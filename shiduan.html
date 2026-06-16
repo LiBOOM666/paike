@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时段管理</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #F5F7FA;
+      color: #262626;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* 搜索操作区 */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .search-wrapper {
+      position: relative;
+      width: 280px;
+    }
+
+    .search-wrapper input {
+      width: 100%;
+      height: 36px;
+      padding: 0 28px 0 10px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-wrapper input:focus {
+      border-color: #1890FF;
+    }
+
+    .search-wrapper .clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #8C8C8C;
+      font-size: 14px;
+      display: none;
+    }
+
+    .search-wrapper .clear-btn.visible {
+      display: block;
+    }
+
+    .status-select {
+      width: 120px;
+      height: 36px;
+      padding: 0 8px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .status-select:focus {
+      border-color: #1890FF;
+    }
+
+    .btn-primary {
+      height: 36px;
+      padding: 0 16px;
+      background: #1890FF;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .btn-primary:hover {
+      background: #40A9FF;
+    }
+
+    /* 表格 */
+    .table-wrapper {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .period-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .period-table thead {
+      background: #FAFAFA;
+    }
+
+    .period-table th {
+      height: 48px;
+      padding: 0 16px;
+      text-align: left;
+      font-size: 14px;
+      font-weight: bold;
+      color: #262626;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .period-table th.col-name { width: 180px; }
+    .period-table th.col-status { width: 80px; }
+    .period-table th.col-desc { width: auto; }
+    .period-table th.col-action { width: 200px; }
+
+    .period-table td {
+      height: 56px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #F0F0F0;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .period-table tbody tr:hover {
+      background: #FAFAFA;
+    }
+
+    .period-table tbody tr.inactive {
+      background: #F5F5F5;
+    }
+
+    .period-table tbody tr.inactive td {
+      color: #8C8C8C;
+    }
+
+    .name-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .name-text {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .status-tag {
+      font-size: 12px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .status-tag.active {
+      background: rgba(24, 144, 255, 0.1);
+      color: #1890FF;
+    }
+
+    .status-tag.inactive {
+      background: #F5F5F5;
+      color: #8C8C8C;
+      border: 1px solid #D9D9D9;
+    }
+
+    .desc-cell {
+      color: #595959;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 400px;
+    }
+
+    .action-cell {
+      display: flex;
+      gap: 12px;
+    }
+
+    .text-btn {
+      font-size: 14px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .text-btn.edit { color: #1890FF; }
+    .text-btn.stop { color: #FF4D4F; }
+    .text-btn.start { color: #52C41A; }
+    .text-btn.delete { color: #FF4D4F; }
+
+    .text-btn:hover { opacity: 0.8; }
+
+    /* 空状态 */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+      color: #8C8C8C;
+      font-size: 14px;
+    }
+
+    .empty-state.visible {
+      display: block;
+    }
+
+    /* 遮罩 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    /* 表单弹窗 */
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 560px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      animation: modalIn 0.2s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .modal-close {
+      font-size: 18px;
+      color: #8C8C8C;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: #262626;
+      margin-bottom: 6px;
+    }
+
+    .form-label .required {
+      color: #FF4D4F;
+      margin-left: 2px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: #1890FF;
+    }
+
+    .form-input.error {
+      border-color: #FF4D4F;
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: #FF4D4F;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    /* 时段列表 */
+    .period-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .period-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .period-item.dragging {
+      opacity: 0.5;
+    }
+
+    .drag-handle {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: #8C8C8C;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .drag-handle span {
+      display: block;
+      width: 10px;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .period-item-label {
+      font-size: 14px;
+      color: #595959;
+      white-space: nowrap;
+      width: 58px;
+    }
+
+    .period-category-select {
+      width: 80px;
+      height: 40px;
+      padding: 0 6px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .period-category-select:focus {
+      border-color: #1890FF;
+    }
+
+    .period-category-select.error {
+      border-color: #FF4D4F;
+    }
+
+    .period-time-input {
+      width: 110px;
+      height: 40px;
+      padding: 0 8px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .period-time-input:focus {
+      border-color: #1890FF;
+    }
+
+    .period-time-input.error {
+      border-color: #FF4D4F;
+    }
+
+    .period-separator {
+      font-size: 14px;
+      color: #8C8C8C;
+      padding: 0 4px;
+      user-select: none;
+    }
+
+    .period-item-remove {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8C8C8C;
+      cursor: pointer;
+      font-size: 14px;
+      background: none;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .period-item-remove:hover {
+      color: #FF4D4F;
+      background: #FFF1F0;
+    }
+
+    .period-item-remove.hidden {
+      visibility: hidden;
+    }
+
+    .drop-indicator {
+      height: 2px;
+      background: #1890FF;
+      border-radius: 1px;
+      margin: -4px 0;
+    }
+
+    .add-period-btn {
+      width: 100%;
+      height: 40px;
+      border: 1px dashed #D9D9D9;
+      border-radius: 6px;
+      background: #fff;
+      color: #595959;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .add-period-btn:hover {
+      border-color: #1890FF;
+      color: #1890FF;
+    }
+
+    .add-period-btn:disabled {
+      border-color: #D9D9D9;
+      color: #BFBFBF;
+      cursor: not-allowed;
+    }
+
+    .add-period-hint {
+      font-size: 12px;
+      color: #8C8C8C;
+      margin-top: 4px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 12px 20px 20px;
+    }
+
+    .btn-cancel {
+      height: 36px;
+      padding: 0 16px;
+      background: none;
+      border: none;
+      color: #595959;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .btn-cancel:hover {
+      background: #F5F5F5;
+    }
+
+    .btn-save {
+      height: 36px;
+      padding: 0 16px;
+      background: #1890FF;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-save:hover {
+      background: #40A9FF;
+    }
+
+    /* 确认弹窗 */
+    .confirm-modal {
+      width: 400px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      animation: modalIn 0.2s ease;
+    }
+
+    .confirm-body {
+      padding: 24px 20px 16px;
+      text-align: center;
+    }
+
+    .confirm-icon {
+      font-size: 32px;
+      color: #FAAD14;
+      margin-bottom: 12px;
+    }
+
+    .confirm-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .confirm-text {
+      font-size: 14px;
+      color: #595959;
+    }
+
+    .confirm-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 12px 20px 20px;
+    }
+
+    .btn-confirm-danger {
+      height: 36px;
+      padding: 0 16px;
+      background: #FF4D4F;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-confirm-danger:hover {
+      background: #FF7875;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>时段管理</h1>
+
+    <div class="search-bar">
+      <div class="search-wrapper">
+        <input type="text" id="searchInput" placeholder="搜索名称">
+        <span class="clear-btn" id="clearSearch">✕</span>
+      </div>
+      <select class="status-select" id="statusFilter">
+        <option value="all">全部</option>
+        <option value="active">启用</option>
+        <option value="inactive">停用</option>
+      </select>
+      <button class="btn-primary" id="addBtn">+ 新增时段</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="period-table">
+        <thead>
+          <tr>
+            <th class="col-name">名称</th>
+            <th class="col-status">状态</th>
+            <th class="col-desc">描述</th>
+            <th class="col-action">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">暂无时段数据</div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑弹窗 -->
+  <div class="modal-overlay" id="formModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="formModalTitle">新增时段</span>
+        <button class="modal-close" id="formModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">名称<span class="required">*</span></label>
+          <input type="text" class="form-input" id="formName" placeholder="请输入名称" maxlength="20">
+          <div class="error-msg" id="nameError">名称不能为空</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <input type="text" class="form-input" id="formDesc" placeholder="请输入描述（选填）" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">时段列表</label>
+          <div class="period-list" id="periodList"></div>
+          <button class="add-period-btn" id="addPeriodBtn">+ 添加时段</button>
+          <div class="add-period-hint" id="addPeriodHint" style="display:none;">最多添加 10 个时段</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="formCancel">取消</button>
+        <button class="btn-save" id="formSave">确认保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div class="modal-overlay" id="confirmModalOverlay">
+    <div class="confirm-modal">
+      <div class="confirm-body">
+        <div class="confirm-icon">⚠</div>
+        <div class="confirm-title" id="confirmTitle">确认停用</div>
+        <div class="confirm-text" id="confirmText">确定要停用该时段吗？</div>
+      </div>
+      <div class="confirm-footer">
+        <button class="btn-cancel" id="confirmCancel">取消</button>
+        <button class="btn-confirm-danger" id="confirmOk">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ================= 数据 =================
+    let timePeriodSets = [
+      {
+        id: 'tps_001',
+        name: '标准作息',
+        description: '适用于小班的标准日常作息时间',
+        status: 'active',
+        periods: [
+          { index: 1, timeRange: '08:00-09:00', category: '学习' },
+          { index: 2, timeRange: '09:00-10:00', category: '运动' },
+          { index: 3, timeRange: '10:00-11:00', category: '游戏' },
+          { index: 4, timeRange: '14:00-15:00', category: '生活' }
+        ]
+      },
+      {
+        id: 'tps_002',
+        name: '午休专用时段',
+        description: '仅用于午休及安静活动安排',
+        status: 'inactive',
+        periods: [
+          { index: 1, timeRange: '12:00-14:00', category: '生活' }
+        ]
+      },
+      {
+        id: 'tps_003',
+        name: '大班扩展时段',
+        description: '大班下午增加兴趣活动时段',
+        status: 'active',
+        periods: [
+          { index: 1, timeRange: '08:00-09:00', category: '学习' },
+          { index: 2, timeRange: '09:00-10:00', category: '运动' },
+          { index: 3, timeRange: '10:00-11:00', category: '游戏' },
+          { index: 4, timeRange: '14:00-15:00', category: '学习' },
+          { index: 5, timeRange: '15:00-16:00', category: '生活' }
+        ]
+      }
+    ];
+
+    const CATEGORIES = ['生活', '运动', '游戏', '学习'];
+    const DEFAULT_CATEGORY = '生活';
+
+    let editingId = null;
+    let confirmCallback = null;
+    let dragSrcIndex = null;
+
+    // ================= DOM 元素 =================
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const addBtn = document.getElementById('addBtn');
+    const tableBody = document.getElementById('tableBody');
+    const emptyState = document.getElementById('emptyState');
+
+    const formModalOverlay = document.getElementById('formModalOverlay');
+    const formModalTitle = document.getElementById('formModalTitle');
+    const formModalClose = document.getElementById('formModalClose');
+    const formName = document.getElementById('formName');
+    const formDesc = document.getElementById('formDesc');
+    const periodList = document.getElementById('periodList');
+    const addPeriodBtn = document.getElementById('addPeriodBtn');
+    const addPeriodHint = document.getElementById('addPeriodHint');
+    const formCancel = document.getElementById('formCancel');
+    const formSave = document.getElementById('formSave');
+    const nameError = document.getElementById('nameError');
+
+    const confirmModalOverlay = document.getElementById('confirmModalOverlay');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmText = document.getElementById('confirmText');
+    const confirmCancel = document.getElementById('confirmCancel');
+    const confirmOk = document.getElementById('confirmOk');
+
+    // ================= 工具函数 =================
+    function generateId() {
+      return 'tps_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+    }
+
+    function getFilteredData() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      const status = statusFilter.value;
+      return timePeriodSets.filter(item => {
+        const matchName = !keyword || item.name.toLowerCase().includes(keyword);
+        const matchStatus = status === 'all' || item.status === status;
+        return matchName && matchStatus;
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function getCategoryOptions(selected) {
+      return CATEGORIES.map(c => `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`).join('');
+    }
+
+    // ================= 渲染表格 =================
+    function renderTable() {
+      const data = getFilteredData();
+      tableBody.innerHTML = '';
+
+      if (data.length === 0) {
+        emptyState.classList.add('visible');
+        return;
+      }
+      emptyState.classList.remove('visible');
+
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = item.status === 'inactive' ? 'inactive' : '';
+
+        const statusTagClass = item.status === 'active' ? 'active' : 'inactive';
+        const statusTagText = item.status === 'active' ? '启用' : '停用';
+        const actionBtn = item.status === 'active'
+          ? `<button class="text-btn stop" data-id="${item.id}" data-action="stop">停用</button>`
+          : `<button class="text-btn start" data-id="${item.id}" data-action="start">启用</button>`;
+
+        tr.innerHTML = `
+          <td><span class="name-text">${escapeHtml(item.name)}</span></td>
+          <td><span class="status-tag ${statusTagClass}">${statusTagText}</span></td>
+          <td>
+            <div class="desc-cell" title="${escapeHtml(item.description || '')}">
+              ${item.description ? escapeHtml(item.description) : '—'}
+            </div>
+          </td>
+          <td>
+            <div class="action-cell">
+              <button class="text-btn edit" data-id="${item.id}" data-action="edit">编辑</button>
+              ${actionBtn}
+              <button class="text-btn delete" data-id="${item.id}" data-action="delete">删除</button>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    // ================= 搜索与筛选 =================
+    searchInput.addEventListener('input', () => {
+      clearSearch.classList.toggle('visible', searchInput.value.length > 0);
+      renderTable();
+    });
+
+    clearSearch.addEventListener('click', () => {
+      searchInput.value = '';
+      clearSearch.classList.remove('visible');
+      renderTable();
+    });
+
+    statusFilter.addEventListener('change', renderTable);
+
+    // ================= 表格操作 =================
+    tableBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      const item = timePeriodSets.find(i => i.id === id);
+      if (!item) return;
+
+      if (action === 'edit') {
+        openFormModal(item);
+      } else if (action === 'stop') {
+        confirmTitle.textContent = '确认停用';
+        showConfirm(`确定要停用「${item.name}」吗？停用后该时段方案将不可在排课中使用。`, () => {
+          item.status = 'inactive';
+          renderTable();
+        });
+      } else if (action === 'start') {
+        item.status = 'active';
+        renderTable();
+      } else if (action === 'delete') {
+        confirmTitle.textContent = '确认删除';
+        showConfirm(`确定要删除「${item.name}」吗？删除后不可恢复。`, () => {
+          timePeriodSets = timePeriodSets.filter(i => i.id !== id);
+          renderTable();
+        });
+      }
+    });
+
+    // ================= 弹窗控制 =================
+    function openFormModal(item = null) {
+      editingId = item ? item.id : null;
+      formModalTitle.textContent = item ? '编辑时段' : '新增时段';
+      formName.value = item ? item.name : '';
+      formDesc.value = item ? item.description : '';
+      nameError.classList.remove('visible');
+      formName.classList.remove('error');
+
+      // 构建时段列表
+      const periods = item && item.periods.length > 0
+        ? item.periods.map((p, i) => ({ ...p, index: i + 1 }))
+        : [{ index: 1, timeRange: '', category: DEFAULT_CATEGORY }];
+      renderPeriodList(periods);
+
+      formModalOverlay.classList.add('visible');
+    }
+
+    function closeFormModal() {
+      formModalOverlay.classList.remove('visible');
+      editingId = null;
+    }
+
+    addBtn.addEventListener('click', () => openFormModal());
+    formModalClose.addEventListener('click', closeFormModal);
+    formCancel.addEventListener('click', closeFormModal);
+    formModalOverlay.addEventListener('click', (e) => {
+      if (e.target === formModalOverlay) closeFormModal();
+    });
+
+    // ================= 时段列表编辑 =================
+    function renderPeriodList(periods) {
+      periodList.innerHTML = '';
+      periods.forEach((p, idx) => {
+        const parts = p.timeRange ? p.timeRange.split('-') : ['', ''];
+        const start = parts[0] || '';
+        const end = parts[1] || '';
+        const category = CATEGORIES.includes(p.category) ? p.category : DEFAULT_CATEGORY;
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'period-item';
+        itemDiv.draggable = true;
+        itemDiv.dataset.index = idx + 1;
+        itemDiv.innerHTML = `
+          <div class="drag-handle" title="拖拽排序">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="period-item-label">（序号）${p.index}</span>
+          <select class="period-category-select">${getCategoryOptions(category)}</select>
+          <input type="time" class="period-time-input" value="${escapeHtml(start)}">
+          <span class="period-separator">-</span>
+          <input type="time" class="period-time-input" value="${escapeHtml(end)}">
+          <button class="period-item-remove ${periods.length <= 1 ? 'hidden' : ''}" title="删除">✕</button>
+        `;
+        periodList.appendChild(itemDiv);
+      });
+
+      updateAddPeriodBtn(periods.length);
+    }
+
+    function updateAddPeriodBtn(count) {
+      const max = 10;
+      addPeriodBtn.disabled = count >= max;
+      addPeriodHint.style.display = count >= max ? 'block' : 'none';
+    }
+
+    function getPeriodInputs() {
+      return Array.from(periodList.querySelectorAll('.period-item')).map((item, idx) => {
+        const inputs = item.querySelectorAll('.period-time-input');
+        const start = inputs[0].value.trim();
+        const end = inputs[1].value.trim();
+        const timeRange = start && end ? `${start}-${end}` : '';
+        const category = item.querySelector('.period-category-select').value;
+        return { index: idx + 1, timeRange, category };
+      });
+    }
+
+    addPeriodBtn.addEventListener('click', () => {
+      const periods = getPeriodInputs();
+      if (periods.length >= 10) return;
+      periods.push({ index: periods.length + 1, timeRange: '', category: DEFAULT_CATEGORY });
+      renderPeriodList(periods);
+      // 聚焦新添加的输入框
+      const inputs = periodList.querySelectorAll('.period-time-input');
+      if (inputs.length > 0) {
+        inputs[inputs.length - 2].focus();
+      }
+    });
+
+    periodList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.period-item-remove');
+      if (!btn || btn.classList.contains('hidden')) return;
+      const periods = getPeriodInputs();
+      if (periods.length <= 1) return;
+      const item = btn.closest('.period-item');
+      const idx = Array.from(periodList.children).indexOf(item);
+      periods.splice(idx, 1);
+      // 重新编号
+      periods.forEach((p, i) => p.index = i + 1);
+      renderPeriodList(periods);
+    });
+
+    // ================= 拖拽排序 =================
+    function getDropInsertIndex(y) {
+      const items = Array.from(periodList.querySelectorAll('.period-item'));
+      if (items.length === 0) return 0;
+      for (let i = 0; i < items.length; i++) {
+        const rect = items[i].getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (y < mid) return i;
+      }
+      return items.length;
+    }
+
+    function showDropIndicator(insertIndex) {
+      document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+      const items = Array.from(periodList.querySelectorAll('.period-item'));
+      const indicator = document.createElement('div');
+      indicator.className = 'drop-indicator';
+      if (insertIndex >= items.length) {
+        periodList.appendChild(indicator);
+      } else {
+        periodList.insertBefore(indicator, items[insertIndex]);
+      }
+    }
+
+    function clearDropIndicator() {
+      document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+    }
+
+    periodList.addEventListener('dragstart', (e) => {
+      const item = e.target.closest('.period-item');
+      if (!item) return;
+      dragSrcIndex = Array.from(periodList.querySelectorAll('.period-item')).indexOf(item);
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragSrcIndex);
+    });
+
+    periodList.addEventListener('dragend', (e) => {
+      const item = e.target.closest('.period-item');
+      if (item) item.classList.remove('dragging');
+      clearDropIndicator();
+      dragSrcIndex = null;
+    });
+
+    periodList.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const insertIndex = getDropInsertIndex(e.clientY);
+      showDropIndicator(insertIndex);
+      e.dataTransfer.dropEffect = 'move';
+    });
+
+    periodList.addEventListener('dragleave', (e) => {
+      if (!periodList.contains(e.relatedTarget)) {
+        clearDropIndicator();
+      }
+    });
+
+    periodList.addEventListener('drop', (e) => {
+      e.preventDefault();
+      clearDropIndicator();
+      const dragged = document.querySelector('.period-item.dragging');
+      if (!dragged || dragSrcIndex === null) return;
+
+      const periods = getPeriodInputs();
+      const insertIndex = getDropInsertIndex(e.clientY);
+      const [moved] = periods.splice(dragSrcIndex, 1);
+
+      let targetIndex = insertIndex;
+      if (dragSrcIndex < insertIndex) targetIndex--;
+      targetIndex = Math.max(0, Math.min(targetIndex, periods.length));
+      periods.splice(targetIndex, 0, moved);
+
+      // 重新编号，序号始终从上到下递增
+      periods.forEach((p, i) => p.index = i + 1);
+      renderPeriodList(periods);
+    });
+
+    // ================= 表单校验 =================
+    function validateTimeRange(startStr, endStr) {
+      const timeRegex = /^([0-1]\d|2[0-3]):([0-5]\d)$/;
+      if (!timeRegex.test(startStr) || !timeRegex.test(endStr)) {
+        return { valid: false, msg: '请选择正确的时间' };
+      }
+      const [, h1, m1] = startStr.match(timeRegex);
+      const [, h2, m2] = endStr.match(timeRegex);
+      const startMin = parseInt(h1) * 60 + parseInt(m1);
+      const endMin = parseInt(h2) * 60 + parseInt(m2);
+      if (endMin <= startMin) return { valid: false, msg: '结束时间必须晚于开始时间' };
+      return { valid: true, start: startMin, end: endMin };
+    }
+
+    function checkOverlap(periods) {
+      const ranges = [];
+      for (const p of periods) {
+        const parts = p.timeRange.split('-');
+        if (parts.length !== 2) continue;
+        const r = validateTimeRange(parts[0], parts[1]);
+        if (!r.valid) continue;
+        ranges.push(r);
+      }
+      for (let i = 0; i < ranges.length; i++) {
+        for (let j = i + 1; j < ranges.length; j++) {
+          if (ranges[i].start < ranges[j].end && ranges[j].start < ranges[i].end) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    formSave.addEventListener('click', () => {
+      const name = formName.value.trim();
+      const desc = formDesc.value.trim();
+      const periods = getPeriodInputs();
+
+      // 校验名称
+      let hasError = false;
+      if (!name) {
+        nameError.textContent = '名称不能为空';
+        nameError.classList.add('visible');
+        formName.classList.add('error');
+        hasError = true;
+      } else if (name.length > 20) {
+        nameError.textContent = '名称不能超过 20 字';
+        nameError.classList.add('visible');
+        formName.classList.add('error');
+        hasError = true;
+      } else {
+        nameError.classList.remove('visible');
+        formName.classList.remove('error');
+      }
+
+      // 校验时段
+      const timeInputGroups = periodList.querySelectorAll('.period-item');
+      let periodError = false;
+      timeInputGroups.forEach(group => {
+        group.querySelectorAll('.period-time-input').forEach(input => {
+          input.classList.remove('error');
+        });
+      });
+
+      for (let i = 0; i < periods.length; i++) {
+        const p = periods[i];
+        const groupInputs = timeInputGroups[i].querySelectorAll('.period-time-input');
+        const startVal = groupInputs[0].value.trim();
+        const endVal = groupInputs[1].value.trim();
+        if (!startVal || !endVal) {
+          groupInputs[0].classList.add('error');
+          groupInputs[1].classList.add('error');
+          periodError = true;
+          continue;
+        }
+        const r = validateTimeRange(startVal, endVal);
+        if (!r.valid) {
+          groupInputs[0].classList.add('error');
+          groupInputs[1].classList.add('error');
+          periodError = true;
+        }
+      }
+
+      if (checkOverlap(periods)) {
+        periodError = true;
+        timeInputGroups.forEach(group => {
+          group.querySelectorAll('.period-time-input').forEach(input => {
+            input.classList.add('error');
+          });
+        });
+      }
+
+      if (hasError || periodError) return;
+
+      // 保存
+      if (editingId) {
+        const item = timePeriodSets.find(i => i.id === editingId);
+        if (item) {
+          item.name = name;
+          item.description = desc;
+          item.periods = periods.map(p => ({ index: p.index, timeRange: p.timeRange, category: p.category }));
+        }
+      } else {
+        timePeriodSets.push({
+          id: generateId(),
+          name,
+          description: desc,
+          status: 'active',
+          periods: periods.map(p => ({ index: p.index, timeRange: p.timeRange, category: p.category }))
+        });
+      }
+
+      closeFormModal();
+      renderTable();
+    });
+
+    formName.addEventListener('input', () => {
+      if (formName.classList.contains('error')) {
+        formName.classList.remove('error');
+        nameError.classList.remove('visible');
+      }
+    });
+
+    periodList.addEventListener('input', (e) => {
+      if (e.target.classList.contains('period-time-input') && e.target.classList.contains('error')) {
+        e.target.classList.remove('error');
+      }
+    });
+
+    // ================= 确认弹窗 =================
+    function showConfirm(text, callback) {
+      confirmText.textContent = text;
+      confirmCallback = callback;
+      confirmModalOverlay.classList.add('visible');
+    }
+
+    function closeConfirm() {
+      confirmModalOverlay.classList.remove('visible');
+      confirmCallback = null;
+    }
+
+    confirmCancel.addEventListener('click', closeConfirm);
+    confirmOk.addEventListener('click', () => {
+      if (confirmCallback) confirmCallback();
+      closeConfirm();
+    });
+    confirmModalOverlay.addEventListener('click', (e) => {
+      if (e.target === confirmModalOverlay) closeConfirm();
+    });
+
+    // ================= 初始化 =================
+    renderTable();
+  </script>
+</body>
+</html>

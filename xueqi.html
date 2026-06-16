@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学期管理</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #F5F7FA;
+      color: #262626;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* 搜索操作区 */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .search-wrapper {
+      position: relative;
+      width: 280px;
+    }
+
+    .search-wrapper input {
+      width: 100%;
+      height: 36px;
+      padding: 0 28px 0 10px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-wrapper input:focus {
+      border-color: #1890FF;
+    }
+
+    .search-wrapper .clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #8C8C8C;
+      font-size: 14px;
+      display: none;
+    }
+
+    .search-wrapper .clear-btn.visible {
+      display: block;
+    }
+
+    .status-select {
+      width: 140px;
+      height: 36px;
+      padding: 0 8px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .status-select:focus {
+      border-color: #1890FF;
+    }
+
+    .btn-primary {
+      height: 36px;
+      padding: 0 16px;
+      background: #1890FF;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .btn-primary:hover {
+      background: #40A9FF;
+    }
+
+    /* 表格 */
+    .table-wrapper {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .term-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .term-table thead {
+      background: #FAFAFA;
+    }
+
+    .term-table th {
+      height: 48px;
+      padding: 0 16px;
+      text-align: left;
+      font-size: 14px;
+      font-weight: bold;
+      color: #262626;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .term-table th.col-name { width: 200px; }
+    .term-table th.col-start { width: 120px; }
+    .term-table th.col-end { width: 120px; }
+    .term-table th.col-status { width: 100px; }
+    .term-table th.col-action { width: 180px; }
+
+    .term-table td {
+      height: 56px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #F0F0F0;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .term-table tbody tr:hover {
+      background: #FAFAFA;
+    }
+
+    .name-text {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .status-tag {
+      display: inline-block;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .status-tag.not_started {
+      background: #E6F7FF;
+      color: #1890FF;
+    }
+
+    .status-tag.in_progress {
+      background: #F6FFED;
+      color: #52C41A;
+    }
+
+    .status-tag.ended {
+      background: #F5F5F5;
+      color: #8C8C8C;
+    }
+
+    .action-cell {
+      display: flex;
+      gap: 12px;
+    }
+
+    .text-btn {
+      font-size: 14px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .text-btn.detail { color: #1890FF; }
+    .text-btn.edit { color: #1890FF; }
+    .text-btn.delete { color: #FF4D4F; }
+
+    .text-btn:hover { opacity: 0.8; }
+
+    /* 空状态 */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+      color: #8C8C8C;
+      font-size: 14px;
+    }
+
+    .empty-state.visible {
+      display: block;
+    }
+
+    /* 遮罩 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    /* 表单弹窗 */
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 480px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      animation: modalIn 0.2s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .modal-close {
+      font-size: 18px;
+      color: #8C8C8C;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: #262626;
+      margin-bottom: 6px;
+    }
+
+    .form-label .required {
+      color: #FF4D4F;
+      margin-left: 2px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid #D9D9D9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      border-color: #1890FF;
+    }
+
+    .form-input.error {
+      border-color: #FF4D4F;
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: #FF4D4F;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    .date-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .date-row .form-group {
+      flex: 1;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 12px 20px 20px;
+    }
+
+    .btn-cancel {
+      height: 36px;
+      padding: 0 16px;
+      background: none;
+      border: none;
+      color: #595959;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .btn-cancel:hover {
+      background: #F5F5F5;
+    }
+
+    .btn-save {
+      height: 36px;
+      padding: 0 16px;
+      background: #1890FF;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-save:hover {
+      background: #40A9FF;
+    }
+
+    /* 详情弹窗 */
+    .detail-row {
+      display: flex;
+      margin-bottom: 14px;
+    }
+
+    .detail-label {
+      width: 80px;
+      font-size: 14px;
+      color: #8C8C8C;
+      flex-shrink: 0;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: #262626;
+      flex: 1;
+    }
+
+    /* 确认弹窗 */
+    .confirm-modal {
+      width: 400px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      animation: modalIn 0.2s ease;
+    }
+
+    .confirm-body {
+      padding: 24px 20px 16px;
+      text-align: center;
+    }
+
+    .confirm-icon {
+      font-size: 32px;
+      color: #FAAD14;
+      margin-bottom: 12px;
+    }
+
+    .confirm-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .confirm-text {
+      font-size: 14px;
+      color: #595959;
+    }
+
+    .confirm-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 12px 20px 20px;
+    }
+
+    .btn-confirm-danger {
+      height: 36px;
+      padding: 0 16px;
+      background: #FF4D4F;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-confirm-danger:hover {
+      background: #FF7875;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>学期管理</h1>
+
+    <div class="search-bar">
+      <div class="search-wrapper">
+        <input type="text" id="searchInput" placeholder="搜索学期名称">
+        <span class="clear-btn" id="clearSearch">✕</span>
+      </div>
+      <select class="status-select" id="statusFilter">
+        <option value="all">全部</option>
+        <option value="not_started">未开始</option>
+        <option value="in_progress">进行中</option>
+        <option value="ended">已结束</option>
+      </select>
+      <button class="btn-primary" id="addBtn">+ 新增学期</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="term-table">
+        <thead>
+          <tr>
+            <th class="col-name">学期名称</th>
+            <th class="col-start">开始时间</th>
+            <th class="col-end">结束时间</th>
+            <th class="col-status">状态</th>
+            <th class="col-action">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">暂无学期数据</div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑弹窗 -->
+  <div class="modal-overlay" id="formModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="formModalTitle">新增学期</span>
+        <button class="modal-close" id="formModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">学期名称<span class="required">*</span></label>
+          <input type="text" class="form-input" id="formName" placeholder="请输入学期名称" maxlength="30">
+          <div class="error-msg" id="nameError">学期名称不能为空</div>
+        </div>
+        <div class="date-row">
+          <div class="form-group">
+            <label class="form-label">开始日期<span class="required">*</span></label>
+            <input type="date" class="form-input" id="formStartDate">
+            <div class="error-msg" id="startDateError">请选择开始日期</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">结束日期<span class="required">*</span></label>
+            <input type="date" class="form-input" id="formEndDate">
+            <div class="error-msg" id="endDateError">结束日期必须晚于开始日期</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <input type="text" class="form-input" id="formDesc" placeholder="请输入描述（选填）" maxlength="200">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="formCancel">取消</button>
+        <button class="btn-save" id="formSave">确认保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 详情弹窗 -->
+  <div class="modal-overlay" id="detailModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">学期详情</span>
+        <button class="modal-close" id="detailModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody">
+        <!-- 动态填充 -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="detailClose">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div class="modal-overlay" id="confirmModalOverlay">
+    <div class="confirm-modal">
+      <div class="confirm-body">
+        <div class="confirm-icon">⚠</div>
+        <div class="confirm-title">确认删除</div>
+        <div class="confirm-text" id="confirmText">确定要删除该学期吗？</div>
+      </div>
+      <div class="confirm-footer">
+        <button class="btn-cancel" id="confirmCancel">取消</button>
+        <button class="btn-confirm-danger" id="confirmOk">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ================= 数据 =================
+    let terms = [
+      {
+        id: 'term_001',
+        name: '2025秋季学期',
+        startDate: '2025-09-01',
+        endDate: '2026-01-17',
+        description: '第一学期，包含中秋节、国庆节假期'
+      },
+      {
+        id: 'term_002',
+        name: '2025春季学期',
+        startDate: '2025-02-17',
+        endDate: '2025-07-04',
+        description: '第二学期'
+      },
+      {
+        id: 'term_003',
+        name: '2026春季学期',
+        startDate: '2026-02-16',
+        endDate: '2026-07-03',
+        description: ''
+      }
+    ];
+
+    let editingId = null;
+    let confirmCallback = null;
+
+    // ================= DOM 元素 =================
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const addBtn = document.getElementById('addBtn');
+    const tableBody = document.getElementById('tableBody');
+    const emptyState = document.getElementById('emptyState');
+
+    const formModalOverlay = document.getElementById('formModalOverlay');
+    const formModalTitle = document.getElementById('formModalTitle');
+    const formModalClose = document.getElementById('formModalClose');
+    const formName = document.getElementById('formName');
+    const formStartDate = document.getElementById('formStartDate');
+    const formEndDate = document.getElementById('formEndDate');
+    const formDesc = document.getElementById('formDesc');
+    const formCancel = document.getElementById('formCancel');
+    const formSave = document.getElementById('formSave');
+    const nameError = document.getElementById('nameError');
+    const startDateError = document.getElementById('startDateError');
+    const endDateError = document.getElementById('endDateError');
+
+    const detailModalOverlay = document.getElementById('detailModalOverlay');
+    const detailModalClose = document.getElementById('detailModalClose');
+    const detailBody = document.getElementById('detailBody');
+    const detailClose = document.getElementById('detailClose');
+
+    const confirmModalOverlay = document.getElementById('confirmModalOverlay');
+    const confirmText = document.getElementById('confirmText');
+    const confirmCancel = document.getElementById('confirmCancel');
+    const confirmOk = document.getElementById('confirmOk');
+
+    // ================= 工具函数 =================
+    function generateId() {
+      return 'term_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+    }
+
+    function todayStr() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function calcStatus(startDate, endDate) {
+      const today = todayStr();
+      if (today < startDate) return 'not_started';
+      if (today > endDate) return 'ended';
+      return 'in_progress';
+    }
+
+    function statusLabel(status) {
+      const map = {
+        not_started: { text: '未开始', className: 'not_started' },
+        in_progress: { text: '进行中', className: 'in_progress' },
+        ended: { text: '已结束', className: 'ended' }
+      };
+      return map[status] || map.not_started;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function getFilteredData() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      const status = statusFilter.value;
+      return terms.filter(item => {
+        const itemStatus = calcStatus(item.startDate, item.endDate);
+        const matchName = !keyword || item.name.toLowerCase().includes(keyword);
+        const matchStatus = status === 'all' || itemStatus === status;
+        return matchName && matchStatus;
+      });
+    }
+
+    // ================= 渲染表格 =================
+    function renderTable() {
+      const data = getFilteredData();
+      tableBody.innerHTML = '';
+
+      if (data.length === 0) {
+        emptyState.classList.add('visible');
+        return;
+      }
+      emptyState.classList.remove('visible');
+
+      data.forEach(item => {
+        const status = calcStatus(item.startDate, item.endDate);
+        const st = statusLabel(status);
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td><span class="name-text">${escapeHtml(item.name)}</span></td>
+          <td>${escapeHtml(item.startDate)}</td>
+          <td>${escapeHtml(item.endDate)}</td>
+          <td><span class="status-tag ${st.className}">${st.text}</span></td>
+          <td>
+            <div class="action-cell">
+              <button class="text-btn detail" data-id="${item.id}" data-action="detail">详情</button>
+              <button class="text-btn edit" data-id="${item.id}" data-action="edit">编辑</button>
+              <button class="text-btn delete" data-id="${item.id}" data-action="delete">删除</button>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    // ================= 搜索与筛选 =================
+    searchInput.addEventListener('input', () => {
+      clearSearch.classList.toggle('visible', searchInput.value.length > 0);
+      renderTable();
+    });
+
+    clearSearch.addEventListener('click', () => {
+      searchInput.value = '';
+      clearSearch.classList.remove('visible');
+      renderTable();
+    });
+
+    statusFilter.addEventListener('change', renderTable);
+
+    // ================= 表格操作 =================
+    tableBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      const item = terms.find(i => i.id === id);
+      if (!item) return;
+
+      if (action === 'detail') {
+        openDetailModal(item);
+      } else if (action === 'edit') {
+        openFormModal(item);
+      } else if (action === 'delete') {
+        showConfirm(`确定要删除「${item.name}」吗？删除后不可恢复。`, () => {
+          terms = terms.filter(i => i.id !== id);
+          renderTable();
+        });
+      }
+    });
+
+    // ================= 详情弹窗 =================
+    function openDetailModal(item) {
+      const status = calcStatus(item.startDate, item.endDate);
+      const st = statusLabel(status);
+      detailBody.innerHTML = `
+        <div class="detail-row">
+          <div class="detail-label">学期名称</div>
+          <div class="detail-value">${escapeHtml(item.name)}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">开始日期</div>
+          <div class="detail-value">${escapeHtml(item.startDate)}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">结束日期</div>
+          <div class="detail-value">${escapeHtml(item.endDate)}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">状态</div>
+          <div class="detail-value"><span class="status-tag ${st.className}">${st.text}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">描述</div>
+          <div class="detail-value">${item.description ? escapeHtml(item.description) : '—'}</div>
+        </div>
+      `;
+      detailModalOverlay.classList.add('visible');
+    }
+
+    function closeDetailModal() {
+      detailModalOverlay.classList.remove('visible');
+    }
+
+    detailModalClose.addEventListener('click', closeDetailModal);
+    detailClose.addEventListener('click', closeDetailModal);
+    detailModalOverlay.addEventListener('click', (e) => {
+      if (e.target === detailModalOverlay) closeDetailModal();
+    });
+
+    // ================= 表单弹窗 =================
+    function openFormModal(item = null) {
+      editingId = item ? item.id : null;
+      formModalTitle.textContent = item ? '编辑学期' : '新增学期';
+      formName.value = item ? item.name : '';
+      formStartDate.value = item ? item.startDate : '';
+      formEndDate.value = item ? item.endDate : '';
+      formDesc.value = item ? item.description : '';
+
+      clearFormErrors();
+      formModalOverlay.classList.add('visible');
+    }
+
+    function closeFormModal() {
+      formModalOverlay.classList.remove('visible');
+      editingId = null;
+    }
+
+    function clearFormErrors() {
+      nameError.classList.remove('visible');
+      startDateError.classList.remove('visible');
+      endDateError.classList.remove('visible');
+      formName.classList.remove('error');
+      formStartDate.classList.remove('error');
+      formEndDate.classList.remove('error');
+    }
+
+    addBtn.addEventListener('click', () => openFormModal());
+    formModalClose.addEventListener('click', closeFormModal);
+    formCancel.addEventListener('click', closeFormModal);
+    formModalOverlay.addEventListener('click', (e) => {
+      if (e.target === formModalOverlay) closeFormModal();
+    });
+
+    // ================= 表单校验与保存 =================
+    formSave.addEventListener('click', () => {
+      const name = formName.value.trim();
+      const startDate = formStartDate.value;
+      const endDate = formEndDate.value;
+      const desc = formDesc.value.trim();
+
+      clearFormErrors();
+      let hasError = false;
+
+      // 校验名称
+      if (!name) {
+        nameError.textContent = '学期名称不能为空';
+        nameError.classList.add('visible');
+        formName.classList.add('error');
+        hasError = true;
+      } else if (name.length > 30) {
+        nameError.textContent = '学期名称不能超过 30 字';
+        nameError.classList.add('visible');
+        formName.classList.add('error');
+        hasError = true;
+      }
+
+      // 校验开始日期
+      if (!startDate) {
+        startDateError.textContent = '请选择开始日期';
+        startDateError.classList.add('visible');
+        formStartDate.classList.add('error');
+        hasError = true;
+      }
+
+      // 校验结束日期
+      if (!endDate) {
+        endDateError.textContent = '请选择结束日期';
+        endDateError.classList.add('visible');
+        formEndDate.classList.add('error');
+        hasError = true;
+      } else if (startDate && endDate <= startDate) {
+        endDateError.textContent = '结束日期必须晚于开始日期';
+        endDateError.classList.add('visible');
+        formEndDate.classList.add('error');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      // 保存
+      if (editingId) {
+        const item = terms.find(i => i.id === editingId);
+        if (item) {
+          item.name = name;
+          item.startDate = startDate;
+          item.endDate = endDate;
+          item.description = desc;
+        }
+      } else {
+        terms.push({
+          id: generateId(),
+          name,
+          startDate,
+          endDate,
+          description: desc
+        });
+      }
+
+      closeFormModal();
+      renderTable();
+    });
+
+    formName.addEventListener('input', () => {
+      if (formName.classList.contains('error')) {
+        formName.classList.remove('error');
+        nameError.classList.remove('visible');
+      }
+    });
+
+    formStartDate.addEventListener('input', () => {
+      if (formStartDate.classList.contains('error')) {
+        formStartDate.classList.remove('error');
+        startDateError.classList.remove('visible');
+      }
+    });
+
+    formEndDate.addEventListener('input', () => {
+      if (formEndDate.classList.contains('error')) {
+        formEndDate.classList.remove('error');
+        endDateError.classList.remove('visible');
+      }
+    });
+
+    // ================= 确认弹窗 =================
+    function showConfirm(text, callback) {
+      confirmText.textContent = text;
+      confirmCallback = callback;
+      confirmModalOverlay.classList.add('visible');
+    }
+
+    function closeConfirm() {
+      confirmModalOverlay.classList.remove('visible');
+      confirmCallback = null;
+    }
+
+    confirmCancel.addEventListener('click', closeConfirm);
+    confirmOk.addEventListener('click', () => {
+      if (confirmCallback) confirmCallback();
+      closeConfirm();
+    });
+    confirmModalOverlay.addEventListener('click', (e) => {
+      if (e.target === confirmModalOverlay) closeConfirm();
+    });
+
+    // ================= 初始化 =================
+    renderTable();
+  </script>
+</body>
+</html>

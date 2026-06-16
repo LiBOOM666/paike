@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>幼儿园排课系统 - 演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #1890ff;
+      --primary-hover: #40a9ff;
+      --success: #52c41a;
+      --success-hover: #73d13d;
+      --danger: #ff4d4f;
+      --danger-hover: #ff7875;
+      --ai: #722ed1;
+      --ai-hover: #9254de;
+      --copy: #fa8c16;
+      --copy-hover: #ffa940;
+      --text: #262626;
+      --text-secondary: #595959;
+      --text-disabled: #8c8c8c;
+      --border: #d9d9d9;
+      --border-light: #e8e8e8;
+      --bg: #f5f7fa;
+      --card-bg: #fff;
+      --today-highlight: #1890ff;
+    }
+
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 顶部导航 */
+    .header {
+      height: 64px;
+      background: var(--card-bg);
+      padding: 0 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 100;
+    }
+
+    .header-left { flex: 1; display: flex; align-items: center; }
+    .header-title { font-size: 20px; font-weight: 600; }
+
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .header-right {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .date-nav { display: flex; align-items: center; gap: 8px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-icon { padding: 8px 12px; font-weight: 600; }
+
+    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
+
+    .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+    .btn-success:hover { background: var(--success-hover); border-color: var(--success-hover); color: #fff; }
+
+    .btn-ai { background: var(--ai); color: #fff; border-color: var(--ai); }
+    .btn-ai:hover { background: var(--ai-hover); border-color: var(--ai-hover); color: #fff; }
+
+    .btn-copy { background: var(--copy); color: #fff; border-color: var(--copy); }
+    .btn-copy:hover { background: var(--copy-hover); border-color: var(--copy-hover); color: #fff; }
+
+    .date-input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      width: 150px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .date-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+    .date-input.invalid { border-color: var(--danger); }
+
+    /* 主体 */
+    .main {
+      display: flex;
+      padding: 16px 20px;
+      gap: 16px;
+      height: calc(100vh - 64px);
+    }
+
+    .main.preview-mode .activity-panel { display: none; }
+    .main.preview-mode { padding: 16px 40px; }
+
+    /* 左侧活动面板 */
+    .activity-panel {
+      width: 320px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .panel-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+
+    .filter-section { margin-bottom: 10px; }
+    .filter-label { font-size: 12px; color: var(--text-disabled); margin-bottom: 6px; }
+
+    .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .filter-tab {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--border-light);
+      background: #fff;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .filter-tab:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .search-box { position: relative; margin: 8px 0 12px; }
+    .search-input {
+      width: 100%;
+      height: 34px;
+      padding: 6px 28px 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--primary); }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--border-light);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 18px;
+      text-align: center;
+      display: none;
+    }
+    .search-box.has-value .search-clear { display: block; }
+    .search-clear:hover { background: var(--border); }
+
+    .activity-scroll {
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+    }
+
+    .activity-scroll::-webkit-scrollbar { width: 4px; }
+    .activity-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .activity-card {
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #fff;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+      min-height: 64px;
+    }
+
+    .activity-card:active { cursor: grabbing; }
+    .activity-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .activity-card.dragging { opacity: 0.5; transform: scale(0.95); }
+
+    .activity-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; padding-right: 22px; }
+    .activity-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+    .activity-tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(4px);
+    }
+
+    .activity-info-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .activity-card:hover .activity-info-btn { opacity: 1; }
+    .activity-info-btn:hover { background: rgba(255,255,255,0.5); }
+
+    .empty-tip { text-align: center; color: var(--text-disabled); font-size: 13px; padding: 32px 0; }
+
+    /* 右侧课表 */
+    .schedule-panel {
+      flex: 1;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .schedule-table {
+      display: grid;
+      grid-template-columns: 70px repeat(7, 1fr);
+      min-width: 840px;
+    }
+
+    .header-cell {
+      padding: 10px 4px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      position: relative;
+      cursor: default;
+      transition: background 0.2s;
+      background: #fff;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .header-cell:first-child { background: #fafafa; cursor: default; }
+    .header-cell:not(:first-child) { cursor: pointer; }
+    .header-cell:not(:first-child):hover { filter: brightness(0.97); }
+
+    .header-cell .date { font-size: 14px; }
+    .header-cell .weekday { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+    .header-cell .day-theme-tag {
+      font-size: 11px;
+      color: var(--primary);
+      margin-top: 4px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 4px;
+    }
+
+    .header-cell.today { box-shadow: inset 0 -3px 0 var(--primary); }
+    .header-cell.today .date { color: var(--primary); }
+
+    .header-cell .swap-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      border: 1px solid var(--border-light);
+      background: rgba(255,255,255,0.9);
+      color: var(--primary);
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+      z-index: 10;
+    }
+    .header-cell:hover .swap-btn { opacity: 1; }
+    .header-cell .swap-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .time-cell {
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slot-cell {
+      min-height: 90px;
+      padding: 6px;
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .slot-cell { background: #fff; }
+    .slot-cell.drag-over { background: #e6f7ff; }
+    .slot-cell.drag-conflict { background: #fff1f0; }
+    .slot-cell.empty { background: #fff; }
+
+    .slot-cell .empty-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-disabled);
+      font-size: 11px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .main.edit-mode .slot-cell.empty:hover .empty-placeholder { opacity: 1; }
+
+    .slot-content { display: flex; flex-direction: column; gap: 4px; height: 100%; }
+
+    .slot-activity {
+      padding: 6px;
+      border-radius: 5px;
+      color: #fff;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .slot-activity .name { font-size: 12px; font-weight: 600; padding-right: 16px; }
+    .slot-activity .type-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.25);
+      margin-top: 2px;
+    }
+
+    .slot-activity .info-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 9px;
+      line-height: 14px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .slot-activity:hover .info-btn { opacity: 1; }
+
+    .slot-person {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .slot-person label { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+    .slot-person select {
+      flex: 1;
+      min-width: 0;
+      height: 22px;
+      padding: 0 2px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 11px;
+      outline: none;
+      cursor: pointer;
+      background: #fff;
+    }
+    .slot-person select:focus { border-color: var(--primary); }
+
+    .slot-note {
+      font-size: 10px;
+      color: var(--text-secondary);
+      line-height: 1.3;
+      padding: 3px;
+      background: #f6ffed;
+      border-radius: 3px;
+      word-break: break-all;
+    }
+
+    /* Tooltip */
+    .theme-tooltip {
+      position: fixed;
+      z-index: 2000;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 1.6;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      max-width: 240px;
+    }
+    .theme-tooltip.visible { opacity: 1; }
+    .theme-tooltip div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* 拖拽幽灵 */
+    .drag-ghost {
+      position: fixed;
+      z-index: 3000;
+      background: var(--primary);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .drag-ghost.visible { opacity: 0.95; }
+
+    /* 弹窗 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .modal-overlay.visible { opacity: 1; visibility: visible; }
+
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      width: 90%;
+      max-width: 520px;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(-10px);
+      transition: transform 0.2s;
+    }
+    .modal-overlay.visible .modal { transform: translateY(0); }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-close {
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 24px;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 20px; overflow-y: auto; }
+    .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 10px; }
+
+    .form-row { margin-bottom: 16px; }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--primary); }
+    .form-textarea { resize: vertical; min-height: 60px; font-family: inherit; }
+
+    .slot-note-row { margin-bottom: 12px; }
+    .slot-note-row:last-child { margin-bottom: 0; }
+
+    .detail-row { margin-bottom: 10px; line-height: 1.6; }
+    .detail-label { color: var(--text-secondary); font-size: 13px; }
+    .detail-value { color: var(--text); }
+    .detail-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .detail-tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #f0f0f0; color: var(--text-secondary); }
+
+    .materials-list { margin-top: 8px; }
+    .material-link {
+      display: block;
+      color: var(--primary);
+      font-size: 13px;
+      text-decoration: none;
+      padding: 4px 0;
+    }
+    .material-link:hover { text-decoration: underline; }
+
+    .confirm-text { font-size: 14px; line-height: 1.6; color: var(--text); }
+    .confirm-text strong { color: var(--danger); }
+
+    .day-option-list { display: flex; flex-direction: column; gap: 8px; }
+    .day-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .day-option:hover { border-color: var(--primary); background: #e6f7ff; }
+    .day-option.selected { border-color: var(--primary); background: #e6f7ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+    .day-option.disabled { opacity: 0.5; cursor: not-allowed; background: #f5f5f5; }
+    .day-option .day-name { font-weight: 600; }
+    .day-option .day-date { font-size: 12px; color: var(--text-secondary); }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2500;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #fff;
+      background: rgba(0,0,0,0.75);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.info { background: var(--primary); }
+    .toast.warning { background: var(--copy); }
+
+    @media (max-width: 900px) {
+      .activity-panel { width: 280px; }
+      .header { padding: 0 12px; }
+      .header-title { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-title">幼儿园排课系统</div>
+    </div>
+    <div class="header-center">
+      <div class="date-nav">
+        <button class="btn btn-icon" id="prevWeek">←</button>
+        <button class="btn" id="currentWeek">回到本周</button>
+        <button class="btn btn-icon" id="nextWeek">→</button>
+        <input type="text" class="date-input" id="dateInput" placeholder="yyyy-MM-dd">
+      </div>
+    </div>
+    <div class="header-right" id="headerRight">
+      <!-- 动态按钮 -->
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <div class="main preview-mode" id="main">
+    <!-- 左侧活动面板 -->
+    <aside class="activity-panel" id="activityPanel">
+      <div class="panel-title">活动资源库</div>
+
+      <div class="filter-section">
+        <div class="filter-label">来源</div>
+        <div class="filter-group" data-filter="source">
+          <span class="filter-tab active" data-value="all">全部</span>
+          <span class="filter-tab" data-value="my">我的</span>
+          <span class="filter-tab" data-value="institution">园所</span>
+          <span class="filter-tab" data-value="platform">平台</span>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">领域</div>
+        <div class="filter-group" data-filter="type">
+          <span class="filter-tab active" data-value="all">全部</span>
+          <span class="filter-tab" data-value="健康">健康</span>
+          <span class="filter-tab" data-value="语言">语言</span>
+          <span class="filter-tab" data-value="社会">社会</span>
+          <span class="filter-tab" data-value="科学">科学</span>
+          <span class="filter-tab" data-value="艺术">艺术</span>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">类型</div>
+        <div class="filter-group" data-filter="category">
+          <span class="filter-tab active" data-value="all">全部</span>
+          <span class="filter-tab" data-value="生活">生活</span>
+          <span class="filter-tab" data-value="运动">运动</span>
+          <span class="filter-tab" data-value="游戏">游戏</span>
+          <span class="filter-tab" data-value="学习">学习</span>
+        </div>
+      </div>
+
+      <div class="search-box" id="searchBox">
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索活动名称">
+        <span class="search-clear" id="searchClear">×</span>
+      </div>
+
+      <div class="activity-scroll" id="activityList"></div>
+    </aside>
+
+    <!-- 右侧课表 -->
+    <section class="schedule-panel" id="schedulePanel">
+      <div class="schedule-table" id="scheduleTable"></div>
+    </section>
+  </div>
+
+  <!-- 表头主题 Tooltip -->
+  <div class="theme-tooltip" id="themeTooltip"></div>
+
+  <!-- 拖拽幽灵 -->
+  <div class="drag-ghost" id="dragGhost"></div>
+
+  <!-- 弹窗：活动详情 -->
+  <div class="modal-overlay" id="activityDetailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span>活动详情</span>
+        <button class="modal-close" data-close="activityDetailModal">×</button>
+      </div>
+      <div class="modal-body" id="activityDetailBody"></div>
+      <div class="modal-footer">
+        <button class="btn" data-close="activityDetailModal">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：每日编辑 -->
+  <div class="modal-overlay" id="dailyEditModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span>编辑每日计划</span>
+        <button class="modal-close" data-close="dailyEditModal">×</button>
+      </div>
+      <div class="modal-body" id="dailyEditBody"></div>
+      <div class="modal-footer">
+        <button class="btn" id="dailyEditCancel">取消</button>
+        <button class="btn btn-success" id="dailyEditSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：替换确认 -->
+  <div class="modal-overlay" id="replaceConfirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span>替换确认</span>
+        <button class="modal-close" data-close="replaceConfirmModal">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-text" id="replaceConfirmText"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="replaceCancel">取消</button>
+        <button class="btn" style="background: var(--danger); color: #fff; border-color: var(--danger);" id="replaceConfirm">替换</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：选择对调目标日期 -->
+  <div class="modal-overlay" id="daySwapModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span>选择对调日期</span>
+        <button class="modal-close" data-close="daySwapModal">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-text" id="daySwapText"></p>
+        <div class="day-option-list" id="daySwapOptions" style="margin-top: 16px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="daySwapCancel">取消</button>
+        <button class="btn btn-primary" id="daySwapConfirm">确认对调</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    /* ================= 数据 ================= */
+    const teachers = ['王老师', '李老师', '张老师', '陈老师', '赵老师', '刘老师', '周老师', '吴老师'];
+
+    const timeSlots = ['08:00-09:00', '09:00-10:00', '10:00-11:00', '14:00-15:00'];
+
+    const activities = [
+      {
+        id: 'a1', name: '晨间律动', type: '健康', category: '运动', source: 'institution',
+        color: '#52c41a', teacher: '王老师', duration: 60,
+        description: '通过欢快的音乐与简单的肢体动作，帮助幼儿舒展身体、激活一天活力。',
+        targetAge: '3-4岁', objectives: '1. 能跟随音乐节奏做简单动作\n2. 愿意参与集体活动',
+        materials: [{ name: '律动音乐.mp3', url: '#' }, { name: '动作示范图', url: '#' }]
+      },
+      {
+        id: 'a2', name: '绘本故事会', type: '语言', category: '学习', source: 'my',
+        color: '#1890ff', teacher: '李老师', duration: 60,
+        description: '精选适合幼儿的绘本，通过教师讲述与互动提问，发展语言表达能力。',
+        targetAge: '3-4岁', objectives: '1. 能安静倾听故事\n2. 能用简单语言表达感受',
+        materials: [{ name: '绘本《小熊请客》', url: '#' }, { name: '故事PPT', url: '#' }]
+      },
+      {
+        id: 'a3', name: '角色扮演区', type: '社会', category: '游戏', source: 'platform',
+        color: '#fa8c16', teacher: '张老师', duration: 60,
+        description: '设置医院、超市、餐厅等情境，让幼儿在角色扮演中学习社会交往规则。',
+        targetAge: '4-5岁', objectives: '1. 体验不同社会角色\n2. 学习与同伴协商',
+        materials: [{ name: '角色服装', url: '#' }, { name: '场景道具清单', url: '#' }]
+      },
+      {
+        id: 'a4', name: '自然观察', type: '科学', category: '学习', source: 'institution',
+        color: '#13c2c2', teacher: '陈老师', duration: 60,
+        description: '带领幼儿观察植物、天气、小动物等自然现象，激发探究兴趣。',
+        targetAge: '4-5岁', objectives: '1. 能用感官观察自然物\n2. 愿意提出简单问题',
+        materials: [{ name: '观察记录表', url: '#' }, { name: '放大镜使用说明', url: '#' }]
+      },
+      {
+        id: 'a5', name: '创意美术', type: '艺术', category: '学习', source: 'my',
+        color: '#eb2f96', teacher: '赵老师', duration: 60,
+        description: '提供多种美术材料，鼓励幼儿自由表达，发展想象力和动手能力。',
+        targetAge: '3-4岁', objectives: '1. 愿意尝试多种绘画方式\n2. 能大胆用色',
+        materials: [{ name: '美术素材包', url: '#' }, { name: '作品展示模板', url: '#' }]
+      },
+      {
+        id: 'a6', name: '生活自理', type: '健康', category: '生活', source: 'institution',
+        color: '#722ed1', teacher: '刘老师', duration: 60,
+        description: '通过情景练习，帮助幼儿掌握洗手、穿衣、整理物品等基本生活技能。',
+        targetAge: '3-4岁', objectives: '1. 能独立完成简单自理行为\n2. 形成良好卫生习惯',
+        materials: [{ name: '洗手步骤图', url: '#' }]
+      },
+      {
+        id: 'a7', name: '户外体能', type: '健康', category: '运动', source: 'platform',
+        color: '#f5222d', teacher: '周老师', duration: 60,
+        description: '利用户外器械开展跑、跳、钻、爬等综合体能活动，增强体质。',
+        targetAge: '4-5岁', objectives: '1. 能协调完成基本动作\n2. 喜欢参加体育活动',
+        materials: [{ name: '器械使用安全须知', url: '#' }, { name: '活动路线图', url: '#' }]
+      },
+      {
+        id: 'a8', name: '音乐游戏', type: '艺术', category: '游戏', source: 'my',
+        color: '#2f54eb', teacher: '吴老师', duration: 60,
+        description: '结合歌曲与游戏，让幼儿在唱唱跳跳中感受音乐节奏与旋律。',
+        targetAge: '3-4岁', objectives: '1. 能随音乐做游戏\n2. 感受音乐带来的快乐',
+        materials: [{ name: '歌曲音频', url: '#' }, { name: '游戏玩法说明', url: '#' }]
+      }
+    ];
+
+    // 主题数据：2026年6月
+    const themes = {
+      month: '2026-06',
+      monthTheme: '夏日探索',
+      weeks: [
+        { start: '2026-06-01', end: '2026-06-07', theme: '夏天的颜色' },
+        { start: '2026-06-08', end: '2026-06-14', theme: '清凉一夏' },
+        { start: '2026-06-15', end: '2026-06-21', theme: '水的旅行' },
+        { start: '2026-06-22', end: '2026-06-28', theme: '夏日昆虫' },
+        { start: '2026-06-29', end: '2026-07-05', theme: '快乐暑假' }
+      ],
+      dayThemes: {
+        '2026-06-15': '认识水滴',
+        '2026-06-16': '水的三态',
+        '2026-06-17': '小雨滴旅行记',
+        '2026-06-18': '节约用水',
+        '2026-06-19': '夏日戏水'
+      }
+    };
+
+    /* ================= 状态 ================= */
+    let state = {
+      currentDate: new Date(),
+      isEditMode: false,
+      filters: { source: 'all', type: 'all', category: 'all' },
+      searchKeyword: ''
+    };
+
+    const scheduleData = {}; // key: date|timeSlot -> { activityId, assignedPerson }
+    const dailyEditData = {}; // key: dateStr -> { theme, slots }
+
+    // 示例数据：本周一、二部分时段预填充
+    const today = normalizeDate(new Date());
+    const monday = getMonday(today);
+    const tuesday = addDays(monday, 1);
+
+    const sampleSchedule = {
+      [key(monday, '08:00-09:00')]: { activityId: 'a1', assignedPerson: '王老师' },
+      [key(monday, '09:00-10:00')]: { activityId: 'a2', assignedPerson: '李老师' },
+      [key(monday, '10:00-11:00')]: { activityId: 'a4', assignedPerson: '陈老师' },
+      [key(tuesday, '08:00-09:00')]: { activityId: 'a3', assignedPerson: '张老师' },
+      [key(tuesday, '09:00-10:00')]: { activityId: 'a5', assignedPerson: '赵老师' }
+    };
+    Object.assign(scheduleData, sampleSchedule);
+
+    dailyEditData[formatDate(monday)] = {
+      theme: '认识水滴',
+      slots: {
+        '08:00-09:00': '晨间集合，做好运动准备',
+        '09:00-10:00': '绘本导入，激发兴趣'
+      }
+    };
+
+    /* ================= 工具函数 ================= */
+    function normalizeDate(date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    function getMonday(date) {
+      const d = normalizeDate(date);
+      const day = d.getDay() || 7;
+      d.setDate(d.getDate() - day + 1);
+      return d;
+    }
+
+    function addDays(date, days) {
+      const d = normalizeDate(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    function formatDate(date) {
+      const d = normalizeDate(date);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatShortDate(date) {
+      const d = normalizeDate(date);
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${m}-${day}`;
+    }
+
+    function key(date, slot) {
+      return `${formatDate(date)}|${slot}`;
+    }
+
+    function parseDate(str) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return null;
+      const [y, m, d] = str.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return null;
+      return date;
+    }
+
+    function isSameDay(d1, d2) {
+      return formatDate(d1) === formatDate(d2);
+    }
+
+    function getWeekTheme(date) {
+      const d = formatDate(date);
+      return themes.weeks.find(w => d >= w.start && d <= w.end) || null;
+    }
+
+    function getDayTheme(date) {
+      const d = formatDate(date);
+      if (dailyEditData[d] && dailyEditData[d].theme) return dailyEditData[d].theme;
+      return themes.dayThemes[d] || '';
+    }
+
+    function getMonthTheme() {
+      return themes.monthTheme || '';
+    }
+
+    function getActivity(id) {
+      return activities.find(a => a.id === id) || null;
+    }
+
+    function showToast(message, type = 'info', duration = 2000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    /* ================= 渲染 ================= */
+    function renderHeaderButtons() {
+      const container = document.getElementById('headerRight');
+      container.innerHTML = '';
+      if (state.isEditMode) {
+        container.innerHTML = `
+          <button class="btn btn-ai" id="btnAi">Ai帮排</button>
+          <button class="btn" id="btnCancel">取消</button>
+          <button class="btn btn-success" id="btnSave">保存</button>
+        `;
+        document.getElementById('btnAi').onclick = () => showToast('Ai帮排功能开发中', 'info');
+        document.getElementById('btnCancel').onclick = () => {
+          state.isEditMode = false;
+          renderAll();
+          showToast('已取消编辑', 'warning');
+        };
+        document.getElementById('btnSave').onclick = () => {
+          state.isEditMode = false;
+          renderAll();
+          showToast('计划已保存', 'success');
+        };
+      } else {
+        container.innerHTML = `
+          <button class="btn btn-copy" id="btnCopy">复制计划</button>
+          <button class="btn btn-primary" id="btnEdit">编辑</button>
+        `;
+        document.getElementById('btnCopy').onclick = () => showToast('复制计划功能开发中', 'warning');
+        document.getElementById('btnEdit').onclick = () => {
+          state.isEditMode = true;
+          renderAll();
+        };
+      }
+    }
+
+    function renderActivityList() {
+      const list = document.getElementById('activityList');
+      let filtered = activities.filter(a => {
+        const matchSource = state.filters.source === 'all' || a.source === state.filters.source;
+        const matchType = state.filters.type === 'all' || a.type === state.filters.type;
+        const matchCategory = state.filters.category === 'all' || a.category === state.filters.category;
+        const matchSearch = !state.searchKeyword || a.name.toLowerCase().includes(state.searchKeyword.toLowerCase());
+        return matchSource && matchType && matchCategory && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-tip">未找到相关活动</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(a => `
+        <div class="activity-card" draggable="${state.isEditMode}" data-activity-id="${a.id}" style="background: ${a.color}">
+          <div class="activity-name">${a.name}</div>
+          <div class="activity-meta">
+            <span class="activity-tag">${a.type}</span>
+            <span class="activity-tag">${a.category}</span>
+          </div>
+          <button class="activity-info-btn" data-info-id="${a.id}">ⓘ</button>
+        </div>
+      `).join('');
+
+      // 详情按钮
+      list.querySelectorAll('.activity-info-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          openActivityDetail(btn.dataset.infoId);
+        });
+      });
+
+      // 拖拽事件
+      list.querySelectorAll('.activity-card').forEach(card => {
+        card.addEventListener('dragstart', onActivityDragStart);
+        card.addEventListener('dragend', onActivityDragEnd);
+      });
+    }
+
+    function renderSchedule() {
+      const table = document.getElementById('scheduleTable');
+      const weekStart = getMonday(state.currentDate);
+      const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+      const today = normalizeDate(new Date());
+
+      let html = '';
+      // 表头
+      html += '<div class="header-cell"></div>';
+      weekDays.forEach((date, idx) => {
+        const isToday = isSameDay(date, today);
+        const dayTheme = getDayTheme(date);
+        html += `
+          <div class="header-cell ${isToday ? 'today' : ''}" data-day-index="${idx}" data-date="${formatDate(date)}">
+            ${state.isEditMode ? `<button class="swap-btn" data-swap-date="${formatDate(date)}" title="对调排课">⇄</button>` : ''}
+            <div class="date">${formatShortDate(date)}</div>
+            <div class="weekday">周${['一','二','三','四','五','六','日'][idx]}</div>
+            ${dayTheme ? `<div class="day-theme-tag">${dayTheme}</div>` : ''}
+          </div>
+        `;
+      });
+
+      // 时段行
+      timeSlots.forEach(slot => {
+        html += `<div class="time-cell">${slot}</div>`;
+        weekDays.forEach(date => {
+          const k = key(date, slot);
+          const data = scheduleData[k];
+          const daily = dailyEditData[formatDate(date)] || {};
+          const note = daily.slots && daily.slots[slot] ? daily.slots[slot] : '';
+          const dragOverClass = state.isEditMode ? 'empty' : '';
+
+          if (data) {
+            const activity = getActivity(data.activityId);
+            const person = data.assignedPerson || '';
+            html += `
+              <div class="slot-cell ${state.isEditMode ? 'editable' : ''}" data-date="${formatDate(date)}" data-slot="${slot}">
+                <div class="slot-content">
+                  <div class="slot-activity" draggable="${state.isEditMode}" data-source-key="${k}" style="background: ${activity ? activity.color : '#999'}" data-activity-id="${data.activityId}">
+                    <div class="name">${activity ? activity.name : '未知活动'}</div>
+                    <div class="type-tag">${activity ? activity.type : ''}</div>
+                    <button class="info-btn" data-info-id="${data.activityId}">ⓘ</button>
+                  </div>
+                  <div class="slot-person" onclick="event.stopPropagation()">
+                    <label>负责人</label>
+                    <select class="person-select" data-date="${formatDate(date)}" data-slot="${slot}" ${!state.isEditMode ? 'disabled' : ''}>
+                      <option value="">请选择</option>
+                      ${teachers.map(t => `<option value="${t}" ${t === person ? 'selected' : ''}>${t}</option>`).join('')}
+                    </select>
+                  </div>
+                  ${note ? `<div class="slot-note">${note}</div>` : ''}
+                </div>
+              </div>
+            `;
+          } else {
+            html += `
+              <div class="slot-cell ${dragOverClass}" data-date="${formatDate(date)}" data-slot="${slot}">
+                ${state.isEditMode ? '<div class="empty-placeholder">拖拽活动到此处</div>' : ''}
+              </div>
+            `;
+          }
+        });
+      });
+
+      table.innerHTML = html;
+
+      // 表头事件
+      table.querySelectorAll('.header-cell[data-date]').forEach(cell => {
+        const date = parseDate(cell.dataset.date);
+        cell.addEventListener('click', e => {
+          if (e.target.closest('.swap-btn')) return;
+          if (state.isEditMode) openDailyEdit(date);
+        });
+        cell.addEventListener('mouseenter', e => showThemeTooltip(e, date));
+        cell.addEventListener('mouseleave', hideThemeTooltip);
+        cell.addEventListener('mousemove', e => moveThemeTooltip(e));
+      });
+
+      // 单元格事件
+      table.querySelectorAll('.slot-cell').forEach(cell => {
+        if (!cell.dataset.date || !cell.dataset.slot) return;
+        if (state.isEditMode) {
+          cell.addEventListener('dragover', onSlotDragOver);
+          cell.addEventListener('dragleave', onSlotDragLeave);
+          cell.addEventListener('drop', onSlotDrop);
+          cell.addEventListener('click', e => {
+            if (e.target.closest('.slot-activity') || e.target.closest('.slot-person')) return;
+            openDailyEdit(parseDate(cell.dataset.date));
+          });
+        }
+      });
+
+      // 负责人变更
+      table.querySelectorAll('.person-select').forEach(sel => {
+        sel.addEventListener('change', e => {
+          const k = key(parseDate(sel.dataset.date), sel.dataset.slot);
+          if (scheduleData[k]) {
+            scheduleData[k].assignedPerson = sel.value;
+            showToast(`已设置负责人：${sel.value}`, 'success');
+          }
+        });
+      });
+
+      // 活动详情
+      table.querySelectorAll('.slot-activity .info-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          openActivityDetail(btn.dataset.infoId);
+        });
+      });
+
+      // 日期对调按钮
+      table.querySelectorAll('.swap-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          openDaySwapModal(parseDate(btn.dataset.swapDate));
+        });
+      });
+
+      // 课表内活动卡片拖拽
+      table.querySelectorAll('.slot-activity').forEach(act => {
+        act.addEventListener('dragstart', onSlotActivityDragStart);
+        act.addEventListener('dragend', onActivityDragEnd);
+      });
+    }
+
+    function renderAll() {
+      const main = document.getElementById('main');
+      main.classList.toggle('preview-mode', !state.isEditMode);
+      main.classList.toggle('edit-mode', state.isEditMode);
+      renderHeaderButtons();
+      renderActivityList();
+      renderSchedule();
+    }
+
+    /* ================= 拖拽排课 ================= */
+    let draggedActivityId = null;
+    let draggedSourceKey = null;
+
+    function onActivityDragStart(e) {
+      if (!state.isEditMode) {
+        e.preventDefault();
+        return;
+      }
+      draggedActivityId = this.dataset.activityId;
+      draggedSourceKey = this.dataset.sourceKey || null;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedActivityId);
+      if (draggedSourceKey) {
+        e.dataTransfer.setData('source-key', draggedSourceKey);
+      }
+    }
+
+    function onSlotActivityDragStart(e) {
+      onActivityDragStart.call(this, e);
+    }
+
+    function onActivityDragEnd(e) {
+      this.classList.remove('dragging');
+      draggedActivityId = null;
+      draggedSourceKey = null;
+      document.querySelectorAll('.slot-cell').forEach(c => {
+        c.classList.remove('drag-over', 'drag-conflict');
+      });
+    }
+
+    function onSlotDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const hasActivity = this.querySelector('.slot-activity');
+      this.classList.toggle('drag-conflict', !!hasActivity);
+      this.classList.toggle('drag-over', !hasActivity);
+    }
+
+    function onSlotDragLeave(e) {
+      this.classList.remove('drag-over', 'drag-conflict');
+    }
+
+    function onSlotDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over', 'drag-conflict');
+      const activityId = e.dataTransfer.getData('text/plain') || draggedActivityId;
+      const sourceKey = e.dataTransfer.getData('source-key') || draggedSourceKey;
+      if (!activityId) return;
+
+      const date = parseDate(this.dataset.date);
+      const slot = this.dataset.slot;
+      const targetKey = key(date, slot);
+      const existing = scheduleData[targetKey];
+
+      // 同位置放下，无需处理
+      if (sourceKey && sourceKey === targetKey) {
+        return;
+      }
+
+      if (existing) {
+        const oldAct = getActivity(existing.activityId);
+        const newAct = getActivity(activityId);
+        openReplaceConfirm(date, slot, activityId, oldAct, newAct, sourceKey);
+      } else {
+        scheduleData[targetKey] = { activityId, assignedPerson: '' };
+        if (sourceKey && sourceKey !== targetKey) {
+          delete scheduleData[sourceKey];
+        }
+        renderSchedule();
+      }
+    }
+
+    /* ================= 替换确认弹窗 ================= */
+    let replaceState = null;
+
+    function openReplaceConfirm(date, slot, newId, oldAct, newAct, sourceKey) {
+      replaceState = { date, slot, newId, sourceKey };
+      document.getElementById('replaceConfirmText').innerHTML =
+        `该时段已有活动 <strong>${oldAct ? oldAct.name : '未知活动'}</strong>，是否替换为 <strong>${newAct ? newAct.name : '未知活动'}</strong>？`;
+      showModal('replaceConfirmModal');
+    }
+
+    document.getElementById('replaceConfirm').addEventListener('click', () => {
+      if (!replaceState) return;
+      const k = key(replaceState.date, replaceState.slot);
+      const oldPerson = scheduleData[k] ? scheduleData[k].assignedPerson : '';
+      scheduleData[k] = { activityId: replaceState.newId, assignedPerson: oldPerson };
+      if (replaceState.sourceKey && replaceState.sourceKey !== k) {
+        delete scheduleData[replaceState.sourceKey];
+      }
+      hideModal('replaceConfirmModal');
+      renderSchedule();
+      showToast('活动已替换，负责人已保留', 'success');
+      replaceState = null;
+    });
+
+    document.getElementById('replaceCancel').addEventListener('click', () => {
+      hideModal('replaceConfirmModal');
+      showToast('已取消替换', 'warning');
+      replaceState = null;
+    });
+
+    /* ================= 活动详情弹窗 ================= */
+    function openActivityDetail(id) {
+      const a = getActivity(id);
+      if (!a) return;
+      const sourceMap = { my: '我的', institution: '园所', platform: '平台' };
+      document.getElementById('activityDetailBody').innerHTML = `
+        <div class="detail-row">
+          <span class="detail-label">活动名称：</span>
+          <span class="detail-value">${a.name}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">标签：</span>
+          <div class="detail-tags">
+            <span class="detail-tag">领域：${a.type}</span>
+            <span class="detail-tag">类型：${a.category}</span>
+            <span class="detail-tag">来源：${sourceMap[a.source] || a.source}</span>
+            <span class="detail-tag">时长：${a.duration}分钟</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">适用年龄：</span>
+          <span class="detail-value">${a.targetAge}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">活动简介：</span>
+          <div class="detail-value">${a.description}</div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">教学目标：</span>
+          <div class="detail-value" style="white-space: pre-line">${a.objectives}</div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">课程资料：</span>
+          <div class="materials-list">
+            ${a.materials.map(m => `<a class="material-link" href="${m.url}" target="_blank">${m.name}</a>`).join('')}
+          </div>
+        </div>
+      `;
+      showModal('activityDetailModal');
+    }
+
+    /* ================= 每日编辑弹窗 ================= */
+    let editingDate = null;
+
+    function openDailyEdit(date) {
+      if (!state.isEditMode) return;
+      editingDate = date;
+      const d = dailyEditData[formatDate(date)] || { theme: '', slots: {} };
+      document.getElementById('dailyEditBody').innerHTML = `
+        <div class="form-row">
+          <label class="form-label">今日主题</label>
+          <input type="text" class="form-input" id="dailyTheme" value="${d.theme || ''}" placeholder="请输入今日主题">
+        </div>
+        ${timeSlots.map(slot => `
+          <div class="slot-note-row">
+            <label class="form-label">${slot} 时段说明</label>
+            <textarea class="form-textarea daily-slot-note" data-slot="${slot}" placeholder="请输入时段说明">${d.slots && d.slots[slot] ? d.slots[slot] : ''}</textarea>
+          </div>
+        `).join('')}
+      `;
+      showModal('dailyEditModal');
+    }
+
+    document.getElementById('dailyEditSave').addEventListener('click', () => {
+      if (!editingDate) return;
+      const dateStr = formatDate(editingDate);
+      const theme = document.getElementById('dailyTheme').value.trim();
+      const slots = {};
+      document.querySelectorAll('.daily-slot-note').forEach(ta => {
+        const v = ta.value.trim();
+        slots[ta.dataset.slot] = v;
+        if (!v) delete slots[ta.dataset.slot];
+      });
+      dailyEditData[dateStr] = { theme, slots };
+      hideModal('dailyEditModal');
+      renderSchedule();
+      showToast('每日计划已保存', 'success');
+      editingDate = null;
+    });
+
+    document.getElementById('dailyEditCancel').addEventListener('click', () => {
+      hideModal('dailyEditModal');
+      editingDate = null;
+    });
+
+    /* ================= 弹窗控制 ================= */
+    function showModal(id) {
+      document.getElementById(id).classList.add('visible');
+    }
+
+    function hideModal(id) {
+      document.getElementById(id).classList.remove('visible');
+    }
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => hideModal(btn.dataset.close));
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) hideModal(overlay.id);
+      });
+    });
+
+    /* ================= 表头主题 Tooltip ================= */
+    const themeTooltip = document.getElementById('themeTooltip');
+
+    function showThemeTooltip(e, date) {
+      const d = formatDate(date);
+      const week = getWeekTheme(date);
+      const monthTheme = getMonthTheme();
+      const dayTheme = getDayTheme(date);
+      themeTooltip.innerHTML = `
+        <div>本月主题：${monthTheme || '未设置'}</div>
+        <div>本周主题：${week ? week.theme : '未设置'}</div>
+        <div>今日主题：${dayTheme || '未设置'}</div>
+      `;
+      themeTooltip.classList.add('visible');
+      moveThemeTooltip(e);
+    }
+
+    function moveThemeTooltip(e) {
+      themeTooltip.style.left = (e.clientX + 12) + 'px';
+      themeTooltip.style.top = (e.clientY + 12) + 'px';
+    }
+
+    function hideThemeTooltip() {
+      themeTooltip.classList.remove('visible');
+    }
+
+    /* ================= 整日对调（按钮 + 弹窗） ================= */
+    let daySwapSourceDate = null;
+    let daySwapTargetDate = null;
+
+    function openDaySwapModal(sourceDate) {
+      daySwapSourceDate = sourceDate;
+      daySwapTargetDate = null;
+      const sourceStr = formatShortDate(sourceDate);
+      document.getElementById('daySwapText').innerHTML = `请选择要与 <strong>${sourceStr}</strong> 对调的目标日期：`;
+
+      const weekStart = getMonday(state.currentDate);
+      const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+      const sourceDateStr = formatDate(sourceDate);
+
+      document.getElementById('daySwapOptions').innerHTML = weekDays.map((date, idx) => {
+        const dateStr = formatDate(date);
+        const disabled = dateStr === sourceDateStr;
+        return `
+          <div class="day-option ${disabled ? 'disabled' : ''}" data-date="${dateStr}" data-disabled="${disabled}">
+            <span class="day-name">周${['一','二','三','四','五','六','日'][idx]}</span>
+            <span class="day-date">${formatShortDate(date)}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('#daySwapOptions .day-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          if (opt.dataset.disabled === 'true') return;
+          daySwapTargetDate = parseDate(opt.dataset.date);
+          document.querySelectorAll('#daySwapOptions .day-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+        });
+      });
+
+      showModal('daySwapModal');
+    }
+
+    document.getElementById('daySwapCancel').addEventListener('click', () => {
+      hideModal('daySwapModal');
+      daySwapSourceDate = null;
+      daySwapTargetDate = null;
+    });
+
+    document.getElementById('daySwapConfirm').addEventListener('click', () => {
+      if (!daySwapSourceDate || !daySwapTargetDate) {
+        showToast('请选择一个目标日期', 'warning');
+        return;
+      }
+      swapDaySchedule(daySwapSourceDate, daySwapTargetDate);
+      hideModal('daySwapModal');
+      daySwapSourceDate = null;
+      daySwapTargetDate = null;
+    });
+
+    function swapDaySchedule(date1, date2) {
+      const d1 = formatDate(date1);
+      const d2 = formatDate(date2);
+
+      // 交换排课
+      const tempSchedule = {};
+      timeSlots.forEach(slot => {
+        const k1 = `${d1}|${slot}`;
+        const k2 = `${d2}|${slot}`;
+        tempSchedule[k1] = scheduleData[k2] ? { ...scheduleData[k2] } : undefined;
+        tempSchedule[k2] = scheduleData[k1] ? { ...scheduleData[k1] } : undefined;
+      });
+      Object.keys(tempSchedule).forEach(k => {
+        if (tempSchedule[k]) scheduleData[k] = tempSchedule[k];
+        else delete scheduleData[k];
+      });
+
+      // 交换日主题和时段说明
+      const t1 = dailyEditData[d1] ? { ...dailyEditData[d1] } : { theme: '', slots: {} };
+      const t2 = dailyEditData[d2] ? { ...dailyEditData[d2] } : { theme: '', slots: {} };
+      if (t2.theme || Object.keys(t2.slots).length) dailyEditData[d1] = t2;
+      else delete dailyEditData[d1];
+      if (t1.theme || Object.keys(t1.slots).length) dailyEditData[d2] = t1;
+      else delete dailyEditData[d2];
+
+      renderSchedule();
+      showToast(`已交换 ${formatShortDate(date1)} 与 ${formatShortDate(date2)} 的排课`, 'success');
+    }
+
+    /* ================= 顶部导航事件 ================= */
+    document.getElementById('prevWeek').addEventListener('click', () => {
+      state.currentDate = addDays(state.currentDate, -7);
+      renderAll();
+    });
+
+    document.getElementById('nextWeek').addEventListener('click', () => {
+      state.currentDate = addDays(state.currentDate, 7);
+      renderAll();
+    });
+
+    document.getElementById('currentWeek').addEventListener('click', () => {
+      state.currentDate = new Date();
+      renderAll();
+    });
+
+    const dateInput = document.getElementById('dateInput');
+    dateInput.addEventListener('change', () => {
+      const date = parseDate(dateInput.value.trim());
+      if (!date) {
+        dateInput.classList.add('invalid');
+        showToast('请输入正确日期格式', 'warning');
+      } else {
+        dateInput.classList.remove('invalid');
+        state.currentDate = getMonday(date);
+        renderAll();
+      }
+    });
+
+    dateInput.addEventListener('input', () => {
+      if (dateInput.classList.contains('invalid')) dateInput.classList.remove('invalid');
+    });
+
+    /* ================= 筛选与搜索事件 ================= */
+    document.querySelectorAll('.filter-group').forEach(group => {
+      group.addEventListener('click', e => {
+        const tab = e.target.closest('.filter-tab');
+        if (!tab) return;
+        group.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const name = group.dataset.filter;
+        state.filters[name] = tab.dataset.value;
+        renderActivityList();
+      });
+    });
+
+    const searchInput = document.getElementById('searchInput');
+    const searchBox = document.getElementById('searchBox');
+    const searchClear = document.getElementById('searchClear');
+
+    searchInput.addEventListener('input', () => {
+      state.searchKeyword = searchInput.value.trim();
+      searchBox.classList.toggle('has-value', !!searchInput.value);
+      renderActivityList();
+    });
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      state.searchKeyword = '';
+      searchBox.classList.remove('has-value');
+      renderActivityList();
+    });
+
+    /* ================= 初始化 ================= */
+    renderAll();
+  </script>
+</body>
+</html>

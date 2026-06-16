@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学期计划管理</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #262626; min-height: 100vh; }
+    .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; }
+    .header-title { font-size: 20px; font-weight: 600; }
+    .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* 按钮 */
+    .btn { padding: 6px 14px; border: 1px solid #d9d9d9; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; height: 34px; display: inline-flex; align-items: center; justify-content: center; }
+    .btn:hover { border-color: #1890ff; color: #1890ff; }
+    .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+    .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; color: #fff; }
+    .btn-danger { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
+    .btn-danger:hover { background: #ff7875; border-color: #ff7875; color: #fff; }
+    .btn-text { border: none; background: transparent; padding: 4px 8px; height: auto; color: #1890ff; }
+    .btn-text:hover { color: #40a9ff; background: transparent; }
+    .btn-text-danger { border: none; background: transparent; padding: 4px 8px; height: auto; color: #ff4d4f; }
+    .btn-text-danger:hover { color: #ff7875; background: transparent; }
+
+    /* 筛选 */
+    .filter-bar { background: #fff; border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-item { display: inline-flex; align-items: center; gap: 8px; }
+    .filter-item label { font-size: 13px; color: #595959; white-space: nowrap; }
+    .filter-select, .search-input { height: 36px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; }
+    .filter-select { min-width: 140px; background: #fff; cursor: pointer; }
+    .search-input { width: 160px; }
+    .date-range { display: flex; align-items: center; gap: 6px; }
+    .date-input { height: 36px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; width: 130px; }
+    .date-sep { color: #8c8c8c; font-size: 13px; }
+
+    /* 表格 */
+    .table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table thead { background: #fafafa; }
+    .data-table th { padding: 12px 16px; text-align: left; font-weight: 600; color: #262626; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    .data-table tbody tr:hover { background: #f5f7fa; }
+    .actions { display: flex; gap: 8px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #8c8c8c; font-size: 14px; }
+
+    /* 详情页画布 */
+    .detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .canvas-wrapper { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: auto; position: relative; }
+    .canvas { position: relative; min-width: 600px; min-height: 400px; }
+    .lines-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+    .lines-layer path { fill: none; stroke: #D9D9D9; stroke-width: 2; stroke-linecap: round; }
+    .nodes-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+    .node { position: absolute; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .node:hover { transform: translateY(-2px); }
+
+    /* 卡片头部 */
+    .node-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .node-label { font-size: 11px; font-weight: 500; }
+    .edit-icon { width: 22px; height: 22px; border-radius: 4px; border: none; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: inherit; opacity: 0.7; transition: all 0.2s; padding: 0; }
+    .edit-icon:hover { opacity: 1; background: rgba(0,0,0,0.08); }
+    .node-term .edit-icon { color: #fff; }
+    .node-term .edit-icon:hover { background: rgba(255,255,255,0.2); }
+
+    .node-term { width: 260px; background: linear-gradient(135deg, #1890FF, #40A9FF); color: #fff; border-radius: 12px; padding: 16px 22px; text-align: left; box-shadow: 0 4px 16px rgba(24,144,255,0.3); }
+    .node-term:hover { box-shadow: 0 6px 20px rgba(24,144,255,0.4); }
+    .node-term .node-label { font-size: 12px; color: rgba(255,255,255,0.85); }
+    .node-term .node-title { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+    .node-term .node-theme { font-size: 12px; color: rgba(255,255,255,0.92); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .node-month { width: 160px; background: #fff; border: 2px solid; border-radius: 10px; padding: 14px 16px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .node-month:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .node-month .node-title { font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #262626; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .node-month .node-theme { font-size: 11px; color: #595959; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .month-color-0 { border-color: #1890FF; } .month-color-0 .node-label { color: #1890FF; }
+    .month-color-1 { border-color: #52C41A; } .month-color-1 .node-label { color: #52C41A; }
+    .month-color-2 { border-color: #FA8C16; } .month-color-2 .node-label { color: #FA8C16; }
+    .month-color-3 { border-color: #722ED1; } .month-color-3 .node-label { color: #722ED1; }
+    .month-color-4 { border-color: #EB2F96; } .month-color-4 .node-label { color: #EB2F96; }
+
+    .node-week { width: 120px; background: #F6FFED; border: 1px solid #B7EB8F; border-radius: 8px; padding: 10px 10px; text-align: left; position: relative; }
+    .node-week:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .node-week .node-label { color: #52C41A; font-size: 11px; }
+    .node-week .node-title { font-size: 12px; font-weight: bold; color: #262626; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .node-week .node-theme { font-size: 11px; color: #8C8C8C; }
+
+    /* 展开状态指示 */
+    .expand-hint { font-size: 11px; color: #8c8c8c; margin-top: 4px; text-align: right; }
+
+    /* Tooltip */
+    .tooltip { display: none; position: fixed; background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 320px; z-index: 50; font-size: 13px; pointer-events: none; line-height: 1.6; }
+    .tooltip-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #262626; }
+    .tooltip-row { margin-bottom: 4px; }
+    .tooltip-label { color: #8C8C8C; font-size: 12px; }
+    .tooltip-value { color: #262626; font-size: 13px; }
+
+    /* 弹窗 */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 100; justify-content: center; align-items: center; }
+    .modal-overlay.visible { display: flex; }
+    .modal { background: #fff; border-radius: 12px; width: 480px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: modalIn 0.2s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #F0F0F0; }
+    .modal-title { font-size: 18px; font-weight: bold; }
+    .modal-close { font-size: 18px; color: #8C8C8C; cursor: pointer; background: none; border: none; }
+    .modal-body { padding: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 14px; color: #262626; margin-bottom: 6px; }
+    .form-label .required { color: #FF4D4F; margin-left: 2px; }
+    .form-input, .form-textarea, .form-select { width: 100%; padding: 0 12px; border: 1px solid #D9D9D9; border-radius: 6px; font-size: 14px; outline: none; font-family: inherit; background: #fff; }
+    .form-input { height: 40px; }
+    .form-select { height: 40px; cursor: pointer; }
+    .form-textarea { height: 100px; padding: 10px 12px; resize: vertical; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: #1890FF; }
+    .form-input.error, .form-textarea.error, .form-select.error { border-color: #FF4D4F; }
+    .readonly-field { background: #F5F5F5; color: #8C8C8C; cursor: not-allowed; }
+    .error-msg { font-size: 12px; color: #FF4D4F; margin-top: 4px; display: none; }
+    .error-msg.visible { display: block; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 12px 20px 20px; }
+    .btn-cancel { height: 36px; padding: 0 16px; background: none; border: none; color: #595959; font-size: 14px; cursor: pointer; border-radius: 6px; }
+    .btn-cancel:hover { background: #F5F5F5; }
+    .btn-save { height: 36px; padding: 0 16px; background: #1890FF; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    .btn-save:hover { background: #40A9FF; }
+
+    /* 确认弹窗 */
+    .confirm-modal { width: 400px; text-align: center; }
+    .confirm-icon { font-size: 40px; margin-bottom: 12px; }
+    .confirm-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .confirm-body { font-size: 14px; color: #595959; margin-bottom: 20px; line-height: 1.5; white-space: pre-line; }
+
+    /* Toast */
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); background: #262626; color: #fff; padding: 10px 20px; border-radius: 6px; font-size: 14px; z-index: 3000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title" id="pageTitle">学期计划管理</div>
+    <div id="headerActions"></div>
+  </div>
+
+  <div class="main">
+    <!-- 列表视图 -->
+    <div class="view active" id="listView">
+      <div class="filter-bar">
+        <div class="filter-item">
+          <label>学期</label>
+          <select class="filter-select" id="filterTerm"><option value="all">全部学期</option></select>
+        </div>
+        <div class="filter-item">
+          <label>年级</label>
+          <select class="filter-select" id="filterGrade">
+            <option value="all">全部年级</option>
+            <option value="托班">托班</option><option value="小班">小班</option><option value="中班">中班</option><option value="大班">大班</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>班级</label>
+          <select class="filter-select" id="filterClass">
+            <option value="all">全部班级</option>
+            <option value="1班">1班</option><option value="2班">2班</option><option value="3班">3班</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>创建人</label>
+          <input type="text" class="search-input" id="filterCreator" placeholder="请输入创建人">
+        </div>
+        <div class="filter-item">
+          <label>创建时间</label>
+          <div class="date-range">
+            <input type="date" class="date-input" id="filterStart"><span class="date-sep">至</span><input type="date" class="date-input" id="filterEnd">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnQuery">查询</button>
+        <button class="btn" id="btnReset">重置</button>
+        <button class="btn btn-primary" id="btnAdd">+ 新增计划</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>学期</th><th>年级</th><th>班级</th><th>时段规则</th><th>创建人</th><th>创建时间</th><th>操作</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none;">暂无计划数据</div>
+      </div>
+    </div>
+
+    <!-- 详情视图 -->
+    <div class="view" id="detailView">
+      <div class="detail-header">
+        <button class="btn" id="btnBack">◀ 返回列表</button>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-item"><label>学期</label><select class="filter-select" id="detailTerm"></select></div>
+        <div class="filter-item"><label>年级</label><select class="filter-select" id="detailGrade">
+          <option value="托班">托班</option><option value="小班">小班</option><option value="中班">中班</option><option value="大班">大班</option>
+        </select></div>
+        <div class="filter-item"><label>班级</label><select class="filter-select" id="detailClass">
+          <option value="1班">1班</option><option value="2班">2班</option><option value="3班">3班</option>
+        </select></div>
+      </div>
+      <div class="canvas-wrapper">
+        <div class="canvas" id="canvas">
+          <svg class="lines-layer" id="linesLayer"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <!-- 编辑弹窗 -->
+  <div class="modal-overlay" id="editModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="editModalTitle">编辑</span>
+        <button class="modal-close" id="editModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="editBody"></div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="editCancel">取消</button>
+        <button class="btn-save" id="editSave">确认保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 表单弹窗（新增/复制） -->
+  <div class="modal-overlay" id="formModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="formModalTitle">新增计划</span>
+        <button class="modal-close" id="formModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="formBody">
+        <div class="form-group">
+          <label class="form-label">学期<span class="required">*</span></label>
+          <select class="form-select" id="formTerm"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">年级<span class="required">*</span></label>
+          <select class="form-select" id="formGrade">
+            <option value="托班">托班</option>
+            <option value="小班">小班</option>
+            <option value="中班">中班</option>
+            <option value="大班">大班</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">班级<span class="required">*</span></label>
+          <select class="form-select" id="formClass">
+            <option value="1班">1班</option>
+            <option value="2班">2班</option>
+            <option value="3班">3班</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">时段规则<span class="required">*</span></label>
+          <select class="form-select" id="formPeriod"></select>
+          <div class="error-msg" id="formPeriodError">请选择时段规则</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="formCancel">取消</button>
+        <button class="btn-save" id="formSave">确认保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal confirm-modal">
+      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirmTitle">确认</div>
+      <div class="confirm-body" id="confirmBody"></div>
+      <div class="modal-footer" style="justify-content:center;">
+        <button class="btn" id="confirmCancel">取消</button>
+        <button class="btn btn-primary" id="confirmOk">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ============ 常量与数据 ============
+    const LAYOUT = { term: { width: 260, height: 110 }, month: { width: 160, height: 92, gap: 28 }, week: { width: 120, height: 60, gap: 10 }, levelGap: 100 };
+    const terms = [
+      { id: 'term_001', name: '2025秋季学期', startDate: '2025-09-01', endDate: '2026-01-17' },
+      { id: 'term_002', name: '2025春季学期', startDate: '2025-02-17', endDate: '2025-07-04' },
+      { id: 'term_003', name: '2026春季学期', startDate: '2026-02-16', endDate: '2026-07-03' }
+    ];
+    const timePeriodSets = [
+      { id: 'tps_001', name: '标准作息', periods: [{index:1,timeRange:'08:00-09:00'},{index:2,timeRange:'09:00-10:00'},{index:3,timeRange:'10:00-11:00'},{index:4,timeRange:'14:00-15:00'}] },
+      { id: 'tps_002', name: '午休专用时段', periods: [{index:1,timeRange:'12:00-14:00'}] },
+      { id: 'tps_003', name: '大班扩展时段', periods: [{index:1,timeRange:'08:00-09:00'},{index:2,timeRange:'09:00-10:00'},{index:3,timeRange:'10:00-11:00'},{index:4,timeRange:'14:00-15:00'},{index:5,timeRange:'15:00-16:00'}] }
+    ];
+
+    // key = `${termId}_${grade}_${className}`
+    let termPlans = {};
+
+    // 预置数据：小班1班
+    termPlans['term_001_小班_1班'] = {
+      termId: 'term_001', grade: '小班', className: '1班', creator: '王老师', createTime: '2025-08-20',
+      periodRule: 'tps_001',
+      termName: '2025秋季学期', termTheme: '快乐成长，探索世界',
+      termPlan: '本学期以培养幼儿社交能力和探索精神为核心，通过主题活动让幼儿在游戏中学习。',
+      months: [
+        { id: 'm_001', month: '2025-09', monthName: '9月', theme: '适应新环境', plan: '帮助新生适应幼儿园集体生活，建立安全感和规则意识。',
+          weeks: [
+            { id: 'w_001', weekNumber: 1, startDate: '2025-09-01', endDate: '2025-09-06', theme: '认识新朋友', plan: '通过自我介绍和合作游戏认识班级新朋友。' },
+            { id: 'w_002', weekNumber: 2, startDate: '2025-09-08', endDate: '2025-09-13', theme: '幼儿园的一天', plan: '熟悉幼儿园一日生活流程。' },
+            { id: 'w_003', weekNumber: 3, startDate: '2025-09-15', endDate: '2025-09-20', theme: '我的小标记', plan: '学会辨认自己的物品和座位标记。' },
+            { id: 'w_004', weekNumber: 4, startDate: '2025-09-22', endDate: '2025-09-27', theme: '安全我知道', plan: '学习基本的安全常识和自我保护方法。' }
+          ]
+        },
+        { id: 'm_002', month: '2025-10', monthName: '10月', theme: '秋天来了', plan: '引导幼儿观察秋季自然变化，感受季节更替之美。',
+          weeks: [
+            { id: 'w_005', weekNumber: 1, startDate: '2025-10-06', endDate: '2025-10-11', theme: '国庆欢乐多', plan: '了解国庆节，感受节日氛围。' },
+            { id: 'w_006', weekNumber: 2, startDate: '2025-10-13', endDate: '2025-10-18', theme: '树叶变颜色', plan: '观察收集不同颜色的落叶，认识秋天。' },
+            { id: 'w_007', weekNumber: 3, startDate: '2025-10-20', endDate: '2025-10-25', theme: '丰收的季节', plan: '认识秋季水果和农作物，了解丰收。' },
+            { id: 'w_008', weekNumber: 4, startDate: '2025-10-27', endDate: '2025-11-01', theme: '秋天的动物', plan: '了解秋天动物的习性变化。' }
+          ]
+        },
+        { id: 'm_003', month: '2025-11', monthName: '11月', theme: '感恩与分享', plan: '培养幼儿的感恩之心，学会分享与关爱他人。',
+          weeks: [
+            { id: 'w_009', weekNumber: 1, startDate: '2025-11-03', endDate: '2025-11-08', theme: '感谢身边的人', plan: '感谢父母、老师和朋友的付出。' },
+            { id: 'w_010', weekNumber: 2, startDate: '2025-11-10', endDate: '2025-11-15', theme: '分享真快乐', plan: '通过分享活动体验给予的快乐。' },
+            { id: 'w_011', weekNumber: 3, startDate: '2025-11-17', endDate: '2025-11-22', theme: '小小志愿者', plan: '参与简单的班级服务活动。' },
+            { id: 'w_012', weekNumber: 4, startDate: '2025-11-24', endDate: '2025-11-29', theme: '温暖冬天', plan: '为需要帮助的人送去温暖。' }
+          ]
+        },
+        { id: 'm_004', month: '2025-12', monthName: '12月', theme: '冬日乐趣', plan: '感受冬季特色，体验冬日活动的快乐。',
+          weeks: [
+            { id: 'w_013', weekNumber: 1, startDate: '2025-12-01', endDate: '2025-12-06', theme: '冬天穿什么', plan: '认识冬季衣物，学习保暖方法。' },
+            { id: 'w_014', weekNumber: 2, startDate: '2025-12-08', endDate: '2025-12-13', theme: '雪花飘飘', plan: '观察雪花，了解水的三态变化。' },
+            { id: 'w_015', weekNumber: 3, startDate: '2025-12-15', endDate: '2025-12-20', theme: '冬至到', plan: '了解冬至节气习俗。' },
+            { id: 'w_016', weekNumber: 4, startDate: '2025-12-22', endDate: '2025-12-27', theme: '新年倒计时', plan: '回顾一年成长，展望新的一年。' }
+          ]
+        }
+      ]
+    };
+
+    // 预置数据：中班1班
+    termPlans['term_001_中班_1班'] = {
+      termId: 'term_001', grade: '中班', className: '1班', creator: '李老师', createTime: '2025-08-22',
+      periodRule: 'tps_001',
+      termName: '2025秋季学期', termTheme: '自信表达，动手创造',
+      termPlan: '本学期重点培养幼儿的语言表达能力和动手操作能力。',
+      months: [
+        { id: 'm_001', month: '2025-09', monthName: '9月', theme: '我是中班生', plan: '帮助幼儿建立中班集体归属感。',
+          weeks: [
+            { id: 'w_001', weekNumber: 1, startDate: '2025-09-01', endDate: '2025-09-06', theme: '升班仪式', plan: '举行升班仪式，颁发中班徽章。' },
+            { id: 'w_002', weekNumber: 2, startDate: '2025-09-08', endDate: '2025-09-13', theme: '值日生', plan: '学习承担值日生职责。' },
+            { id: 'w_003', weekNumber: 3, startDate: '2025-09-15', endDate: '2025-09-20', theme: '我的日记', plan: '尝试用图画记录一天的生活。' },
+            { id: 'w_004', weekNumber: 4, startDate: '2025-09-22', endDate: '2025-09-27', theme: '安全小卫士', plan: '学习识别常见安全隐患。' }
+          ]
+        },
+        { id: 'm_002', month: '2025-10', monthName: '10月', theme: '秋意浓浓', plan: '深入探索秋天的自然现象。',
+          weeks: [
+            { id: 'w_005', weekNumber: 1, startDate: '2025-10-06', endDate: '2025-10-11', theme: '祖国生日', plan: '制作国庆主题手工作品。' },
+            { id: 'w_006', weekNumber: 2, startDate: '2025-10-13', endDate: '2025-10-18', theme: '叶子拼贴画', plan: '用落叶创作拼贴画作品。' },
+            { id: 'w_007', weekNumber: 3, startDate: '2025-10-20', endDate: '2025-10-25', theme: '农作物博览会', plan: '展示认识的秋季农作物。' },
+            { id: 'w_008', weekNumber: 4, startDate: '2025-10-27', endDate: '2025-11-01', theme: '候鸟迁徙', plan: '了解秋天候鸟迁徙现象。' }
+          ]
+        },
+        { id: 'm_003', month: '2025-11', monthName: '11月', theme: '感恩的心', plan: '通过多种方式表达感恩之情。',
+          weeks: [
+            { id: 'w_009', weekNumber: 1, startDate: '2025-11-03', endDate: '2025-11-08', theme: '感恩信', plan: '给父母画一封感恩信。' },
+            { id: 'w_010', weekNumber: 2, startDate: '2025-11-10', endDate: '2025-11-15', theme: '分享日', plan: '带上心爱的玩具与同学分享。' },
+            { id: 'w_011', weekNumber: 3, startDate: '2025-11-17', endDate: '2025-11-22', theme: '班级小帮手', plan: '主动帮助老师和同学做力所能及的事。' },
+            { id: 'w_012', weekNumber: 4, startDate: '2025-11-24', endDate: '2025-11-29', theme: '温暖行动', plan: '为园内植物做冬季保暖。' }
+          ]
+        },
+        { id: 'm_004', month: '2025-12', monthName: '12月', theme: '冬日创想', plan: '用创意和艺术感受冬天。',
+          weeks: [
+            { id: 'w_013', weekNumber: 1, startDate: '2025-12-01', endDate: '2025-12-06', theme: '冬装设计', plan: '设计心目中的冬季服装。' },
+            { id: 'w_014', weekNumber: 2, startDate: '2025-12-08', endDate: '2025-12-13', theme: '雪花实验', plan: '观察雪花形状，做结冰实验。' },
+            { id: 'w_015', weekNumber: 3, startDate: '2025-12-15', endDate: '2025-12-20', theme: '冬至美食', plan: '了解冬至吃饺子习俗。' },
+            { id: 'w_016', weekNumber: 4, startDate: '2025-12-22', endDate: '2025-12-27', theme: '新年愿望', plan: '画出自己的新年愿望。' }
+          ]
+        }
+      ]
+    };
+
+    let expandedState = {};
+    let currentEditTarget = null;
+    let pendingAction = null, pendingKey = null, copySourceKey = null;
+    let currentDetail = { termId: 'term_001', grade: '小班', className: '1班' };
+    let formMode = 'add'; // 'add' | 'copy'
+
+    // ============ DOM 引用 ============
+    const listView = document.getElementById('listView');
+    const detailView = document.getElementById('detailView');
+    const pageTitle = document.getElementById('pageTitle');
+    const tooltip = document.getElementById('tooltip');
+
+    // 列表筛选
+    const filterTerm = document.getElementById('filterTerm');
+    const filterGrade = document.getElementById('filterGrade');
+    const filterClass = document.getElementById('filterClass');
+    const filterCreator = document.getElementById('filterCreator');
+    const filterStart = document.getElementById('filterStart');
+    const filterEnd = document.getElementById('filterEnd');
+
+    // 详情筛选
+    const detailTerm = document.getElementById('detailTerm');
+    const detailGrade = document.getElementById('detailGrade');
+    const detailClass = document.getElementById('detailClass');
+    const canvas = document.getElementById('canvas');
+    const linesLayer = document.getElementById('linesLayer');
+    const nodesLayer = document.getElementById('nodesLayer');
+
+    // 弹窗
+    const editModalOverlay = document.getElementById('editModalOverlay');
+    const editModalTitle = document.getElementById('editModalTitle');
+    const editBody = document.getElementById('editBody');
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmBody = document.getElementById('confirmBody');
+    const confirmOk = document.getElementById('confirmOk');
+
+    // 表单弹窗
+    const formModalOverlay = document.getElementById('formModalOverlay');
+    const formModalTitle = document.getElementById('formModalTitle');
+    const formTerm = document.getElementById('formTerm');
+    const formGrade = document.getElementById('formGrade');
+    const formClass = document.getElementById('formClass');
+    const formPeriod = document.getElementById('formPeriod');
+
+    // ============ 工具函数 ============
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+    function getTermName(id) { const t = terms.find(x => x.id === id); return t ? t.name : id; }
+    function getPeriodName(id) { const p = timePeriodSets.find(x => x.id === id); return p ? p.name : id; }
+    function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    function formatDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    function planKey(t, g, c) { return `${t}_${g}_${c}`; }
+    function getExpandedState(t, g, c) { const k = planKey(t,g,c); if(!expandedState[k]) expandedState[k]={}; return expandedState[k]; }
+
+    // ============ 动态生成计划结构 ============
+    function generateWeeks(ms, me) {
+      const weeks = [], start = new Date(ms), end = new Date(me);
+      let cur = new Date(start);
+      const dow = cur.getDay(), dtm = dow === 0 ? -6 : 1 - dow;
+      const fm = new Date(cur); fm.setDate(cur.getDate() + dtm);
+      let ws = fm < start ? new Date(start) : new Date(fm);
+      let wn = 1;
+      while (ws <= end) {
+        const we = new Date(ws); we.setDate(ws.getDate() + 6);
+        weeks.push({ id: `w_${wn}`, weekNumber: wn, startDate: formatDate(ws), endDate: formatDate(we > end ? new Date(end) : we), theme: '暂无主题', plan: '暂无计划' });
+        wn++; ws.setDate(ws.getDate() + 7);
+      }
+      return weeks;
+    }
+    function generateTermPlan(term, grade, className) {
+      const start = new Date(term.startDate), end = new Date(term.endDate);
+      const months = []; let cm = new Date(start.getFullYear(), start.getMonth(), 1);
+      while (cm <= end) {
+        const y = cm.getFullYear(), mi = cm.getMonth();
+        const mst = new Date(Math.max(start.getTime(), cm.getTime()));
+        const nx = new Date(y, mi + 1, 1);
+        const men = new Date(Math.min(end.getTime(), nx.getTime() - 1));
+        const ms = `${y}-${String(mi+1).padStart(2,'0')}`;
+        months.push({ id: `m_${ms}`, month: ms, monthName: `${mi+1}月`, theme: '暂无主题', plan: '暂无计划', weeks: generateWeeks(mst, men) });
+        cm.setMonth(cm.getMonth() + 1);
+      }
+      return { termId: term.id, grade, className, termName: term.name, termTheme: '暂无主题', termPlan: '暂无计划', creator: '当前用户', createTime: todayStr(), months };
+    }
+    function getOrCreatePlan(termId, grade, className) {
+      const key = planKey(termId, grade, className);
+      let plan = termPlans[key];
+      if (!plan) { const term = terms.find(t => t.id === termId); if (term) { plan = generateTermPlan(term, grade, className); termPlans[key] = plan; } }
+      return plan;
+    }
+
+    // ============ 横向布局算法 ============
+    function calculateLayout(plan) {
+      const { term, month, week, levelGap } = LAYOUT;
+      const exp = getExpandedState(plan.termId, plan.grade, plan.className);
+      const monthBaseY = 40;
+      const months = plan.months.map((m, i) => {
+        const y = monthBaseY + i * (month.height + month.gap);
+        const x = 40 + term.width + levelGap;
+        let weeks = [];
+        if (exp[m.id]) {
+          const mcy = y + month.height / 2;
+          const wth = m.weeks.length * week.height + (m.weeks.length - 1) * week.gap;
+          const wsy = mcy - wth / 2;
+          const wx = x + month.width + levelGap;
+          weeks = m.weeks.map((w, j) => ({ ...w, x: wx, y: wsy + j * (week.height + week.gap) }));
+        }
+        return { ...m, x, y, weeks };
+      });
+      let minY = monthBaseY, maxY = monthBaseY + plan.months.length * (month.height + month.gap) - month.gap;
+      months.forEach(m => { if (exp[m.id]) m.weeks.forEach(w => { minY = Math.min(minY, w.y); maxY = Math.max(maxY, w.y + week.height); }); });
+      const yOffset = minY < 40 ? 40 - minY : 0;
+      const canvasHeight = Math.max(400, maxY + yOffset + 40);
+      const termX = 40, termY = (canvasHeight - term.height) / 2;
+      months.forEach(m => { m.y += yOffset; m.weeks.forEach(w => w.y += yOffset); });
+      const hasExp = months.some(m => exp[m.id]);
+      let maxRightX;
+      if (hasExp) maxRightX = Math.max(...months.filter(m => exp[m.id]).flatMap(m => m.weeks.map(w => w.x + week.width)));
+      else maxRightX = Math.max(...months.map(m => m.x + month.width));
+      return { term: { x: termX, y: termY }, months, canvasWidth: Math.max(900, maxRightX + 40), canvasHeight };
+    }
+
+    // ============ 渲染思维导图 ============
+    function renderCanvas() {
+      const plan = getOrCreatePlan(currentDetail.termId, currentDetail.grade, currentDetail.className);
+      nodesLayer.innerHTML = ''; linesLayer.innerHTML = '';
+      if (!plan) return;
+      const layout = calculateLayout(plan);
+      canvas.style.width = layout.canvasWidth + 'px';
+      canvas.style.height = layout.canvasHeight + 'px';
+      const { term, month, week } = LAYOUT;
+      const exp = getExpandedState(plan.termId, plan.grade, plan.className);
+
+      // 学期节点
+      const tn = document.createElement('div');
+      tn.className = 'node node-term';
+      tn.style.left = layout.term.x + 'px'; tn.style.top = layout.term.y + 'px';
+      tn.dataset.type = 'term'; tn.dataset.termId = plan.termId;
+      tn.innerHTML = `
+        <div class="node-header">
+          <div class="node-label">学期主题</div>
+          <button class="edit-icon" data-edit-type="term" data-term-id="${plan.termId}" title="编辑">✏️</button>
+        </div>
+        <div class="node-title">${escapeHtml(plan.termName)}</div>
+        <div class="node-theme">${escapeHtml(plan.termTheme || '暂无主题')}</div>`;
+      nodesLayer.appendChild(tn);
+
+      // 月份和周节点
+      layout.months.forEach((m, idx) => {
+        const isExp = !!exp[m.id];
+
+        const mn = document.createElement('div');
+        mn.className = `node node-month month-color-${idx % 5}`;
+        mn.style.left = m.x + 'px'; mn.style.top = m.y + 'px';
+        mn.dataset.type = 'month'; mn.dataset.termId = plan.termId; mn.dataset.monthId = m.id;
+        mn.innerHTML = `
+          <div class="node-header">
+            <div class="node-label">${escapeHtml(m.monthName)}</div>
+            <button class="edit-icon" data-edit-type="month" data-month-id="${m.id}" title="编辑">✏️</button>
+          </div>
+          <div class="node-title">${escapeHtml(m.theme || '暂无主题')}</div>
+          <div class="node-theme">${escapeHtml(m.plan ? (m.plan.length > 12 ? m.plan.substring(0,12)+'...' : m.plan) : '暂无计划')}</div>
+          <div class="expand-hint">${isExp ? '点击收起' : '点击展开'}</div>`;
+        nodesLayer.appendChild(mn);
+
+        if (isExp) {
+          m.weeks.forEach(w => {
+            const wn = document.createElement('div');
+            wn.className = 'node node-week';
+            wn.style.left = w.x + 'px'; wn.style.top = w.y + 'px';
+            wn.dataset.type = 'week'; wn.dataset.termId = plan.termId; wn.dataset.monthId = m.id; wn.dataset.weekId = w.id;
+            wn.innerHTML = `
+              <div class="node-header">
+                <div class="node-label">第${w.weekNumber}周</div>
+                <button class="edit-icon" data-edit-type="week" data-week-id="${w.id}" data-month-id="${m.id}" title="编辑">✏️</button>
+              </div>
+              <div class="node-title">${escapeHtml(w.theme || '暂无主题')}</div>
+              <div class="node-theme">${w.startDate.slice(5)}~${w.endDate.slice(5)}</div>`;
+            nodesLayer.appendChild(wn);
+          });
+        }
+      });
+
+      // SVG 连线（根据节点实际渲染尺寸取中心点，确保连线精确贴合）
+      const nodeRight = el => ({ x: el.offsetLeft + el.offsetWidth, y: el.offsetTop + el.offsetHeight / 2 });
+      const nodeLeft = el => ({ x: el.offsetLeft, y: el.offsetTop + el.offsetHeight / 2 });
+      const termPoint = nodeRight(tn);
+      layout.months.forEach(m => {
+        const mn = nodesLayer.querySelector(`.node-month[data-month-id="${m.id}"]`);
+        if (!mn) return;
+        const ml = nodeLeft(mn);
+        const midX = (termPoint.x + ml.x) / 2;
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        p.setAttribute('d', `M ${termPoint.x} ${termPoint.y} C ${midX} ${termPoint.y}, ${midX} ${ml.y}, ${ml.x} ${ml.y}`);
+        linesLayer.appendChild(p);
+        if (exp[m.id]) {
+          const mr = nodeRight(mn);
+          m.weeks.forEach(w => {
+            const wn = nodesLayer.querySelector(`.node-week[data-month-id="${m.id}"][data-week-id="${w.id}"]`);
+            if (!wn) return;
+            const wl = nodeLeft(wn);
+            const midX2 = (mr.x + wl.x) / 2;
+            const p2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            p2.setAttribute('d', `M ${mr.x} ${mr.y} C ${midX2} ${mr.y}, ${midX2} ${wl.y}, ${wl.x} ${wl.y}`);
+            linesLayer.appendChild(p2);
+          });
+        }
+      });
+    }
+
+    // ============ Tooltip ============
+    function showTooltip(e, type, data) {
+      let html = '';
+      if (type === 'term') html = `<div class="tooltip-title">${escapeHtml(data.termName)}</div><div class="tooltip-row"><span class="tooltip-label">学期主题：</span><span class="tooltip-value">${escapeHtml(data.termTheme || '—')}</span></div><div class="tooltip-row"><span class="tooltip-label">学期计划：</span><span class="tooltip-value">${escapeHtml(data.termPlan || '—')}</span></div>`;
+      else if (type === 'month') html = `<div class="tooltip-title">${escapeHtml(data.monthName)}</div><div class="tooltip-row"><span class="tooltip-label">主题名称：</span><span class="tooltip-value">${escapeHtml(data.theme || '—')}</span></div><div class="tooltip-row"><span class="tooltip-label">计划内容：</span><span class="tooltip-value">${escapeHtml(data.plan || '—')}</span></div>`;
+      else if (type === 'week') html = `<div class="tooltip-title">第${data.weekNumber}周 (${data.startDate}~${data.endDate})</div><div class="tooltip-row"><span class="tooltip-label">主题名称：</span><span class="tooltip-value">${escapeHtml(data.theme || '—')}</span></div><div class="tooltip-row"><span class="tooltip-label">计划内容：</span><span class="tooltip-value">${escapeHtml(data.plan || '—')}</span></div>`;
+      tooltip.innerHTML = html; tooltip.style.display = 'block'; updateTooltipPosition(e);
+    }
+    function updateTooltipPosition(e) {
+      const rect = tooltip.getBoundingClientRect();
+      let x = e.clientX + 16, y = e.clientY + 16;
+      if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 16;
+      if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 16;
+      tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+    }
+    function hideTooltip() { tooltip.style.display = 'none'; }
+
+    // ============ 编辑弹窗 ============
+    function openEditModal(target) {
+      const { type, termId, monthId, weekId } = target;
+      const plan = termPlans[planKey(termId, currentDetail.grade, currentDetail.className)];
+      if (!plan) return;
+      let html = '';
+      if (type === 'term') {
+        editModalTitle.textContent = '编辑学期计划';
+        html = `<div class="form-group"><label class="form-label">学期名称</label><input type="text" class="form-input readonly-field" value="${escapeHtml(plan.termName)}" readonly></div><div class="form-group"><label class="form-label">学期主题</label><input type="text" class="form-input" id="editField1" value="${escapeHtml(plan.termTheme)}" placeholder="请输入学期主题" maxlength="50"></div><div class="form-group"><label class="form-label">学期计划</label><textarea class="form-textarea" id="editField2" placeholder="请输入学期计划内容" maxlength="500">${escapeHtml(plan.termPlan)}</textarea></div>`;
+      } else if (type === 'month') {
+        const month = plan.months.find(m => m.id === monthId);
+        if (!month) return;
+        editModalTitle.textContent = '编辑月份计划';
+        html = `<div class="form-group"><label class="form-label">月份</label><input type="text" class="form-input readonly-field" value="${escapeHtml(month.monthName)}" readonly></div><div class="form-group"><label class="form-label">主题名称<span class="required">*</span></label><input type="text" class="form-input" id="editField1" value="${escapeHtml(month.theme)}" placeholder="请输入主题名称" maxlength="50"><div class="error-msg" id="editError1">主题名称不能为空</div></div><div class="form-group"><label class="form-label">计划内容</label><textarea class="form-textarea" id="editField2" placeholder="请输入计划内容" maxlength="500">${escapeHtml(month.plan)}</textarea></div>`;
+      } else if (type === 'week') {
+        const month = plan.months.find(m => m.id === monthId);
+        const week = month?.weeks.find(w => w.id === weekId);
+        if (!week) return;
+        editModalTitle.textContent = '编辑周计划';
+        html = `<div class="form-group"><label class="form-label">时间范围</label><input type="text" class="form-input readonly-field" value="${escapeHtml(week.startDate)} ~ ${escapeHtml(week.endDate)}" readonly></div><div class="form-group"><label class="form-label">主题名称<span class="required">*</span></label><input type="text" class="form-input" id="editField1" value="${escapeHtml(week.theme)}" placeholder="请输入主题名称" maxlength="50"><div class="error-msg" id="editError1">主题名称不能为空</div></div><div class="form-group"><label class="form-label">计划内容</label><textarea class="form-textarea" id="editField2" placeholder="请输入计划内容" maxlength="500">${escapeHtml(week.plan)}</textarea></div>`;
+      }
+      editBody.innerHTML = html;
+      currentEditTarget = target;
+      editModalOverlay.classList.add('visible');
+    }
+    function closeEditModal() { editModalOverlay.classList.remove('visible'); currentEditTarget = null; }
+    function saveEdit() {
+      if (!currentEditTarget) return;
+      const { type, termId, monthId, weekId } = currentEditTarget;
+      const plan = termPlans[planKey(termId, currentDetail.grade, currentDetail.className)];
+      if (!plan) return;
+      const val1 = document.getElementById('editField1')?.value.trim() || '';
+      const val2 = document.getElementById('editField2')?.value.trim() || '';
+      const errEl = document.getElementById('editError1');
+      const inputEl = document.getElementById('editField1');
+      if (errEl) errEl.classList.remove('visible');
+      if (inputEl) inputEl.classList.remove('error');
+      if (type !== 'term' && !val1) { if (errEl) errEl.classList.add('visible'); if (inputEl) inputEl.classList.add('error'); return; }
+      if (type === 'term') { plan.termTheme = val1; plan.termPlan = val2; }
+      else if (type === 'month') { const m = plan.months.find(x => x.id === monthId); if (m) { m.theme = val1; m.plan = val2; } }
+      else if (type === 'week') { const m = plan.months.find(x => x.id === monthId); const w = m?.weeks.find(x => x.id === weekId); if (w) { w.theme = val1; w.plan = val2; } }
+      closeEditModal(); renderCanvas(); renderTable();
+    }
+
+    // ============ 表单弹窗（新增/复制） ============
+    function openFormModal(mode, sourceKey) {
+      formMode = mode;
+      copySourceKey = mode === 'copy' ? sourceKey : null;
+      formModalTitle.textContent = mode === 'copy' ? '复制计划' : '新增计划';
+
+      // 重置表单
+      document.getElementById('formPeriodError').classList.remove('visible');
+      document.getElementById('formPeriod').classList.remove('error');
+
+      if (mode === 'copy' && sourceKey) {
+        const source = termPlans[sourceKey];
+        if (source) {
+          const baseKey = `${source.termId}_${source.grade}`;
+          let nextClassNum = 2;
+          let nextKey = `${baseKey}_${nextClassNum}班`;
+          while (termPlans[nextKey]) { nextClassNum++; nextKey = `${baseKey}_${nextClassNum}班`; }
+          formTerm.value = source.termId;
+          formGrade.value = source.grade;
+          formClass.value = `${nextClassNum}班`;
+          formPeriod.value = source.periodRule || 'tps_001';
+          // 禁用学期和年级（复制时通常保持同学期同年级，只变班级）
+          formTerm.disabled = true;
+          formGrade.disabled = true;
+          formClass.disabled = false;
+        }
+      } else {
+        formTerm.value = terms[0].id;
+        formGrade.value = '小班';
+        formClass.value = '1班';
+        formPeriod.value = 'tps_001';
+        formTerm.disabled = false;
+        formGrade.disabled = false;
+        formClass.disabled = false;
+        // 如果默认选项已存在，自动选下一个班级
+        let tryClass = 1;
+        while (tryClass <= 3) {
+          const tryKey = planKey(formTerm.value, formGrade.value, `${tryClass}班`);
+          if (!termPlans[tryKey]) { formClass.value = `${tryClass}班`; break; }
+          tryClass++;
+        }
+      }
+      formModalOverlay.classList.add('visible');
+    }
+    function closeFormModal() { formModalOverlay.classList.remove('visible'); copySourceKey = null; }
+    function saveForm() {
+      const termId = formTerm.value;
+      const grade = formGrade.value;
+      const className = formClass.value;
+      const periodId = formPeriod.value;
+      const key = planKey(termId, grade, className);
+
+      const errEl = document.getElementById('formPeriodError');
+      const selEl = document.getElementById('formPeriod');
+      errEl.classList.remove('visible');
+      selEl.classList.remove('error');
+
+      if (!periodId) { errEl.classList.add('visible'); selEl.classList.add('error'); return; }
+
+      if (formMode === 'copy' && copySourceKey) {
+        const source = termPlans[copySourceKey];
+        if (source) {
+          const copied = JSON.parse(JSON.stringify(source));
+          copied.className = className;
+          copied.creator = '当前用户';
+          copied.createTime = todayStr();
+          copied.periodRule = periodId;
+          termPlans[key] = copied;
+          showToast('计划已复制');
+        }
+      } else {
+        if (termPlans[key]) { showToast('该计划已存在'); return; }
+        const plan = getOrCreatePlan(termId, grade, className);
+        if (plan) { plan.periodRule = periodId; showToast('计划已创建'); }
+      }
+      closeFormModal(); renderTable();
+    }
+
+    // ============ 管理列表 ============
+    function buildDirectory() {
+      return Object.keys(termPlans).map(key => {
+        const p = termPlans[key];
+        return { key, termId: p.termId, termName: getTermName(p.termId), grade: p.grade, className: p.className || '1班', periodRule: p.periodRule || 'tps_001', creator: p.creator || '—', createTime: p.createTime || '—' };
+      });
+    }
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      const empty = document.getElementById('emptyState');
+      const f = { term: filterTerm.value, grade: filterGrade.value, className: filterClass.value, creator: filterCreator.value.trim(), start: filterStart.value, end: filterEnd.value };
+      const dir = buildDirectory().filter(item => {
+        if (f.term !== 'all' && item.termId !== f.term) return false;
+        if (f.grade !== 'all' && item.grade !== f.grade) return false;
+        if (f.className !== 'all' && item.className !== f.className) return false;
+        if (f.creator && !item.creator.includes(f.creator)) return false;
+        if (f.start && item.createTime < f.start) return false;
+        if (f.end && item.createTime > f.end) return false;
+        return true;
+      });
+      if (dir.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      tbody.innerHTML = dir.map(item => `
+        <tr><td>${item.termName}</td><td>${item.grade}</td><td>${item.className}</td><td>${getPeriodName(item.periodRule)}</td><td>${item.creator}</td><td>${item.createTime}</td>
+        <td><div class="actions"><button class="btn-text" onclick="goDetail('${item.key}')">详情</button><button class="btn-text" onclick="showCopyForm('${item.key}')">复制</button><button class="btn-text-danger" onclick="showDelete('${item.key}')">删除</button></div></td></tr>
+      `).join('');
+    }
+
+    window.goDetail = function(key) {
+      const parts = key.split('_');
+      currentDetail.className = parts.pop();
+      currentDetail.grade = parts.pop();
+      currentDetail.termId = parts.join('_');
+      detailTerm.value = currentDetail.termId;
+      detailGrade.value = currentDetail.grade;
+      detailClass.value = currentDetail.className;
+      listView.classList.remove('active');
+      detailView.classList.add('active');
+      pageTitle.textContent = '学期计划';
+      renderCanvas();
+    };
+    window.showCopyForm = function(key) {
+      openFormModal('copy', key);
+    };
+    window.showDelete = function(key) {
+      const plan = termPlans[key]; if (!plan) return;
+      pendingKey = key; pendingAction = 'delete';
+      confirmTitle.textContent = '确认删除';
+      confirmBody.textContent = `确定要删除「${getTermName(plan.termId)} ${plan.grade} ${plan.className || '1班'}」的计划吗？删除后不可恢复。`;
+      confirmOk.className = 'btn btn-danger';
+      confirmModal.classList.add('visible');
+    };
+
+    // ============ 新增计划 ============
+    document.getElementById('btnAdd').addEventListener('click', () => {
+      openFormModal('add');
+    });
+
+    // ============ 确认弹窗事件 ============
+    document.getElementById('confirmCancel').addEventListener('click', () => {
+      confirmModal.classList.remove('visible'); pendingAction = null; pendingKey = null;
+    });
+    confirmOk.addEventListener('click', () => {
+      if (!pendingAction || !pendingKey) { confirmModal.classList.remove('visible'); return; }
+      if (pendingAction === 'delete') {
+        delete termPlans[pendingKey]; showToast('计划已删除'); renderTable();
+      }
+      confirmModal.classList.remove('visible'); pendingAction = null; pendingKey = null;
+    });
+
+    // ============ 表单弹窗事件 ============
+    document.getElementById('formModalClose').addEventListener('click', closeFormModal);
+    document.getElementById('formCancel').addEventListener('click', closeFormModal);
+    formModalOverlay.addEventListener('click', (e) => { if (e.target === formModalOverlay) closeFormModal(); });
+    document.getElementById('formSave').addEventListener('click', saveForm);
+
+    // ============ 详情视图事件 ============
+    document.getElementById('btnBack').addEventListener('click', () => {
+      detailView.classList.remove('active');
+      listView.classList.add('active');
+      pageTitle.textContent = '学期计划管理';
+      renderTable();
+    });
+    detailTerm.addEventListener('change', () => { currentDetail.termId = detailTerm.value; renderCanvas(); });
+    detailGrade.addEventListener('change', () => { currentDetail.grade = detailGrade.value; renderCanvas(); });
+    detailClass.addEventListener('change', () => { currentDetail.className = detailClass.value; renderCanvas(); });
+
+    // 思维导图事件
+    nodesLayer.addEventListener('mouseover', (e) => {
+      const node = e.target.closest('.node'); if (!node) return;
+      const type = node.dataset.type;
+      const plan = getOrCreatePlan(currentDetail.termId, currentDetail.grade, currentDetail.className);
+      if (!plan) return;
+      let data;
+      if (type === 'term') data = plan;
+      else if (type === 'month') data = plan.months.find(m => m.id === node.dataset.monthId);
+      else if (type === 'week') { const m = plan.months.find(x => x.id === node.dataset.monthId); data = m?.weeks.find(w => w.id === node.dataset.weekId); if (data) data = { ...data, monthName: m.monthName }; }
+      if (data) showTooltip(e, type, data);
+    });
+    nodesLayer.addEventListener('mousemove', (e) => { if (tooltip.style.display === 'block') updateTooltipPosition(e); });
+    nodesLayer.addEventListener('mouseout', (e) => { const node = e.target.closest('.node'); if (node && !node.contains(e.relatedTarget)) hideTooltip(); });
+    nodesLayer.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.edit-icon');
+      if (editBtn) {
+        e.stopPropagation();
+        const type = editBtn.dataset.editType;
+        const target = { type, termId: currentDetail.termId };
+        if (type === 'month') target.monthId = editBtn.dataset.monthId;
+        if (type === 'week') { target.monthId = editBtn.dataset.monthId; target.weekId = editBtn.dataset.weekId; }
+        openEditModal(target);
+        return;
+      }
+      const node = e.target.closest('.node');
+      if (!node) return;
+      const type = node.dataset.type;
+      if (type === 'month') {
+        const exp = getExpandedState(currentDetail.termId, currentDetail.grade, currentDetail.className);
+        exp[node.dataset.monthId] = !exp[node.dataset.monthId];
+        renderCanvas();
+      } else if (type === 'week') {
+        const m = node.dataset.monthId; const w = node.dataset.weekId;
+        showToast(`前往 ${m} ${w} 的每日计划`);
+      }
+    });
+    document.getElementById('editModalClose').addEventListener('click', closeEditModal);
+    document.getElementById('editCancel').addEventListener('click', closeEditModal);
+    editModalOverlay.addEventListener('click', (e) => { if (e.target === editModalOverlay) closeEditModal(); });
+    document.getElementById('editSave').addEventListener('click', saveEdit);
+    let resizeTimer;
+    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderCanvas, 200); });
+
+    // 列表筛选事件
+    [filterTerm, filterGrade, filterClass, filterStart, filterEnd].forEach(el => el.addEventListener('change', renderTable));
+    filterCreator.addEventListener('input', renderTable);
+    document.getElementById('btnQuery').addEventListener('click', renderTable);
+    document.getElementById('btnReset').addEventListener('click', () => {
+      filterTerm.value = 'all';
+      filterGrade.value = 'all';
+      filterClass.value = 'all';
+      filterCreator.value = '';
+      filterStart.value = '';
+      filterEnd.value = '';
+      renderTable();
+    });
+
+    // 初始化
+    terms.forEach(t => {
+      const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
+      filterTerm.appendChild(opt.cloneNode(true));
+      detailTerm.appendChild(opt.cloneNode(true));
+      formTerm.appendChild(opt.cloneNode(true));
+    });
+    timePeriodSets.forEach(p => {
+      const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.name;
+      formPeriod.appendChild(opt);
+    });
+    detailTerm.value = 'term_001';
+    renderTable();
+  </script>
+</body>
+</html>

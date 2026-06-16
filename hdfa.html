@@ -1,0 +1,2246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活动方案库 - 幼儿园排课系统</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f7fa;
+      color: #262626;
+      min-height: 100vh;
+    }
+
+    /* 顶部标题栏 */
+    .header {
+      background: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-title { font-size: 20px; font-weight: 600; }
+
+    /* 主体 */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* 筛选操作区 */
+    .filter-bar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 14px;
+      color: #595959;
+      white-space: nowrap;
+    }
+
+    .filter-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    .search-box {
+      position: relative;
+      width: 200px;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 36px;
+      padding: 6px 28px 6px 10px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: #1890ff; }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+      text-align: center;
+      color: #8c8c8c;
+      cursor: pointer;
+      font-size: 12px;
+      display: none;
+    }
+
+    .search-box.has-value .search-clear { display: block; }
+
+    .filter-select {
+      height: 36px;
+      padding: 0 8px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      cursor: pointer;
+      min-width: 100px;
+    }
+
+    .filter-select:focus { border-color: #1890ff; }
+
+    .date-range {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .date-input {
+      height: 36px;
+      padding: 0 8px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      width: 130px;
+    }
+
+    .date-input:focus { border-color: #1890ff; }
+
+    .date-sep { color: #8c8c8c; font-size: 13px; }
+
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .btn-primary {
+      background: #1890ff;
+      color: #fff;
+      border-color: #1890ff;
+    }
+
+    .btn-primary:hover {
+      background: #40a9ff;
+      border-color: #40a9ff;
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: #ff4d4f;
+      color: #fff;
+      border-color: #ff4d4f;
+    }
+
+    .btn-danger:hover {
+      background: #ff7875;
+      border-color: #ff7875;
+      color: #fff;
+    }
+
+    .btn-text {
+      border: none;
+      background: transparent;
+      padding: 4px 8px;
+      height: auto;
+      color: #1890ff;
+    }
+
+    .btn-text:hover { color: #40a9ff; background: transparent; }
+
+    .btn-text-danger {
+      border: none;
+      background: transparent;
+      padding: 4px 8px;
+      height: auto;
+      color: #ff4d4f;
+    }
+
+    .btn-text-danger:hover { color: #ff7875; background: transparent; }
+
+    /* 表格 */
+    .table-wrap {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .data-table thead {
+      background: #fafafa;
+    }
+
+    .data-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #262626;
+      border-bottom: 1px solid #f0f0f0;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover { background: #f5f7fa; }
+
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .tag-type-health { background: #f6ffed; color: #52c41a; }
+    .tag-type-language { background: #e6fffb; color: #13c2c2; }
+    .tag-type-social { background: #fff0f6; color: #eb2f96; }
+    .tag-type-science { background: #fff2e8; color: #fa541c; }
+    .tag-type-art { background: #f9f0ff; color: #722ed1; }
+
+    .tag-category-life { background: #fff7e6; color: #fa8c16; }
+    .tag-category-sport { background: #f0f5ff; color: #2f54eb; }
+    .tag-category-game { background: #e6f7ff; color: #1890ff; }
+    .tag-category-study { background: #f6ffed; color: #52c41a; }
+
+    .tag-grade { background: #f5f5f5; color: #595959; }
+
+    .actions { display: flex; gap: 8px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #8c8c8c;
+      font-size: 14px;
+    }
+
+    /* 弹窗遮罩 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      width: 560px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.show .modal { transform: scale(1); }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #262626;
+    }
+
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      color: #8c8c8c;
+      line-height: 28px;
+      text-align: center;
+      border-radius: 4px;
+    }
+
+    .modal-close:hover { background: #f5f5f5; color: #262626; }
+
+    .form-row {
+      margin-bottom: 16px;
+    }
+
+    .form-row-flex {
+      display: flex;
+      gap: 16px;
+    }
+
+    .form-row-flex .form-row { flex: 1; }
+
+    /* 多选下拉 */
+    .multi-select { position: relative; }
+
+    .multi-select-trigger {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #262626;
+      transition: border-color 0.2s;
+    }
+
+    .multi-select-trigger:hover { border-color: #1890ff; }
+    .multi-select-trigger.active { border-color: #1890ff; }
+
+    .multi-select-trigger .placeholder { color: #bfbfbf; }
+
+    .multi-select-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .multi-select-dropdown.show { display: block; }
+
+    .multi-select-option {
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .multi-select-option:hover { background: #f0f7ff; }
+
+    .multi-select-option input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #1890ff;
+    }
+
+    .multi-select-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      min-height: 0;
+    }
+
+    .multi-select-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #e6f7ff;
+      color: #1890ff;
+      border: 1px solid #bae7ff;
+    }
+
+    .multi-select-tag .remove {
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .multi-select-tag .remove:hover { color: #ff4d4f; }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: #262626;
+      margin-bottom: 6px;
+    }
+
+    .form-label .required { color: #ff4d4f; margin-left: 2px; }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    .form-input,
+    .form-select {
+      height: 40px;
+      padding: 0 12px;
+    }
+
+    .form-textarea {
+      padding: 10px 12px;
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus { border-color: #1890ff; }
+
+    .form-input.error,
+    .form-select.error,
+    .form-textarea.error { border-color: #ff4d4f; }
+
+    .error-msg {
+      color: #ff4d4f;
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    /* 文件上传 */
+    .upload-area {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 10px;
+    }
+
+    .upload-area:hover { border-color: #1890ff; }
+
+    .upload-text {
+      font-size: 14px;
+      color: #595959;
+    }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #f5f7fa;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .file-name {
+      color: #262626;
+      word-break: break-all;
+    }
+
+    .file-remove {
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #8c8c8c;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .file-remove:hover { color: #ff4d4f; }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    /* 详情弹窗 */
+    .detail-modal { width: 480px; }
+
+    .detail-row {
+      display: flex;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+
+    .detail-label {
+      width: 80px;
+      font-size: 13px;
+      color: #8c8c8c;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: #262626;
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .detail-value .tag { margin-right: 4px; }
+
+    .detail-multiline {
+      background: #f5f7fa;
+      padding: 10px 12px;
+      border-radius: 6px;
+      min-height: 60px;
+      white-space: pre-wrap;
+    }
+
+    .detail-files {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .detail-file-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #f6ffed;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #262626;
+    }
+
+    .detail-file-icon { font-size: 14px; }
+
+    /* 资源选择弹窗 */
+    .resource-modal {
+      width: 1100px;
+      max-width: 95vw;
+      padding: 20px 24px;
+    }
+
+    .resource-body {
+      display: flex;
+      gap: 20px;
+      min-height: 520px;
+    }
+
+    .resource-sidebar {
+      flex: 0 0 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .resource-category {
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #595959;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      border: 1px solid transparent;
+    }
+
+    .resource-category:hover {
+      background: #f0f7ff;
+      color: #1890ff;
+    }
+
+    .resource-category.active {
+      background: #1890ff;
+      color: #fff;
+    }
+
+    .resource-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .resource-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .resource-toolbar .form-input {
+      width: 260px;
+    }
+
+    .resource-page-info {
+      font-size: 13px;
+      color: #8c8c8c;
+      white-space: nowrap;
+    }
+
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      flex: 1;
+      align-content: flex-start;
+    }
+
+    .resource-card {
+      position: relative;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #fff;
+    }
+
+    .resource-card:hover {
+      border-color: #1890ff;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.12);
+    }
+
+    .resource-card.selected {
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px #1890ff;
+    }
+
+    .resource-card .check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #d9d9d9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: transparent;
+      transition: all 0.15s;
+      z-index: 2;
+    }
+
+    .resource-card.selected .check {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: #fff;
+    }
+
+    .resource-cover {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: #f5f7fa;
+    }
+
+    .resource-name-wrap {
+      padding: 8px 10px;
+      font-size: 13px;
+      color: #262626;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .resource-empty {
+      grid-column: 1 / -1;
+      color: #8c8c8c;
+      text-align: center;
+      padding: 80px 0;
+      font-size: 14px;
+    }
+
+    .resource-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .resource-pagination .page-btn {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #595959;
+      transition: all 0.15s;
+    }
+
+    .resource-pagination .page-btn:hover:not(:disabled) {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .resource-pagination .page-btn:disabled {
+      cursor: not-allowed;
+      color: #bfbfbf;
+      background: #f5f5f5;
+    }
+
+    .resource-pagination .page-btn.active {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: #fff;
+    }
+
+    /* 确认弹窗 */
+    .confirm-modal { width: 400px; text-align: center; }
+
+    .confirm-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .confirm-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .confirm-body {
+      font-size: 14px;
+      color: #595959;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .confirm-footer {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #262626;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      z-index: 3000;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  
+    /* 排课弹窗 */
+    .schedule-modal { width: 720px; max-width: 95vw; }
+
+    .schedule-activity-name {
+      font-size: 14px;
+      color: #595959;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      background: #f5f7fa;
+      border-radius: 6px;
+    }
+
+    .schedule-layout {
+      display: flex;
+      gap: 20px;
+      min-height: 380px;
+    }
+    .schedule-left { flex: 0 0 300px; }
+    .schedule-right { flex: 1; }
+
+    /* 日历 */
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .calendar-nav {
+      width: 28px; height: 28px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .calendar-nav:hover { border-color: #1890ff; color: #1890ff; }
+    .calendar-month { font-size: 15px; font-weight: 600; }
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 12px;
+      color: #8c8c8c;
+      margin-bottom: 2px;
+    }
+    .calendar-weekday { padding: 5px 0; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+      gap: 1px;
+    }
+    .calendar-day:hover { background: #f0f7ff; }
+    .calendar-day.other-month { color: #d9d9d9; pointer-events: none; }
+    .calendar-day.today { border-color: #1890ff; }
+    .calendar-day.selected { background: #1890ff; color: #fff; }
+    .calendar-day .day-count {
+      font-size: 10px;
+      background: #ff4d4f;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0 5px;
+      min-width: 14px;
+      text-align: center;
+      line-height: 14px;
+    }
+    .calendar-day.selected .day-count { background: #fff; color: #1890ff; }
+
+    /* 时段 */
+    .slots-section { margin-bottom: 12px; }
+    .slots-section-label { font-size: 13px; color: #595959; margin-bottom: 6px; padding-left: 4px; border-left: 3px solid #1890ff; }
+    .slots-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .slot-item {
+      padding: 8px 10px; border: 1px solid #d9d9d9; border-radius: 6px; cursor: pointer;
+      font-size: 13px; transition: all 0.15s; text-align: center;
+    }
+    .slot-item:hover { border-color: #1890ff; }
+    .slot-item.selected { background: #e6f7ff; border-color: #1890ff; color: #1890ff; }
+    .slot-item.occupied { background: #fafafa; border-color: #e8e8e8; color: #bfbfbf; cursor: not-allowed; }
+    .slot-activity-name { display: block; font-size: 11px; color: #8c8c8c; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .schedule-no-date { display: flex; align-items: center; justify-content: center; height: 100%; color: #bfbfbf; font-size: 14px; }
+
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">活动方案库</div>
+  </div>
+
+  <div class="main">
+    <!-- 筛选操作区 -->
+    <div class="filter-bar">
+      <div class="filter-row">
+        <div class="filter-group">
+          <span class="filter-label">年级</span>
+          <select class="filter-select" id="filterGrade">
+            <option value="all">全部</option>
+            <option value="托班">托班</option>
+            <option value="小班">小班</option>
+            <option value="中班">中班</option>
+            <option value="大班">大班</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">类型</span>
+          <select class="filter-select" id="filterCategory">
+            <option value="all">全部</option>
+            <option value="生活">生活</option>
+            <option value="运动">运动</option>
+            <option value="游戏">游戏</option>
+            <option value="学习">学习</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">领域</span>
+          <select class="filter-select" id="filterType">
+            <option value="all">全部</option>
+            <option value="健康">健康</option>
+            <option value="语言">语言</option>
+            <option value="社会">社会</option>
+            <option value="科学">科学</option>
+            <option value="艺术">艺术</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">归属</span>
+          <select class="filter-select" id="filterOwnership">
+            <option value="all">全部</option>
+            <option value="个人">个人</option>
+            <option value="园所">园所</option>
+            <option value="平台">平台</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <span class="filter-label">创建时间</span>
+          <div class="date-range">
+            <input type="date" class="date-input" id="filterStartDate">
+            <span class="date-sep">至</span>
+            <input type="date" class="date-input" id="filterEndDate">
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary" id="btnSearch">查询</button>
+          <button class="btn" id="btnReset">重置</button>
+          <button class="btn btn-primary" id="btnCreate">+ 新增</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>活动名称</th>
+            <th>领域</th>
+            <th>活动类型</th>
+            <th>年级</th>
+            <th>归属</th>
+            <th>创建人</th>
+            <th>创建时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- JS 渲染 -->
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">暂无活动方案</div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑弹窗 -->
+  <div class="modal-overlay" id="formModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="formTitle">新增活动方案</div>
+        <button class="modal-close" id="formClose">✕</button>
+      </div>
+      <form id="activityForm">
+        <div class="form-row">
+          <label class="form-label">活动名称<span class="required">*</span></label>
+          <input type="text" class="form-input" id="formName" placeholder="请输入活动名称">
+          <div class="error-msg" id="errName">请输入活动名称</div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-row">
+            <label class="form-label">活动领域<span class="required">*</span></label>
+            <select class="form-select" id="formType">
+              <option value="">请选择</option>
+              <option value="健康">健康</option>
+              <option value="语言">语言</option>
+              <option value="社会">社会</option>
+              <option value="科学">科学</option>
+              <option value="艺术">艺术</option>
+            </select>
+            <div class="error-msg" id="errType">请选择活动领域</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">活动类型<span class="required">*</span></label>
+            <select class="form-select" id="formCategory">
+              <option value="">请选择</option>
+              <option value="生活">生活</option>
+              <option value="运动">运动</option>
+              <option value="游戏">游戏</option>
+              <option value="学习">学习</option>
+            </select>
+            <div class="error-msg" id="errCategory">请选择活动类型</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">年级<span class="required">*</span></label>
+          <select class="form-select" id="formGrade">
+            <option value="">请选择</option>
+            <option value="托班">托班</option>
+            <option value="小班">小班</option>
+            <option value="中班">中班</option>
+            <option value="大班">大班</option>
+          </select>
+          <div class="error-msg" id="errGrade">请选择年级</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">归属<span class="required">*</span></label>
+          <select class="form-select" id="formOwnership">
+            <option value="">请选择</option>
+            <option value="个人">个人</option>
+            <option value="园所">园所</option>
+          </select>
+          <div class="error-msg" id="errOwnership">请选择归属</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">活动简介</label>
+          <textarea class="form-textarea" id="formDescription" placeholder="请输入活动简介"></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">教学目标</label>
+          <textarea class="form-textarea" id="formObjectives" placeholder="请输入教学目标"></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">课程资料</label>
+          <div class="file-list" id="fileList"></div>
+          <div class="upload-area" id="uploadArea">
+            <span class="upload-text">+ 上传资料</span>
+          </div>
+          <input type="file" id="fileInput" style="display:none;" multiple>
+        </div>
+        <div class="form-row">
+          <label class="form-label">使用课件</label>
+          <div class="multi-select" id="courseMultiSelect">
+            <div class="multi-select-trigger" id="courseTrigger">
+              <span class="placeholder">请选择课件</span>
+              <span>▼</span>
+            </div>
+            <div class="multi-select-dropdown" id="courseDropdown">
+              <div class="multi-select-option" data-value="创想无限">
+                <input type="checkbox" value="创想无限"> 创想无限
+              </div>
+              <div class="multi-select-option" data-value="ai园宠">
+                <input type="checkbox" value="ai园宠"> ai园宠
+              </div>
+              <div class="multi-select-option" data-value="故事绘">
+                <input type="checkbox" value="故事绘"> 故事绘
+              </div>
+              <div class="multi-select-option" data-value="ai小画家">
+                <input type="checkbox" value="ai小画家"> ai小画家
+              </div>
+            </div>
+            <div class="multi-select-tags" id="courseTags"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">课程资源</label>
+          <div class="file-list" id="resourceFormList"></div>
+          <button type="button" class="btn" id="btnSelectResource" style="width:100%;">+ 选择资源</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" id="formCancel">取消</button>
+          <button type="submit" class="btn btn-primary">确认保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 详情弹窗 -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal detail-modal">
+      <div class="modal-header">
+        <div class="modal-title">活动详情</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn-primary" id="joinPlanBtn" style="height:28px;padding:0 12px;font-size:13px;">+ 加入计划</button>
+          <button class="modal-close" id="detailClose">✕</button>
+        </div>
+      </div>
+      <div id="detailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="detailCloseBtn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 排课弹窗 -->
+  <div class="modal-overlay" id="scheduleModal">
+    <div class="modal schedule-modal">
+      <div class="modal-header">
+        <div class="modal-title" id="scheduleTitle">加入计划</div>
+        <button class="modal-close" id="scheduleClose">✕</button>
+      </div>
+      <div class="schedule-activity-name" id="scheduleActivityName"></div>
+      <div class="schedule-layout">
+        <!-- 左侧日历 -->
+        <div class="schedule-left">
+          <div class="calendar-header">
+            <button class="calendar-nav" id="calPrev">‹</button>
+            <span class="calendar-month" id="calMonth"></span>
+            <button class="calendar-nav" id="calNext">›</button>
+          </div>
+          <div class="calendar-weekdays">
+            <span class="calendar-weekday">日</span>
+            <span class="calendar-weekday">一</span>
+            <span class="calendar-weekday">二</span>
+            <span class="calendar-weekday">三</span>
+            <span class="calendar-weekday">四</span>
+            <span class="calendar-weekday">五</span>
+            <span class="calendar-weekday">六</span>
+          </div>
+          <div class="calendar-grid" id="calGrid"></div>
+        </div>
+        <!-- 右侧时段 -->
+        <div class="schedule-right" id="scheduleRight">
+          <div class="schedule-no-date">请选择日期</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="scheduleCancel">取消</button>
+        <button class="btn btn-primary" id="scheduleSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 资源选择弹窗 -->
+  <div class="modal-overlay" id="resourceModal">
+    <div class="modal resource-modal">
+      <div class="modal-header">
+        <div class="modal-title">选择课程资源</div>
+        <button class="modal-close" id="resourceClose">✕</button>
+      </div>
+      <div class="resource-body">
+        <div class="resource-sidebar" id="resourceSidebar"></div>
+        <div class="resource-main">
+          <div class="resource-toolbar">
+            <input type="text" class="form-input" id="resourceSearch" placeholder="搜索资源名称">
+            <div class="resource-page-info" id="resourcePageInfo"></div>
+          </div>
+          <div class="resource-grid" id="resourceGrid"></div>
+          <div class="resource-pagination" id="resourcePagination"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="resourceCancel">取消</button>
+        <button class="btn btn-primary" id="resourceConfirm">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal confirm-modal">
+      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-title">确认删除</div>
+      <div class="confirm-body" id="deleteBody">确定要删除该活动方案吗？删除后不可恢复。</div>
+      <div class="confirm-footer">
+        <button class="btn" id="deleteCancel">取消</button>
+        <button class="btn btn-danger" id="deleteConfirm">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ================== 数据 ==================
+    let activities = [
+      {
+        id: 'pa_001',
+        name: '我的美术课',
+        type: '艺术',
+        category: '游戏',
+        grade: '小班',
+        ownership: '个人',
+        creator: '王老师',
+        createTime: '2026-06-01',
+        description: '通过水彩画培养幼儿色彩感知能力，让幼儿在自由创作中表达对世界的认识。',
+        objectives: '能辨认3种以上基础颜色，尝试自由涂鸦表达情感。',
+        materials: [
+          { name: '水彩画教案.pdf', size: '2.3MB' },
+          { name: '色彩卡片.zip', size: '15MB' }
+        ],
+        courses: ['ai小画家'],
+        resources: [
+          { id: 'r1', name: '幼儿美术启蒙视频', category: '视频', size: '45MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+          { id: 'r2', name: '色彩认知互动课件', category: '绘本', size: '8MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' }
+        ],
+        color: '#FF9F43'
+      },
+      {
+        id: 'pa_002',
+        name: '晨间体能',
+        type: '健康',
+        category: '运动',
+        grade: '中班',
+        ownership: '园所',
+        creator: '李老师',
+        createTime: '2026-05-28',
+        description: '早晨入园后的轻量体能活动，帮助幼儿唤醒身体活力。',
+        objectives: '提升肢体协调能力，培养规律运动的习惯。',
+        materials: [
+          { name: '体能活动视频.mp4', size: '120MB' }
+        ],
+        courses: ['创想无限', 'ai园宠'],
+        resources: [
+          { id: 'r4', name: '幼儿歌曲集', category: '音乐', size: '12MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' }
+        ],
+        color: '#52C41A'
+      },
+      {
+        id: 'pa_003',
+        name: '睡前绘本',
+        type: '语言',
+        category: '学习',
+        grade: '小班',
+        ownership: '个人',
+        creator: '陈老师',
+        createTime: '2026-06-05',
+        description: '午休前的绘本阅读时光，营造安静的阅读氛围。',
+        objectives: '能安静倾听故事，尝试简单复述故事情节。',
+        materials: [],
+        courses: ['故事绘'],
+        resources: [],
+        color: '#13C2C2'
+      }
+    ];
+
+    const resourceLibrary = [
+      { id: 'r1', name: '幼儿美术启蒙视频', category: '视频', size: '45MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r2', name: '色彩认知互动课件', category: '绘本', size: '8MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r3', name: '水彩画步骤图', category: '图片', size: '2MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r4', name: '幼儿歌曲集', category: '音乐', size: '12MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r5', name: '美术作品展示模板', category: '绘本', size: '1MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r6', name: '动物世界短片', category: '视频', size: '30MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r7', name: '睡前故事绘本', category: '绘本', size: '5MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r8', name: '儿歌律动音频', category: '音乐', size: '8MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r9', name: '自然风景图集', category: '图片', size: '4MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r10', name: '手工折纸教程', category: '视频', size: '22MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r11', name: '数字认知卡片', category: '绘本', size: '3MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r12', name: '轻音乐合集', category: '音乐', size: '18MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r13', name: '交通工具图片', category: '图片', size: '2MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r14', name: '科学小实验视频', category: '视频', size: '55MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r15', name: '情绪管理绘本', category: '绘本', size: '6MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r16', name: '英文启蒙儿歌', category: '音乐', size: '10MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r17', name: '水果认知图片', category: '图片', size: '1MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r18', name: '舞蹈教学视频', category: '视频', size: '38MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r19', name: '安全教育绘本', category: '绘本', size: '4MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r20', name: '古典音乐欣赏', category: '音乐', size: '25MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r21', name: '季节变换图片', category: '图片', size: '3MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r22', name: '体育游戏视频', category: '视频', size: '28MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r23', name: '习惯养成绘本', category: '绘本', size: '7MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r24', name: '民族音乐精选', category: '音乐', size: '14MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r25', name: '动物剪影图片', category: '图片', size: '2MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r26', name: '乐高搭建视频', category: '视频', size: '42MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r27', name: '童话故事绘本', category: '绘本', size: '9MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r28', name: '奥尔夫音乐', category: '音乐', size: '11MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r29', name: '植物成长图片', category: '图片', size: '3MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r30', name: '绘本动画视频', category: '视频', size: '50MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' }
+    ];
+
+    const typeColorMap = {
+      '健康': 'tag-type-health',
+      '语言': 'tag-type-language',
+      '社会': 'tag-type-social',
+      '科学': 'tag-type-science',
+      '艺术': 'tag-type-art'
+    };
+
+    const categoryColorMap = {
+      '生活': 'tag-category-life',
+      '运动': 'tag-category-sport',
+      '游戏': 'tag-category-game',
+      '学习': 'tag-category-study'
+    };
+
+    const domainColors = {
+      '健康': '#52C41A',
+      '语言': '#13C2C2',
+      '社会': '#EB2F96',
+      '科学': '#FA541C',
+      '艺术': '#722ED1'
+    };
+
+    let editingId = null;
+    let pendingDeleteId = null;
+    let tempMaterials = [];
+    let selectedCourses = [];
+    let currentDetailActivity = null;
+    let tempResources = [];
+    let pendingResources = [];
+    let resourceSearchTerm = '';
+    let resourceCategory = '全部';
+    let resourcePage = 1;
+
+    // ================== 工具函数 ==================
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function formatDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function todayStr() {
+      return formatDate(new Date());
+    }
+
+    // ================== 筛选 ==================
+    const filterType = document.getElementById('filterType');
+    const filterCategory = document.getElementById('filterCategory');
+    const filterGrade = document.getElementById('filterGrade');
+    const filterOwnership = document.getElementById('filterOwnership');
+    const filterStartDate = document.getElementById('filterStartDate');
+    const filterEndDate = document.getElementById('filterEndDate');
+    const btnSearch = document.getElementById('btnSearch');
+    const btnReset = document.getElementById('btnReset');
+
+    function getFilters() {
+      return {
+        type: filterType.value,
+        category: filterCategory.value,
+        grade: filterGrade.value,
+        ownership: filterOwnership.value,
+        startDate: filterStartDate.value,
+        endDate: filterEndDate.value
+      };
+    }
+
+    function filterActivities() {
+      const f = getFilters();
+      return activities.filter(a => {
+        if (f.type !== 'all' && a.type !== f.type) return false;
+        if (f.category !== 'all' && a.category !== f.category) return false;
+        if (f.grade !== 'all' && a.grade !== f.grade) return false;
+        if (f.ownership !== 'all' && a.ownership !== f.ownership) return false;
+        if (f.startDate && a.createTime < f.startDate) return false;
+        if (f.endDate && a.createTime > f.endDate) return false;
+        return true;
+      });
+    }
+
+    btnSearch.addEventListener('click', renderTable);
+
+    btnReset.addEventListener('click', () => {
+      filterType.value = 'all';
+      filterCategory.value = 'all';
+      filterGrade.value = 'all';
+      filterOwnership.value = 'all';
+      filterStartDate.value = '';
+      filterEndDate.value = '';
+      renderTable();
+    });
+
+    // ================== 渲染表格 ==================
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      const empty = document.getElementById('emptyState');
+      const filtered = filterActivities();
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+
+      empty.style.display = 'none';
+      tbody.innerHTML = filtered.map(a => `
+        <tr>
+          <td style="font-weight:500;">${a.name}</td>
+          <td><span class="tag ${typeColorMap[a.type] || ''}">${a.type}</span></td>
+          <td><span class="tag ${categoryColorMap[a.category] || ''}">${a.category}</span></td>
+          <td><span class="tag tag-grade">${a.grade}</span></td>
+          <td>${a.ownership || '-'}</td>
+          <td>${a.creator}</td>
+          <td>${a.createTime}</td>
+          <td>
+            <div class="actions">
+              <button class="btn-text" onclick="showDetail('${a.id}')">详情</button>
+              <button class="btn-text" onclick="showEdit('${a.id}')">编辑</button>
+              <button class="btn-text-danger" onclick="showDelete('${a.id}')">删除</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ================== 新增/编辑弹窗 ==================
+    const formModal = document.getElementById('formModal');
+    const formTitle = document.getElementById('formTitle');
+    const activityForm = document.getElementById('activityForm');
+    const fileList = document.getElementById('fileList');
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+
+    function openFormModal(title) {
+      formTitle.textContent = title;
+      formModal.classList.add('show');
+      document.getElementById('formName').focus();
+    }
+
+    function closeFormModal() {
+      formModal.classList.remove('show');
+      activityForm.reset();
+      tempMaterials = [];
+      renderFileList();
+      selectedCourses = [];
+      renderCourseTags();
+      updateCourseCheckboxes();
+      closeCourseDropdown();
+      tempResources = [];
+      pendingResources = [];
+      resourceSearchTerm = '';
+      resourceCategory = '全部';
+      resourcePage = 1;
+      renderFormResourceList();
+      editingId = null;
+      clearErrors();
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+      document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => el.classList.remove('error'));
+    }
+
+    function showFieldError(id, show) {
+      const el = document.getElementById(id);
+      const err = document.getElementById('err' + id.replace('form', ''));
+      if (el) el.classList.toggle('error', show);
+      if (err) err.classList.toggle('show', show);
+    }
+
+    function renderFileList() {
+      if (tempMaterials.length === 0) {
+        fileList.innerHTML = '';
+        return;
+      }
+      fileList.innerHTML = tempMaterials.map((f, i) => `
+        <div class="file-item">
+          <span class="file-name">📄 ${f.name}</span>
+          <button type="button" class="file-remove" onclick="removeFile(${i})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.removeFile = function(index) {
+      tempMaterials.splice(index, 1);
+      renderFileList();
+    };
+
+    // ================== 课程资源选择 ==================
+    const resourceModal = document.getElementById('resourceModal');
+    const resourceSidebar = document.getElementById('resourceSidebar');
+    const resourceGrid = document.getElementById('resourceGrid');
+    const resourcePagination = document.getElementById('resourcePagination');
+    const resourcePageInfo = document.getElementById('resourcePageInfo');
+    const resourceSearch = document.getElementById('resourceSearch');
+
+    const RESOURCE_CATEGORIES = ['全部', '视频', '绘本', '音乐', '图片'];
+    const RESOURCES_PER_PAGE = 24;
+
+    function renderFormResourceList() {
+      const el = document.getElementById('resourceFormList');
+      if (tempResources.length === 0) {
+        el.innerHTML = '';
+        return;
+      }
+      el.innerHTML = tempResources.map((r, i) => `
+        <div class="file-item">
+          <span class="file-name">🗂️ ${r.name}</span>
+          <button type="button" class="file-remove" onclick="removeFormResource(${i})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.removeFormResource = function(index) {
+      tempResources.splice(index, 1);
+      renderFormResourceList();
+    };
+
+    function getFilteredResources() {
+      const term = resourceSearchTerm.trim().toLowerCase();
+      return resourceLibrary.filter(r => {
+        if (term && !r.name.toLowerCase().includes(term)) return false;
+        if (resourceCategory && resourceCategory !== '全部' && r.category !== resourceCategory) return false;
+        return true;
+      });
+    }
+
+    function renderResourceSidebar() {
+      resourceSidebar.innerHTML = RESOURCE_CATEGORIES.map(cat => `
+        <div class="resource-category ${cat === resourceCategory ? 'active' : ''}" data-category="${cat}">${cat}</div>
+      `).join('');
+
+      resourceSidebar.querySelectorAll('.resource-category').forEach(el => {
+        el.addEventListener('click', () => {
+          resourceCategory = el.dataset.category;
+          resourcePage = 1;
+          renderResourceSidebar();
+          renderResourceGrid();
+          renderResourcePagination();
+        });
+      });
+    }
+
+    function renderResourceGrid() {
+      const filtered = getFilteredResources();
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / RESOURCES_PER_PAGE));
+      if (resourcePage > totalPages) resourcePage = totalPages;
+      const start = (resourcePage - 1) * RESOURCES_PER_PAGE;
+      const pageItems = filtered.slice(start, start + RESOURCES_PER_PAGE);
+
+      resourcePageInfo.textContent = total > 0 ? `共 ${total} 个资源，第 ${resourcePage}/${totalPages} 页` : '共 0 个资源';
+
+      if (pageItems.length === 0) {
+        resourceGrid.innerHTML = '<div class="resource-empty">未找到匹配资源</div>';
+        return;
+      }
+
+      resourceGrid.innerHTML = pageItems.map(r => {
+        const checked = pendingResources.some(pr => pr.id === r.id);
+        return `
+          <div class="resource-card ${checked ? 'selected' : ''}" data-id="${r.id}">
+            <div class="check">✓</div>
+            <img class="resource-cover" src="${r.cover}" alt="${r.name}" loading="lazy">
+            <div class="resource-name-wrap" title="${r.name}">${r.name}</div>
+          </div>
+        `;
+      }).join('');
+
+      resourceGrid.querySelectorAll('.resource-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = card.dataset.id;
+          const checked = !card.classList.contains('selected');
+          toggleResourceSelection(id, checked);
+          card.classList.toggle('selected', checked);
+        });
+      });
+    }
+
+    function renderResourcePagination() {
+      const filtered = getFilteredResources();
+      const totalPages = Math.ceil(filtered.length / RESOURCES_PER_PAGE);
+      if (totalPages <= 1) {
+        resourcePagination.innerHTML = '';
+        return;
+      }
+
+      let html = `
+        <button class="page-btn" id="resPagePrev" ${resourcePage === 1 ? 'disabled' : ''}><</button>
+      `;
+
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === resourcePage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      }
+
+      html += `<button class="page-btn" id="resPageNext" ${resourcePage === totalPages ? 'disabled' : ''}>></button>`;
+      resourcePagination.innerHTML = html;
+
+      document.getElementById('resPagePrev').addEventListener('click', () => {
+        if (resourcePage > 1) { resourcePage--; renderResourceGrid(); renderResourcePagination(); }
+      });
+      document.getElementById('resPageNext').addEventListener('click', () => {
+        if (resourcePage < totalPages) { resourcePage++; renderResourceGrid(); renderResourcePagination(); }
+      });
+      resourcePagination.querySelectorAll('.page-btn[data-page]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          resourcePage = Number(btn.dataset.page);
+          renderResourceGrid();
+          renderResourcePagination();
+        });
+      });
+    }
+
+    function toggleResourceSelection(id, checked) {
+      const res = resourceLibrary.find(r => r.id === id);
+      if (!res) return;
+      if (checked) {
+        if (!pendingResources.some(r => r.id === id)) pendingResources.push(res);
+      } else {
+        pendingResources = pendingResources.filter(r => r.id !== id);
+      }
+    }
+
+    function openResourceModal() {
+      pendingResources = tempResources.map(r => ({ ...r }));
+      resourceSearchTerm = '';
+      resourceSearch.value = '';
+      resourceCategory = '全部';
+      resourcePage = 1;
+      resourceModal.classList.add('show');
+      renderResourceSidebar();
+      renderResourceGrid();
+      renderResourcePagination();
+    }
+
+    function closeResourceModal() {
+      resourceModal.classList.remove('show');
+      pendingResources = [];
+      resourceSearchTerm = '';
+      resourceCategory = '全部';
+      resourcePage = 1;
+    }
+
+    function confirmResourceSelection() {
+      tempResources = pendingResources.map(r => ({ ...r }));
+      renderFormResourceList();
+      closeResourceModal();
+    }
+
+    document.getElementById('btnSelectResource').addEventListener('click', openResourceModal);
+    document.getElementById('resourceClose').addEventListener('click', closeResourceModal);
+    document.getElementById('resourceCancel').addEventListener('click', closeResourceModal);
+    document.getElementById('resourceConfirm').addEventListener('click', confirmResourceSelection);
+
+    resourceModal.addEventListener('click', (e) => {
+      if (e.target === resourceModal) closeResourceModal();
+    });
+
+    resourceSearch.addEventListener('input', () => {
+      resourceSearchTerm = resourceSearch.value;
+      resourcePage = 1;
+      renderResourceGrid();
+      renderResourcePagination();
+    });
+
+    // ================== 多选下拉：使用课件 ==================
+    const courseTrigger = document.getElementById('courseTrigger');
+    const courseDropdown = document.getElementById('courseDropdown');
+    const courseTags = document.getElementById('courseTags');
+    const courseOptions = document.querySelectorAll('#courseDropdown .multi-select-option');
+
+    function openCourseDropdown() {
+      courseDropdown.classList.add('show');
+      courseTrigger.classList.add('active');
+    }
+
+    function closeCourseDropdown() {
+      courseDropdown.classList.remove('show');
+      courseTrigger.classList.remove('active');
+    }
+
+    function toggleCourseDropdown() {
+      if (courseDropdown.classList.contains('show')) {
+        closeCourseDropdown();
+      } else {
+        openCourseDropdown();
+      }
+    }
+
+    function renderCourseTags() {
+      if (selectedCourses.length === 0) {
+        courseTags.innerHTML = '';
+        courseTrigger.querySelector('.placeholder').textContent = '请选择课件';
+        courseTrigger.querySelector('.placeholder').style.color = '#bfbfbf';
+        return;
+      }
+      courseTrigger.querySelector('.placeholder').textContent = `已选 ${selectedCourses.length} 项`;
+      courseTrigger.querySelector('.placeholder').style.color = '#262626';
+      courseTags.innerHTML = selectedCourses.map(c => `
+        <span class="multi-select-tag">
+          ${c}
+          <span class="remove" onclick="removeCourse('${c}')">✕</span>
+        </span>
+      `).join('');
+    }
+
+    function updateCourseCheckboxes() {
+      courseOptions.forEach(opt => {
+        const cb = opt.querySelector('input[type="checkbox"]');
+        const val = opt.dataset.value;
+        cb.checked = selectedCourses.includes(val);
+      });
+    }
+
+    window.removeCourse = function(value) {
+      selectedCourses = selectedCourses.filter(c => c !== value);
+      renderCourseTags();
+      updateCourseCheckboxes();
+    };
+
+    courseTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCourseDropdown();
+    });
+
+    courseOptions.forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cb = opt.querySelector('input[type="checkbox"]');
+        const val = opt.dataset.value;
+        cb.checked = !cb.checked;
+        if (cb.checked) {
+          if (!selectedCourses.includes(val)) selectedCourses.push(val);
+        } else {
+          selectedCourses = selectedCourses.filter(c => c !== val);
+        }
+        renderCourseTags();
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('courseMultiSelect').contains(e.target)) {
+        closeCourseDropdown();
+      }
+    });
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+      const files = Array.from(fileInput.files);
+      files.forEach(file => {
+        if (tempMaterials.length >= 10) {
+          showToast('最多上传 10 个文件');
+          return;
+        }
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+        tempMaterials.push({ name: file.name, size: sizeMB + 'MB', file: file });
+      });
+      renderFileList();
+      fileInput.value = '';
+    });
+
+    document.getElementById('btnCreate').addEventListener('click', () => {
+      editingId = null;
+      tempMaterials = [];
+      renderFileList();
+      tempResources = [];
+      renderFormResourceList();
+      clearErrors();
+      openFormModal('新增活动方案');
+    });
+
+    document.getElementById('formClose').addEventListener('click', closeFormModal);
+    document.getElementById('formCancel').addEventListener('click', closeFormModal);
+    formModal.addEventListener('click', (e) => {
+      if (e.target === formModal) closeFormModal();
+    });
+
+    window.showEdit = function(id) {
+      const a = activities.find(x => x.id === id);
+      if (!a) return;
+      editingId = id;
+      tempMaterials = a.materials.map(m => ({ ...m }));
+      renderFileList();
+      tempResources = a.resources ? a.resources.map(r => ({ ...r })) : [];
+      renderFormResourceList();
+      clearErrors();
+
+      document.getElementById('formName').value = a.name;
+      document.getElementById('formType').value = a.type;
+      document.getElementById('formCategory').value = a.category;
+      document.getElementById('formGrade').value = a.grade;
+      document.getElementById('formDescription').value = a.description || '';
+      document.getElementById('formObjectives').value = a.objectives || '';
+
+      document.getElementById('formOwnership').value = a.ownership || '';
+
+      selectedCourses = a.courses ? [...a.courses] : [];
+      renderCourseTags();
+      updateCourseCheckboxes();
+
+      openFormModal('编辑活动方案');
+    };
+
+    activityForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      clearErrors();
+
+      const name = document.getElementById('formName').value.trim();
+      const type = document.getElementById('formType').value;
+      const category = document.getElementById('formCategory').value;
+      const grade = document.getElementById('formGrade').value;
+      const ownership = document.getElementById('formOwnership').value;
+      const description = document.getElementById('formDescription').value.trim();
+      const objectives = document.getElementById('formObjectives').value.trim();
+
+      let valid = true;
+      if (!name) { showFieldError('formName', true); valid = false; }
+      if (!type) { showFieldError('formType', true); valid = false; }
+      if (!category) { showFieldError('formCategory', true); valid = false; }
+      if (!grade) { showFieldError('formGrade', true); valid = false; }
+      if (!ownership) { showFieldError('formOwnership', true); valid = false; }
+      if (!valid) return;
+
+      const color = domainColors[type] || '#1890ff';
+
+      const courses = [...selectedCourses];
+      const resources = tempResources.map(r => ({ id: r.id, name: r.name, category: r.category, size: r.size, cover: r.cover }));
+
+      if (editingId) {
+        const idx = activities.findIndex(a => a.id === editingId);
+        if (idx !== -1) {
+          activities[idx] = {
+            ...activities[idx],
+            name, type, category, grade, ownership, description, objectives,
+            materials: tempMaterials.map(m => ({ name: m.name, size: m.size })),
+            courses,
+            resources,
+            color
+          };
+          showToast('活动方案已更新');
+        }
+      } else {
+        const newId = 'pa_' + Date.now();
+        activities.unshift({
+          id: newId,
+          name, type, category, grade, ownership, description, objectives,
+          creator: '当前用户',
+          createTime: todayStr(),
+          materials: tempMaterials.map(m => ({ name: m.name, size: m.size })),
+          courses,
+          resources,
+          color
+        });
+        showToast('活动方案已创建');
+      }
+
+      closeFormModal();
+      renderTable();
+    });
+
+    // ================== 详情弹窗 ==================
+    const detailModal = document.getElementById('detailModal');
+    const detailBody = document.getElementById('detailBody');
+
+    window.showDetail = function(id) {
+      const a = activities.find(x => x.id === id);
+      currentDetailActivity = a;
+      if (!a) return;
+
+      const materialsHtml = a.materials && a.materials.length > 0
+        ? a.materials.map(m => `<div class="detail-file-item"><span class="detail-file-icon">📄</span>${m.name}</div>`).join('')
+        : '<span style="color:#8c8c8c">暂无资料</span>';
+
+      const resourcesHtml = a.resources && a.resources.length > 0
+        ? a.resources.map(r => `<div class="detail-file-item"><span class="detail-file-icon">🗂️</span>${r.name}</div>`).join('')
+        : '<span style="color:#8c8c8c">暂无资源</span>';
+
+      detailBody.innerHTML = `
+        <div class="detail-row">
+          <div class="detail-label">活动名称</div>
+          <div class="detail-value" style="font-weight:600;font-size:15px;">${a.name}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">活动领域</div>
+          <div class="detail-value"><span class="tag ${typeColorMap[a.type] || ''}">${a.type}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">活动类型</div>
+          <div class="detail-value"><span class="tag ${categoryColorMap[a.category] || ''}">${a.category}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">年级</div>
+          <div class="detail-value"><span class="tag tag-grade">${a.grade}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">归属</div>
+          <div class="detail-value">${a.ownership || '-'}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">创建人</div>
+          <div class="detail-value">${a.creator}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">创建时间</div>
+          <div class="detail-value">${a.createTime}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">活动简介</div>
+          <div class="detail-value">
+            <div class="detail-multiline">${a.description || '—'}</div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">教学目标</div>
+          <div class="detail-value">
+            <div class="detail-multiline">${a.objectives || '—'}</div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">课程资料</div>
+          <div class="detail-value detail-files">${materialsHtml}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">使用课件</div>
+          <div class="detail-value">
+            ${a.courses && a.courses.length > 0 ? a.courses.map(c => `<span class="tag" style="background:#e6f7ff;color:#1890ff;border:1px solid #bae7ff;margin-right:4px;">${c}</span>`).join('') : '<span style="color:#8c8c8c">—</span>'}
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">课程资源</div>
+          <div class="detail-value detail-files">${resourcesHtml}</div>
+        </div>
+      `;
+
+      detailModal.classList.add('show');
+    };
+
+    document.getElementById('detailClose').addEventListener('click', () => detailModal.classList.remove('show'));
+    document.getElementById('detailCloseBtn').addEventListener('click', () => detailModal.classList.remove('show'));
+    detailModal.addEventListener('click', (e) => {
+      if (e.target === detailModal) detailModal.classList.remove('show');
+    });
+
+    // ================== 删除确认 ==================
+    const deleteModal = document.getElementById('deleteModal');
+
+    window.showDelete = function(id) {
+      pendingDeleteId = id;
+      const a = activities.find(x => x.id === id);
+      document.getElementById('deleteBody').textContent = `确定要删除「${a ? a.name : '该活动方案'}」吗？删除后不可恢复。`;
+      deleteModal.classList.add('show');
+    };
+
+    document.getElementById('deleteCancel').addEventListener('click', () => {
+      deleteModal.classList.remove('show');
+      pendingDeleteId = null;
+    });
+
+    document.getElementById('deleteConfirm').addEventListener('click', () => {
+      if (pendingDeleteId) {
+        activities = activities.filter(a => a.id !== pendingDeleteId);
+        showToast('活动方案已删除');
+        renderTable();
+      }
+      deleteModal.classList.remove('show');
+      pendingDeleteId = null;
+    });
+
+    deleteModal.addEventListener('click', (e) => {
+      if (e.target === deleteModal) {
+        deleteModal.classList.remove('show');
+        pendingDeleteId = null;
+      }
+    });
+
+
+    // ================== 排课功能 ==================
+    const TIME_SLOTS = [
+      { label: '08:00-08:30', period: 'morning' },
+      { label: '08:30-09:00', period: 'morning' },
+      { label: '09:00-09:30', period: 'morning' },
+      { label: '09:30-10:00', period: 'morning' },
+      { label: '10:00-10:30', period: 'morning' },
+      { label: '10:30-11:00', period: 'morning' },
+      { label: '11:00-11:30', period: 'morning' },
+      { label: '11:30-12:00', period: 'morning' },
+      { label: '14:00-14:30', period: 'afternoon' },
+      { label: '14:30-15:00', period: 'afternoon' },
+      { label: '15:00-15:30', period: 'afternoon' },
+      { label: '15:30-16:00', period: 'afternoon' },
+      { label: '16:00-16:30', period: 'afternoon' },
+      { label: '16:30-17:00', period: 'afternoon' },
+    ];
+
+    let schedule = loadSchedule();
+    let currentScheduleMonth = new Date();
+    currentScheduleMonth.setDate(1);
+    let selectedScheduleDate = null;
+    let selectedTimeSlots = [];
+    let schedulingActivity = null;
+
+    function loadSchedule() {
+      try {
+        const data = localStorage.getItem('geren_schedule');
+        return data ? JSON.parse(data) : [];
+      } catch(e) { return []; }
+    }
+
+    function saveSchedule() {
+      localStorage.setItem('geren_schedule', JSON.stringify(schedule));
+    }
+
+    function getScheduleCountForDate(dateStr) {
+      return schedule.filter(s => s.date === dateStr).length;
+    }
+
+    function getSlotsForDate(dateStr) {
+      return schedule.filter(s => s.date === dateStr);
+    }
+
+    function renderCalendar() {
+      const year = currentScheduleMonth.getFullYear();
+      const month = currentScheduleMonth.getMonth();
+      document.getElementById('calMonth').textContent = year + '年' + (month + 1) + '月';
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+      const today = todayStr();
+
+      let html = '';
+
+      // Previous month days
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        const d = new Date(year, month - 1, day);
+        const dStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const count = getScheduleCountForDate(dStr);
+        html += '<div class="calendar-day other-month" data-date="' + dStr + '"><span>' + day + '</span>';
+        if (count > 0) html += '<span class="day-count">' + count + '</span>';
+        html += '</div>';
+      }
+
+      // Current month days
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dd = new Date(year, month, d);
+        const dStr = dd.getFullYear() + '-' + String(dd.getMonth() + 1).padStart(2, '0') + '-' + String(dd.getDate()).padStart(2, '0');
+        const count = getScheduleCountForDate(dStr);
+        const isToday = dStr === today;
+        const isSelected = dStr === selectedScheduleDate;
+        let cls = 'calendar-day';
+        if (isToday) cls += ' today';
+        if (isSelected) cls += ' selected';
+        html += '<div class="' + cls + '" data-date="' + dStr + '"><span>' + d + '</span>';
+        if (count > 0) html += '<span class="day-count">' + count + '</span>';
+        html += '</div>';
+      }
+
+      // Next month days
+      const totalCells = firstDay + daysInMonth;
+      const remaining = (7 - (totalCells % 7)) % 7;
+      for (let d = 1; d <= remaining; d++) {
+        const dd = new Date(year, month + 1, d);
+        const dStr = dd.getFullYear() + '-' + String(dd.getMonth() + 1).padStart(2, '0') + '-' + String(dd.getDate()).padStart(2, '0');
+        const count = getScheduleCountForDate(dStr);
+        html += '<div class="calendar-day other-month" data-date="' + dStr + '"><span>' + d + '</span>';
+        if (count > 0) html += '<span class="day-count">' + count + '</span>';
+        html += '</div>';
+      }
+
+      document.getElementById('calGrid').innerHTML = html;
+
+      document.querySelectorAll('.calendar-day:not(.other-month)').forEach(el => {
+        el.addEventListener('click', () => {
+          selectedScheduleDate = el.dataset.date;
+          selectedTimeSlots = [];
+          renderCalendar();
+          renderTimeSlots();
+        });
+      });
+    }
+
+    function renderTimeSlots() {
+      const right = document.getElementById('scheduleRight');
+
+      if (!selectedScheduleDate) {
+        right.innerHTML = '<div class="schedule-no-date">请选择日期</div>';
+        return;
+      }
+
+      const slotsForDate = getSlotsForDate(selectedScheduleDate);
+      let html = '<div style="font-size:14px;font-weight:600;margin-bottom:8px;">' + selectedScheduleDate + ' 的时段</div>';
+
+      const morningSlots = TIME_SLOTS.filter(s => s.period === 'morning');
+      const afternoonSlots = TIME_SLOTS.filter(s => s.period === 'afternoon');
+
+      html += renderSlotGroup('上午', morningSlots, slotsForDate);
+      html += renderSlotGroup('下午', afternoonSlots, slotsForDate);
+      right.innerHTML = html;
+
+      document.querySelectorAll('.slot-item:not(.occupied)').forEach(el => {
+        el.addEventListener('click', () => {
+          const slot = el.dataset.slot;
+          el.classList.toggle('selected');
+          if (el.classList.contains('selected')) {
+            if (!selectedTimeSlots.includes(slot)) selectedTimeSlots.push(slot);
+          } else {
+            selectedTimeSlots = selectedTimeSlots.filter(s => s !== slot);
+          }
+        });
+      });
+    }
+
+    function renderSlotGroup(label, slots, slotsForDate) {
+      let html = '<div class="slots-section"><div class="slots-section-label">' + label + '</div><div class="slots-grid">';
+
+      slots.forEach(slot => {
+        const existing = slotsForDate.find(s => s.slot === slot.label);
+        const isOccupied = !!existing;
+        const isSelected = selectedTimeSlots.includes(slot.label);
+        let cls = 'slot-item';
+        if (isOccupied) cls += ' occupied';
+        if (isSelected) cls += ' selected';
+
+        let content = '<div class="' + cls + '" data-slot="' + slot.label + '">' + slot.label;
+        if (existing) {
+          content += '<span class="slot-activity-name">' + existing.activityName + '</span>';
+        }
+        content += '</div>';
+        html += content;
+      });
+
+      html += '</div></div>';
+      return html;
+    }
+
+    document.getElementById('joinPlanBtn').addEventListener('click', function() {
+      if (currentDetailActivity) {
+        schedulingActivity = currentDetailActivity;
+        currentScheduleMonth = new Date();
+        currentScheduleMonth.setDate(1);
+        selectedScheduleDate = null;
+        selectedTimeSlots = [];
+        document.getElementById('detailModal').classList.remove('show');
+        document.getElementById('scheduleTitle').textContent = '加入计划';
+        document.getElementById('scheduleActivityName').textContent = '当前活动：' + currentDetailActivity.name;
+        document.getElementById('scheduleModal').classList.add('show');
+        renderCalendar();
+        renderTimeSlots();
+      }
+    });
+
+    document.getElementById('scheduleClose').addEventListener('click', function() {
+      document.getElementById('scheduleModal').classList.remove('show');
+      document.getElementById('detailModal').classList.add('show');
+    });
+    document.getElementById('scheduleCancel').addEventListener('click', function() {
+      document.getElementById('scheduleModal').classList.remove('show');
+      document.getElementById('detailModal').classList.add('show');
+    });
+    document.getElementById('calPrev').addEventListener('click', function() {
+      currentScheduleMonth.setMonth(currentScheduleMonth.getMonth() - 1);
+      renderCalendar();
+      selectedScheduleDate = null;
+      selectedTimeSlots = [];
+      renderTimeSlots();
+    });
+    document.getElementById('calNext').addEventListener('click', function() {
+      currentScheduleMonth.setMonth(currentScheduleMonth.getMonth() + 1);
+      renderCalendar();
+      selectedScheduleDate = null;
+      selectedTimeSlots = [];
+      renderTimeSlots();
+    });
+
+    document.getElementById('scheduleSave').addEventListener('click', function() {
+      if (!selectedScheduleDate) {
+        showToast('请选择日期');
+        return;
+      }
+      if (selectedTimeSlots.length === 0) {
+        showToast('请选择时段');
+        return;
+      }
+
+      selectedTimeSlots.forEach(slot => {
+        schedule.push({
+          activityId: schedulingActivity.id,
+          activityName: schedulingActivity.name,
+          date: selectedScheduleDate,
+          slot: slot
+        });
+      });
+
+      saveSchedule();
+      showToast('已为「' + schedulingActivity.name + '」排课 ' + selectedTimeSlots.length + ' 个时段');
+      document.getElementById('scheduleModal').classList.remove('show');
+      document.getElementById('detailModal').classList.add('show');
+    });
+
+    document.getElementById('scheduleModal').addEventListener('click', function(e) {
+      if (e.target === e.currentTarget) {
+        document.getElementById('scheduleModal').classList.remove('show');
+        document.getElementById('detailModal').classList.add('show');
+      }
+    });
+
+    // ================== 初始化 ==================
+    renderTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>应用广场 - 幼儿园排课系统</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f7fa;
+      color: #262626;
+      min-height: 100vh;
+    }
+
+    /* 顶部标题栏 */
+    .header {
+      background: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-title { font-size: 20px; font-weight: 600; }
+
+    /* 主体 */
+    .main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* 日期导航 */
+    .date-nav {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+
+    .date-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .date-icon { font-size: 22px; }
+
+    .date-text {
+      font-size: 22px;
+      font-weight: 600;
+      color: #262626;
+    }
+
+    .date-weekday {
+      font-size: 16px;
+      color: #8c8c8c;
+    }
+
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 6px 14px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .btn-primary {
+      background: #1890ff;
+      color: #fff;
+      border-color: #1890ff;
+    }
+
+    .btn-primary:hover {
+      background: #40a9ff;
+      border-color: #40a9ff;
+      color: #fff;
+    }
+
+    .date-input {
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      width: 140px;
+    }
+
+    .date-input:focus { border-color: #1890ff; }
+
+    /* 时间轴 */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e8e8e8;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .timeline-item:last-child { margin-bottom: 0; }
+
+    .timeline-dot {
+      position: absolute;
+      left: -20px;
+      top: 18px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #d9d9d9;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px #e8e8e8;
+      z-index: 1;
+    }
+
+    .timeline-item.has-activity .timeline-dot {
+      background: #1890ff;
+      box-shadow: 0 0 0 2px #bae7ff;
+    }
+
+    .timeline-time {
+      font-size: 13px;
+      color: #8c8c8c;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    /* 活动卡片 */
+    .activity-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .activity-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .activity-card-inner {
+      display: flex;
+      padding: 16px 20px;
+      gap: 16px;
+    }
+
+    .activity-bar {
+      width: 4px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      align-self: stretch;
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #262626;
+      margin-bottom: 8px;
+    }
+
+    .activity-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .tag-type-health { background: #f6ffed; color: #52c41a; }
+    .tag-type-language { background: #e6fffb; color: #13c2c2; }
+    .tag-type-social { background: #fff0f6; color: #eb2f96; }
+    .tag-type-science { background: #fff2e8; color: #fa541c; }
+    .tag-type-art { background: #f9f0ff; color: #722ed1; }
+
+    .tag-category-life { background: #fff7e6; color: #fa8c16; }
+    .tag-category-sport { background: #f0f5ff; color: #2f54eb; }
+    .tag-category-game { background: #e6f7ff; color: #1890ff; }
+    .tag-category-study { background: #f6ffed; color: #52c41a; }
+
+    .tag-grade { background: #f5f5f5; color: #595959; }
+
+    .activity-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .activity-teacher {
+      font-size: 13px;
+      color: #595959;
+    }
+
+    .activity-teacher strong { color: #262626; }
+
+    .btn-open {
+      padding: 5px 12px;
+      border: 1px solid #1890ff;
+      background: #fff;
+      color: #1890ff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .btn-open:hover {
+      background: #1890ff;
+      color: #fff;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      background: #fff;
+      border-radius: 12px;
+      padding: 60px 20px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+    .empty-title { font-size: 16px; color: #595959; margin-bottom: 6px; }
+
+    .empty-desc { font-size: 14px; color: #8c8c8c; }
+
+    /* 课件浮层 */
+    .popover-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+    }
+
+    .popover-overlay.show { display: block; }
+
+    .popover-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .popover {
+      position: absolute;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      padding: 16px;
+      min-width: 240px;
+      max-width: 320px;
+    }
+
+    .popover-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .popover-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #262626;
+    }
+
+    .popover-close {
+      width: 22px;
+      height: 22px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      color: #8c8c8c;
+      line-height: 22px;
+      text-align: center;
+    }
+
+    .popover-close:hover { color: #262626; }
+
+    .popover-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .popover-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #262626;
+      transition: background 0.15s;
+    }
+
+    .popover-item:hover { background: #f0f7ff; }
+
+    .popover-item-icon { font-size: 14px; flex-shrink: 0; }
+
+    .popover-empty {
+      font-size: 13px;
+      color: #8c8c8c;
+      padding: 8px 0;
+      text-align: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #262626;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      z-index: 3000;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">应用广场</div>
+  </div>
+
+  <div class="main">
+    <!-- 日期导航 -->
+    <div class="date-nav">
+      <div class="date-header">
+        <span class="date-icon">📅</span>
+        <span class="date-text" id="dateText">--</span>
+        <span class="date-weekday" id="dateWeekday">--</span>
+      </div>
+      <div class="date-controls">
+        <button class="btn" id="btnPrev">◀ 昨天</button>
+        <button class="btn btn-primary" id="btnToday">今天</button>
+        <button class="btn" id="btnNext">明天 ▶</button>
+        <input type="date" class="date-input" id="dateInput">
+      </div>
+    </div>
+
+    <!-- 时间轴 -->
+    <div id="contentArea">
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+
+  <!-- 课件浮层 -->
+  <div class="popover-overlay" id="popoverOverlay">
+    <div class="popover-backdrop" id="popoverBackdrop"></div>
+    <div class="popover" id="popover">
+      <div class="popover-header">
+        <div class="popover-title" id="popoverTitle">课件</div>
+        <button class="popover-close" id="popoverClose">✕</button>
+      </div>
+      <div class="popover-list" id="popoverList"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ================== 数据 ==================
+    const timeSlots = ['08:00-09:00', '09:00-10:00', '10:00-11:00', '14:00-15:00'];
+
+    const activities = [
+      {
+        id: 'a1', name: '创意美术', type: '艺术', category: '游戏', grade: '小班',
+        color: '#FF9F43', teacher: '王老师',
+        description: '培养幼儿创造力与色彩搭配能力',
+        materials: [
+          { name: '创意美术课件.pdf' },
+          { name: '色彩搭配教学视频.mp4' }
+        ],
+        courses: ['ai小画家']
+      },
+      {
+        id: 'a2', name: '体能训练', type: '健康', category: '运动', grade: '中班',
+        color: '#52C41A', teacher: '李老师',
+        description: '增强幼儿体质与肢体协调能力',
+        materials: [
+          { name: '体能训练教案.pdf' }
+        ],
+        courses: ['创想无限', 'ai园宠']
+      },
+      {
+        id: 'a3', name: '音乐律动', type: '艺术', category: '游戏', grade: '小班',
+        color: '#722ED1', teacher: '张老师',
+        description: '通过音乐与律动培养节奏感',
+        materials: [
+          { name: '音乐律动曲谱.pdf' },
+          { name: '示范音频.mp3' }
+        ],
+        courses: []
+      },
+      {
+        id: 'a4', name: '绘本阅读', type: '语言', category: '学习', grade: '小班',
+        color: '#13C2C2', teacher: '陈老师',
+        description: '通过绘本故事培养语言理解与表达能力',
+        materials: [
+          { name: '绘本电子版.pdf' }
+        ],
+        courses: ['故事绘']
+      },
+      {
+        id: 'a5', name: '科学探索', type: '科学', category: '学习', grade: '中班',
+        color: '#FA541C', teacher: '赵老师',
+        description: '激发幼儿对自然现象的好奇心',
+        materials: [
+          { name: '科学探索实验手册.pdf' }
+        ],
+        courses: []
+      },
+      {
+        id: 'a6', name: '生活自理', type: '健康', category: '生活', grade: '小班',
+        color: '#EB2F96', teacher: '刘老师',
+        description: '培养幼儿基本生活自理能力',
+        materials: [
+          { name: '生活自理指导视频.mp4' }
+        ],
+        courses: []
+      },
+      {
+        id: 'a7', name: '社交游戏', type: '社会', category: '游戏', grade: '小班',
+        color: '#1890FF', teacher: '周老师',
+        description: '培养幼儿人际交往与社会适应能力',
+        materials: [
+          { name: '社交游戏方案.pdf' }
+        ],
+        courses: ['创想无限']
+      },
+      {
+        id: 'a8', name: '手工折纸', type: '艺术', category: '游戏', grade: '中班',
+        color: '#FA8C16', teacher: '吴老师',
+        description: '锻炼幼儿手部精细动作与空间想象能力',
+        materials: [
+          { name: '折纸步骤图.pdf' },
+          { name: '折纸示范视频.mp4' }
+        ],
+        courses: ['ai小画家']
+      }
+    ];
+
+    // 模拟课表数据：key = "date|timeSlot"
+    const scheduleData = {};
+
+    function initDemoSchedule() {
+      const today = formatDate(new Date());
+      const tomorrow = formatDate(addDays(new Date(), 1));
+
+      scheduleData[`${today}|08:00-09:00`] = { activity: activities[0], assignedPerson: '王老师' };
+      scheduleData[`${today}|09:00-10:00`] = { activity: activities[1], assignedPerson: '李老师' };
+      scheduleData[`${today}|10:00-11:00`] = { activity: activities[2], assignedPerson: '' };
+      scheduleData[`${today}|14:00-15:00`] = { activity: activities[3], assignedPerson: '陈老师' };
+
+      scheduleData[`${tomorrow}|08:00-09:00`] = { activity: activities[4], assignedPerson: '赵老师' };
+      scheduleData[`${tomorrow}|09:00-10:00`] = { activity: activities[5], assignedPerson: '' };
+    }
+
+    // ================== 工具函数 ==================
+    function formatDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function parseDate(str) {
+      if (!str) return null;
+      const d = new Date(str);
+      if (isNaN(d.getTime())) return null;
+      return d;
+    }
+
+    function addDays(d, days) {
+      const nd = new Date(d);
+      nd.setDate(nd.getDate() + days);
+      return nd;
+    }
+
+    function getWeekdayName(dateStr) {
+      const d = new Date(dateStr);
+      const names = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      return names[d.getDay()];
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // ================== 颜色映射 ==================
+    const typeColorClass = {
+      '健康': 'tag-type-health',
+      '语言': 'tag-type-language',
+      '社会': 'tag-type-social',
+      '科学': 'tag-type-science',
+      '艺术': 'tag-type-art'
+    };
+
+    const categoryColorClass = {
+      '生活': 'tag-category-life',
+      '运动': 'tag-category-sport',
+      '游戏': 'tag-category-game',
+      '学习': 'tag-category-study'
+    };
+
+    // ================== 状态 ==================
+    let currentDate = new Date();
+
+    // ================== 渲染 ==================
+    function render() {
+      const dateStr = formatDate(currentDate);
+      const weekday = getWeekdayName(dateStr);
+
+      document.getElementById('dateText').textContent = dateStr;
+      document.getElementById('dateWeekday').textContent = weekday;
+      document.getElementById('dateInput').value = dateStr;
+
+      const timeline = document.getElementById('timeline');
+      const contentArea = document.getElementById('contentArea');
+
+      let hasAny = false;
+      let html = '';
+
+      timeSlots.forEach(slot => {
+        const key = `${dateStr}|${slot}`;
+        const item = scheduleData[key];
+
+        if (item) {
+          hasAny = true;
+          const a = item.activity;
+          const typeTag = `<span class="tag ${typeColorClass[a.type] || ''}">${a.type}</span>`;
+          const catTag = `<span class="tag ${categoryColorClass[a.category] || ''}">${a.category}</span>`;
+          const gradeTag = `<span class="tag tag-grade">${a.grade}</span>`;
+          const teacherText = item.assignedPerson ? `<strong>${item.assignedPerson}</strong>` : '<span style="color:#bfbfbf">未指定</span>';
+
+          html += `
+            <div class="timeline-item has-activity">
+              <div class="timeline-dot" style="background:${a.color};box-shadow:0 0 0 2px ${a.color}33;"></div>
+              <div class="timeline-time">${slot}</div>
+              <div class="activity-card">
+                <div class="activity-card-inner">
+                  <div class="activity-bar" style="background:${a.color};"></div>
+                  <div class="activity-content">
+                    <div class="activity-name">${a.name}</div>
+                    <div class="activity-tags">
+                      ${typeTag}
+                      ${catTag}
+                      ${gradeTag}
+                    </div>
+                    <div class="activity-meta">
+                      <div class="activity-teacher">负责人：${teacherText}</div>
+                      <button class="btn-open" onclick="openCourseware('${a.id}', event)">
+                        📂 打开课件
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-time">${slot}</div>
+              <div class="activity-card" style="opacity:0.6;">
+                <div class="activity-card-inner">
+                  <div class="activity-bar" style="background:#d9d9d9;"></div>
+                  <div class="activity-content">
+                    <div class="activity-name" style="color:#8c8c8c;font-weight:400;">暂无活动</div>
+                    <div class="activity-tags"></div>
+                    <div class="activity-meta">
+                      <div class="activity-teacher"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      if (!hasAny) {
+        contentArea.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">今日暂无课程安排</div>
+            <div class="empty-desc">去排课系统添加今日活动吧</div>
+          </div>
+        `;
+      } else {
+        contentArea.innerHTML = `<div class="timeline" id="timeline">${html}</div>`;
+      }
+    }
+
+    // ================== 课件浮层 ==================
+    const popoverOverlay = document.getElementById('popoverOverlay');
+    const popover = document.getElementById('popover');
+    const popoverTitle = document.getElementById('popoverTitle');
+    const popoverList = document.getElementById('popoverList');
+
+    window.openCourseware = function(activityId, event) {
+      const a = activities.find(x => x.id === activityId);
+      if (!a) return;
+
+      popoverTitle.textContent = `${a.name} - 课件`;
+
+      let itemsHtml = '';
+
+      if (a.materials && a.materials.length > 0) {
+        a.materials.forEach(m => {
+          itemsHtml += `
+            <div class="popover-item" onclick="handleOpen('${m.name}')">
+              <span class="popover-item-icon">📄</span>
+              <span>${m.name}</span>
+            </div>
+          `;
+        });
+      }
+
+      if (a.courses && a.courses.length > 0) {
+        a.courses.forEach(c => {
+          itemsHtml += `
+            <div class="popover-item" onclick="handleOpen('${c}')">
+              <span class="popover-item-icon">🎓</span>
+              <span>${c}</span>
+            </div>
+          `;
+        });
+      }
+
+      if (!itemsHtml) {
+        itemsHtml = '<div class="popover-empty">暂无课件</div>';
+      }
+
+      popoverList.innerHTML = itemsHtml;
+
+      // 定位
+      const btnRect = event.currentTarget.getBoundingClientRect();
+      popover.style.left = btnRect.left + 'px';
+      popover.style.top = (btnRect.bottom + 8) + 'px';
+
+      // 边界检测
+      requestAnimationFrame(() => {
+        const popRect = popover.getBoundingClientRect();
+        if (popRect.right > window.innerWidth - 16) {
+          popover.style.left = (window.innerWidth - popRect.width - 16) + 'px';
+        }
+        if (popRect.bottom > window.innerHeight - 16) {
+          popover.style.top = (btnRect.top - popRect.height - 8) + 'px';
+        }
+      });
+
+      popoverOverlay.classList.add('show');
+    };
+
+    window.handleOpen = function(name) {
+      showToast(`正在打开：${name}`);
+      closePopover();
+    };
+
+    function closePopover() {
+      popoverOverlay.classList.remove('show');
+    }
+
+    document.getElementById('popoverBackdrop').addEventListener('click', closePopover);
+    document.getElementById('popoverClose').addEventListener('click', closePopover);
+
+    // ================== 日期导航 ==================
+    document.getElementById('btnPrev').addEventListener('click', () => {
+      currentDate = addDays(currentDate, -1);
+      render();
+    });
+
+    document.getElementById('btnNext').addEventListener('click', () => {
+      currentDate = addDays(currentDate, 1);
+      render();
+    });
+
+    document.getElementById('btnToday').addEventListener('click', () => {
+      currentDate = new Date();
+      render();
+    });
+
+    document.getElementById('dateInput').addEventListener('change', (e) => {
+      const d = parseDate(e.target.value);
+      if (d) {
+        currentDate = d;
+        render();
+      }
+    });
+
+    // ================== 初始化 ==================
+    initDemoSchedule();
+    render();
+  </script>
+</body>
+</html>
