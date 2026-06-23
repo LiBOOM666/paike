@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目导航中心</title>
+  <style>
+    :root {
+      --sidebar-width: 260px;
+      --sidebar-collapsed: 60px;
+      --header-height: 60px;
+      --primary: #4377fd;
+      --text: #272727;
+      --text-secondary: #606266;
+      --border: #f0f0f0;
+      --bg: #f5f7fa;
+      --sidebar-bg: #fff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .app { display: flex; min-height: 100%; }
+
+    /* 侧边栏 */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      box-shadow: 1px 0 4px rgba(0, 21, 41, 0.08);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.28s;
+      overflow: hidden;
+      z-index: 20;
+    }
+    .sidebar.collapsed { width: var(--sidebar-collapsed); }
+
+    .logo {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4377fd, #6a9aff);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 16px;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      margin-left: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      opacity: 1;
+      transition: opacity 0.2s;
+    }
+    .sidebar.collapsed .logo-text { opacity: 0; width: 0; margin: 0; }
+
+    .menu { flex: 1; overflow-y: auto; padding: 12px 10px; }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      color: #303133;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+      margin-bottom: 6px;
+    }
+    .menu-item:hover { background: rgba(67, 119, 253, 0.15); }
+    .menu-item.active { background: var(--primary); color: #fff; }
+    .menu-item svg {
+      width: 18px; height: 18px;
+      margin-right: 10px;
+      flex-shrink: 0;
+      fill: currentColor;
+    }
+    .menu-title {
+      flex: 1;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 0.2s;
+    }
+    .sidebar.collapsed .menu-title { opacity: 0; width: 0; }
+
+    /* 主区域 */
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: margin-left 0.28s;
+    }
+    .main.collapsed { margin-left: var(--sidebar-collapsed); }
+
+    .header {
+      height: var(--header-height);
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left { display: flex; align-items: center; }
+    .hamburger {
+      width: 22px; height: 22px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .breadcrumb {
+      margin-left: 16px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    .breadcrumb span + span::before {
+      content: '/';
+      margin: 0 8px;
+      color: #c0c4cc;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    .header-item { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .header-item:hover { color: var(--primary); }
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 首页缺省图 */
+    .placeholder {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: var(--bg);
+      padding: 40px;
+    }
+    .placeholder-img {
+      width: 320px;
+      max-width: 80%;
+      height: auto;
+      opacity: 0.9;
+    }
+    .placeholder h2 {
+      margin-top: 24px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .placeholder p {
+      margin-top: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* iframe 内容区 */
+    .page-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+      display: none;
+      background: #fff;
+    }
+    .page-frame.active { display: block; }
+    .placeholder.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- 左侧路由按钮 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <div class="logo-icon">导</div>
+        <span class="logo-text">项目导航中心</span>
+      </div>
+      <nav class="menu" id="menu"></nav>
+    </aside>
+
+    <!-- 主框架 -->
+    <div class="main" id="main">
+      <header class="header">
+        <div class="header-left">
+          <svg class="hamburger" id="hamburger" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm0 160h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm0 160h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM136 416h56c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm0 160h56c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm0 160h56c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8z" fill="currentColor"/>
+          </svg>
+          <div class="breadcrumb" id="breadcrumb"></div>
+        </div>
+        <div class="header-right">
+          <div class="header-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+            <span>任务中心</span>
+          </div>
+          <div class="header-item">
+            <div class="avatar">管</div>
+            <span>个人中心</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- 首页缺省图 -->
+        <div class="placeholder" id="placeholder">
+          <svg class="placeholder-img" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
+            <rect width="640" height="360" rx="12" fill="#e8eefc"/>
+            <circle cx="320" cy="150" r="60" fill="#4377fd" opacity="0.15"/>
+            <path d="M280 150 L320 110 L360 150 L340 150 L340 190 L300 190 L300 150 Z" fill="#4377fd"/>
+            <rect x="220" y="240" width="200" height="16" rx="8" fill="#c5d3f7"/>
+            <rect x="260" y="270" width="120" height="12" rx="6" fill="#d7e1f9"/>
+          </svg>
+          <h2 id="page-title">首页</h2>
+          <p>点击左侧路由按钮，打开对应的 HTML 页面</p>
+        </div>
+
+        <!-- 页面 iframe -->
+        <iframe class="page-frame" id="pageFrame" title="页面内容"></iframe>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // GitHub Pages 项目根地址（根据仓库 https://github.com/LiBOOM666/paike 推导）
+    const BASE_URL = 'https://liboom666.github.io/paike/';
+
+    // 每个 HTML 文件对应一个中文路由按钮（排除 guangchang.html）
+    const routes = [
+      { title: '首页', type: 'home' },
+      { title: '幼儿园排课系统', file: 'paike.html' },
+      { title: '学期计划管理', file: 'jihua_guanli.html' },
+      { title: '时段管理', file: 'shiduan.html' },
+      { title: '学期管理', file: 'xueqi.html' },
+      { title: '活动方案库', file: 'hdfa.html' }
+    ];
+
+    const icons = {
+      home: '<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
+      file: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>'
+    };
+
+    let activeIndex = 0;
+
+    function renderMenu() {
+      const menuEl = document.getElementById('menu');
+      menuEl.innerHTML = routes.map((route, index) => `
+        <div class="menu-item ${index === activeIndex ? 'active' : ''}" data-index="${index}">
+          ${route.type === 'home' ? icons.home : icons.file}
+          <span class="menu-title">${route.title}</span>
+        </div>
+      `).join('');
+
+      menuEl.querySelectorAll('.menu-item').forEach(el => {
+        el.addEventListener('click', function () {
+          activeIndex = Number(this.dataset.index);
+          renderMenu();
+          navigate(routes[activeIndex]);
+        });
+      });
+    }
+
+    function navigate(route) {
+      const placeholder = document.getElementById('placeholder');
+      const frame = document.getElementById('pageFrame');
+      const title = document.getElementById('page-title');
+      const breadcrumb = document.getElementById('breadcrumb');
+
+      if (route.type === 'home') {
+        placeholder.classList.remove('hidden');
+        frame.classList.remove('active');
+        frame.src = '';
+        title.textContent = '首页';
+        breadcrumb.innerHTML = '<span>首页</span>';
+      } else {
+        placeholder.classList.add('hidden');
+        frame.classList.add('active');
+        frame.src = BASE_URL + route.file;
+        title.textContent = route.title;
+        breadcrumb.innerHTML = `<span>首页</span><span>${route.title}</span>`;
+      }
+    }
+
+    // 侧边栏折叠
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+      document.getElementById('main').classList.toggle('collapsed');
+    });
+
+    // 初始化
+    renderMenu();
+    navigate(routes[0]);
+  </script>
+</body>
+</html>

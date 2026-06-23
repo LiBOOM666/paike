@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>园所资源库</title>
+  <style>
+    :root {
+      --primary: #4377fd;
+      --primary-hover: #3460d0;
+      --success: #52c41a;
+      --danger: #ff4d4f;
+      --text: #272727;
+      --text-secondary: #606266;
+      --border: #e4e7ed;
+      --bg: #f5f7fa;
+      --card-bg: #fff;
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* 页面标题 */
+    .page-header {
+      margin-bottom: 20px;
+    }
+    .page-header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-header p {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* 检索与操作区 */
+    .toolbar {
+      background: var(--card-bg);
+      padding: 18px 20px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    .toolbar-row + .toolbar-row {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .input {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fff;
+      width: 220px;
+    }
+    .input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 119, 253, 0.12);
+    }
+
+    .category-filter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+    .category-filter-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .category-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .category-tag {
+      height: 32px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 16px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+    }
+    .category-tag:hover { border-color: var(--primary); color: var(--primary); }
+    .category-tag.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .btn {
+      height: 36px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+    }
+    .btn-success:hover { opacity: 0.9; }
+
+    .toolbar-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    /* 表格卡片 */
+    .table-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      background: #fafafa;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    tbody tr:hover { background: #f8faff; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    .tag-3d { background: #e6f7ff; color: #096dd9; }
+    .tag-video { background: #fff2e8; color: #d46b08; }
+    .tag-picture-book { background: #f6ffed; color: #389e0d; }
+    .tag-image { background: #fff0f6; color: #c41d7f; }
+    .tag-music { background: #f9f0ff; color: #722ed1; }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .action-link {
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+    .action-link:hover { opacity: 0.8; text-decoration: underline; }
+    .action-link.delete { color: var(--danger); }
+    .action-divider {
+      color: #dcdfe6;
+      font-size: 12px;
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      color: #c0c4cc;
+      margin-bottom: 12px;
+    }
+
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .pagination button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .pagination button:hover { border-color: var(--primary); color: var(--primary); }
+    .pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* 弹窗 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      width: 520px;
+      max-width: 92vw;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 600; }
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--text-secondary);
+      border-radius: 4px;
+    }
+    .modal-close:hover { background: #f2f3f5; color: var(--text); }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .form-item {
+      margin-bottom: 16px;
+    }
+    .form-item label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .form-item label .required { color: #ff4d4f; margin-right: 4px; }
+    .form-item .input {
+      width: 100%;
+    }
+
+    .category-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .category-option {
+      height: 36px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 18px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .category-option:hover { border-color: var(--primary); color: var(--primary); }
+    .category-option.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .file-upload {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .file-upload:hover {
+      border-color: var(--primary);
+      background: rgba(67, 119, 253, 0.02);
+    }
+    .file-upload input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .file-upload-icon {
+      width: 40px;
+      height: 40px;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .file-upload-text {
+      font-size: 14px;
+      color: var(--text);
+    }
+    .file-upload-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .file-selected {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .detail-row {
+      display: flex;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label {
+      width: 90px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .detail-value { flex: 1; color: var(--text); }
+
+    .modal-footer {
+      padding: 12px 20px 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="color: var(--primary);">
+          <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V6h5.17l2 2H20v10z"/>
+        </svg>
+        园所资源库
+      </h1>
+      <p>统一管理幼儿园教学素材，支持按素材名称与资源分类快速检索。</p>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-row">
+        <div class="category-filter">
+          <span class="category-filter-label">资源分类：</span>
+          <div class="category-tags" id="categoryFilter">
+            <button class="category-tag active" data-value="">全部</button>
+            <button class="category-tag" data-value="3D动画">3D动画</button>
+            <button class="category-tag" data-value="视频">视频</button>
+            <button class="category-tag" data-value="绘本">绘本</button>
+            <button class="category-tag" data-value="图片">图片</button>
+            <button class="category-tag" data-value="音乐">音乐</button>
+          </div>
+        </div>
+      </div>
+      <div class="toolbar-row">
+        <input type="text" id="searchName" class="input" placeholder="请输入素材名称">
+        <button class="btn btn-primary" onclick="handleSearch()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          检索
+        </button>
+        <button class="btn" onclick="handleReset()">重置</button>
+        <div class="toolbar-actions">
+          <button class="btn btn-success" onclick="openModal('add')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            新增资源
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>素材名称</th>
+            <th>资源分类</th>
+            <th>上传人</th>
+            <th>创建时间</th>
+            <th style="width: 150px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="resourceTableBody">
+          <!-- 数据由 JS 渲染 -->
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V6h5.17l2 2H20v10z"/></svg>
+        <div>暂无资源数据</div>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑弹窗 -->
+  <div class="modal-overlay" id="formModalOverlay" onclick="closeModalOnOverlay(event, 'formModalOverlay')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="formModalTitle">新增资源</h3>
+        <button class="modal-close" onclick="closeFormModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-item">
+          <label><span class="required">*</span>素材名称</label>
+          <input type="text" id="formName" class="input" placeholder="请输入素材名称">
+        </div>
+        <div class="form-item">
+          <label><span class="required">*</span>资源分类</label>
+          <div class="category-options" id="formCategoryOptions">
+            <button class="category-option" data-value="3D动画">3D动画</button>
+            <button class="category-option" data-value="视频">视频</button>
+            <button class="category-option" data-value="绘本">绘本</button>
+            <button class="category-option" data-value="图片">图片</button>
+            <button class="category-option" data-value="音乐">音乐</button>
+          </div>
+        </div>
+        <div class="form-item">
+          <label><span class="required">*</span>上传文件</label>
+          <div class="file-upload" id="fileUploadBox">
+            <input type="file" id="formFile" onchange="handleFileChange(event)">
+            <div id="fileUploadDefault">
+              <svg class="file-upload-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+              <div class="file-upload-text">点击上传或拖拽文件到此处</div>
+              <div class="file-upload-hint">支持 3D动画、视频、绘本、图片、音乐等格式</div>
+            </div>
+            <div id="fileUploadSelected" class="file-selected" style="display: none;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color: var(--success);"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+              <span id="fileSelectedName"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeFormModal()">取消</button>
+        <button class="btn btn-primary" onclick="handleSubmit()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 详情弹窗 -->
+  <div class="modal-overlay" id="detailModalOverlay" onclick="closeModalOnOverlay(event, 'detailModalOverlay')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>资源详情</h3>
+        <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="detailBody">
+        <!-- 由 JS 渲染 -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeDetailModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CATEGORIES = {
+      '3D动画': 'tag-3d',
+      '视频': 'tag-video',
+      '绘本': 'tag-picture-book',
+      '图片': 'tag-image',
+      '音乐': 'tag-music'
+    };
+
+    const CATEGORY_LIST = ['3D动画', '视频', '绘本', '图片', '音乐'];
+    const DEFAULT_CREATOR = '管理员';
+
+    let resources = [
+      { id: 1, name: '春天的花朵', category: '图片', creator: '王老师', createdAt: '2026-06-20 10:30', fileName: 'chuntian.jpg' },
+      { id: 2, name: '小动物找妈妈', category: '绘本', creator: '李老师', createdAt: '2026-06-19 14:20', fileName: 'xiaodongwu.pdf' },
+      { id: 3, name: '数字歌', category: '音乐', creator: '张老师', createdAt: '2026-06-18 09:15', fileName: 'shuzige.mp3' },
+      { id: 4, name: '太阳系漫游', category: '3D动画', creator: '陈老师', createdAt: '2026-06-17 16:45', fileName: 'taiyangxi.glb' },
+      { id: 5, name: '洗手七步法', category: '视频', creator: '赵老师', createdAt: '2026-06-16 11:00', fileName: 'xishou.mp4' },
+      { id: 6, name: '彩虹桥', category: '图片', creator: '王老师', createdAt: '2026-06-15 15:30', fileName: 'caihong.png' },
+      { id: 7, name: '晚安故事集', category: '绘本', creator: '刘老师', createdAt: '2026-06-14 08:50', fileName: 'wanan.pdf' }
+    ];
+
+    const pageSize = 5;
+    let currentPage = 1;
+    let filtered = [...resources];
+    let currentCategoryFilter = '';
+    let editingId = null;
+    let selectedFileName = '';
+
+    function formatDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const h = String(date.getHours()).padStart(2, '0');
+      const min = String(date.getMinutes()).padStart(2, '0');
+      return `${y}-${m}-${d} ${h}:${min}`;
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('resourceTableBody');
+      const empty = document.getElementById('emptyState');
+      const start = (currentPage - 1) * pageSize;
+      const pageData = filtered.slice(start, start + pageSize);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+      } else {
+        empty.style.display = 'none';
+        tbody.innerHTML = pageData.map(item => `
+          <tr>
+            <td>${escapeHtml(item.name)}</td>
+            <td><span class="tag ${CATEGORIES[item.category] || 'tag-3d'}">${escapeHtml(item.category)}</span></td>
+            <td>${escapeHtml(item.creator)}</td>
+            <td>${escapeHtml(item.createdAt)}</td>
+            <td>
+              <div class="actions">
+                <span class="action-link" onclick="openDetailModal(${item.id})">详情</span>
+                <span class="action-divider">|</span>
+                <span class="action-link" onclick="openModal('edit', ${item.id})">编辑</span>
+                <span class="action-divider">|</span>
+                <span class="action-link delete" onclick="handleDelete(${item.id})">删除</span>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+      const pager = document.getElementById('pagination');
+      let html = `
+        <button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
+      `;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+      }
+      html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
+      pager.innerHTML = html;
+    }
+
+    function goPage(page) {
+      const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    function handleSearch() {
+      const name = document.getElementById('searchName').value.trim();
+      filtered = resources.filter(item => {
+        const matchName = !name || item.name.includes(name);
+        const matchCategory = !currentCategoryFilter || item.category === currentCategoryFilter;
+        return matchName && matchCategory;
+      });
+      currentPage = 1;
+      renderTable();
+    }
+
+    function handleReset() {
+      document.getElementById('searchName').value = '';
+      setCategoryFilter('');
+      filtered = [...resources];
+      currentPage = 1;
+      renderTable();
+    }
+
+    function setCategoryFilter(value) {
+      currentCategoryFilter = value;
+      document.querySelectorAll('#categoryFilter .category-tag').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === value);
+      });
+    }
+
+    function initCategoryFilter() {
+      document.querySelectorAll('#categoryFilter .category-tag').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setCategoryFilter(btn.dataset.value);
+          handleSearch();
+        });
+      });
+    }
+
+    function initFormCategory() {
+      document.querySelectorAll('#formCategoryOptions .category-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#formCategoryOptions .category-option').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+    }
+
+    function getSelectedFormCategory() {
+      const active = document.querySelector('#formCategoryOptions .category-option.active');
+      return active ? active.dataset.value : '';
+    }
+
+    function setSelectedFormCategory(value) {
+      document.querySelectorAll('#formCategoryOptions .category-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === value);
+      });
+    }
+
+    function handleFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        selectedFileName = file.name;
+        document.getElementById('fileUploadDefault').style.display = 'none';
+        document.getElementById('fileUploadSelected').style.display = 'flex';
+        document.getElementById('fileSelectedName').textContent = file.name;
+      }
+    }
+
+    function resetFileUpload() {
+      selectedFileName = '';
+      document.getElementById('formFile').value = '';
+      document.getElementById('fileUploadDefault').style.display = 'block';
+      document.getElementById('fileUploadSelected').style.display = 'none';
+      document.getElementById('fileSelectedName').textContent = '';
+    }
+
+    function openModal(type, id) {
+      editingId = type === 'edit' ? id : null;
+      document.getElementById('formModalTitle').textContent = type === 'edit' ? '编辑资源' : '新增资源';
+      document.getElementById('formModalOverlay').classList.add('active');
+
+      if (type === 'edit' && id) {
+        const item = resources.find(r => r.id === id);
+        document.getElementById('formName').value = item.name;
+        setSelectedFormCategory(item.category);
+        selectedFileName = item.fileName || '';
+        if (selectedFileName) {
+          document.getElementById('fileUploadDefault').style.display = 'none';
+          document.getElementById('fileUploadSelected').style.display = 'flex';
+          document.getElementById('fileSelectedName').textContent = selectedFileName;
+        } else {
+          resetFileUpload();
+        }
+      } else {
+        document.getElementById('formName').value = '';
+        setSelectedFormCategory('');
+        resetFileUpload();
+      }
+
+      document.getElementById('formName').focus();
+    }
+
+    function closeFormModal() {
+      document.getElementById('formModalOverlay').classList.remove('active');
+      editingId = null;
+    }
+
+    function handleSubmit() {
+      const name = document.getElementById('formName').value.trim();
+      const category = getSelectedFormCategory();
+
+      if (!name) { alert('请输入素材名称'); return; }
+      if (!category) { alert('请选择资源分类'); return; }
+      if (!selectedFileName) { alert('请上传文件'); return; }
+
+      if (editingId) {
+        const item = resources.find(r => r.id === editingId);
+        item.name = name;
+        item.category = category;
+        item.fileName = selectedFileName;
+      } else {
+        const newId = resources.length > 0 ? Math.max(...resources.map(r => r.id)) + 1 : 1;
+        resources.unshift({
+          id: newId,
+          name,
+          category,
+          creator: DEFAULT_CREATOR,
+          createdAt: formatDate(new Date()),
+          fileName: selectedFileName
+        });
+      }
+
+      handleSearch();
+      closeFormModal();
+    }
+
+    function openDetailModal(id) {
+      const item = resources.find(r => r.id === id);
+      document.getElementById('detailBody').innerHTML = `
+        <div class="detail-row">
+          <div class="detail-label">素材名称</div>
+          <div class="detail-value">${escapeHtml(item.name)}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">资源分类</div>
+          <div class="detail-value"><span class="tag ${CATEGORIES[item.category] || 'tag-3d'}">${escapeHtml(item.category)}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">文件名称</div>
+          <div class="detail-value">${escapeHtml(item.fileName || '-')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">上传人</div>
+          <div class="detail-value">${escapeHtml(item.creator)}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">创建时间</div>
+          <div class="detail-value">${escapeHtml(item.createdAt)}</div>
+        </div>
+      `;
+      document.getElementById('detailModalOverlay').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModalOverlay').classList.remove('active');
+    }
+
+    function closeModalOnOverlay(event, modalId) {
+      if (event.target.id === modalId) {
+        if (modalId === 'formModalOverlay') closeFormModal();
+        if (modalId === 'detailModalOverlay') closeDetailModal();
+      }
+    }
+
+    function handleDelete(id) {
+      const item = resources.find(r => r.id === id);
+      if (!confirm(`确定要删除资源「${item.name}」吗？删除后不可恢复。`)) return;
+      resources = resources.filter(r => r.id !== id);
+      handleSearch();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 初始化
+    initCategoryFilter();
+    initFormCategory();
+    renderTable();
+  </script>
+</body>
+</html>
