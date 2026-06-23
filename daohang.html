@@ -406,21 +406,12 @@
       const placeholder = document.getElementById('placeholder');
       const frame = document.getElementById('pageFrame');
       const title = document.getElementById('page-title');
+      const desc = placeholder.querySelector('p');
       const breadcrumb = document.getElementById('breadcrumb');
+
+      // 隐藏外部提示条
       const externalTip = document.getElementById('externalTip');
-      const externalLink = document.getElementById('externalLink');
-
-      externalTip.classList.remove('active');
-      externalLink.href = '#';
-
-      if (item.type === 'home') {
-        placeholder.classList.remove('hidden');
-        frame.classList.remove('active');
-        frame.src = '';
-        title.textContent = '首页';
-        breadcrumb.innerHTML = '<span>首页</span>';
-        return;
-      }
+      if (externalTip) externalTip.classList.remove('active');
 
       const pathParts = ['<span>首页</span>'];
       if (parentTitle) pathParts.push(`<span>${parentTitle}</span>`);
@@ -428,17 +419,28 @@
       breadcrumb.innerHTML = pathParts.join('');
       title.textContent = item.title;
 
+      if (item.type === 'home') {
+        frame.classList.remove('active');
+        frame.src = '';
+        desc.textContent = '点击左侧路由按钮，打开对应的页面';
+        return;
+      }
+
       if (item.url) {
-        // 外部链接：iframe 加载 + 提供新标签页打开入口
-        placeholder.classList.add('hidden');
-        frame.classList.add('active');
-        frame.src = item.url;
-        externalTip.classList.add('active');
-        externalLink.href = item.url;
-      } else if (item.file) {
+        // 外部系统：直接在新标签页打开
+        window.open(item.url, '_blank');
+        placeholder.classList.remove('hidden');
+        frame.classList.remove('active');
+        frame.src = '';
+        desc.textContent = `已在浏览器新标签页打开：${item.url}`;
+        return;
+      }
+
+      if (item.file) {
         placeholder.classList.add('hidden');
         frame.classList.add('active');
         frame.src = BASE_URL + item.file;
+        desc.textContent = '点击左侧路由按钮，打开对应的页面';
       }
     }
 
