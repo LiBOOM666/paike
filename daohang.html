@@ -72,6 +72,7 @@
 
     .menu { flex: 1; overflow-y: auto; padding: 12px 10px; }
 
+    .menu-group { margin-bottom: 6px; }
     .menu-item {
       display: flex;
       align-items: center;
@@ -81,7 +82,6 @@
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
       user-select: none;
-      margin-bottom: 6px;
     }
     .menu-item:hover { background: rgba(67, 119, 253, 0.15); }
     .menu-item.active { background: var(--primary); color: #fff; }
@@ -100,6 +100,29 @@
       transition: opacity 0.2s;
     }
     .sidebar.collapsed .menu-title { opacity: 0; width: 0; }
+    .arrow {
+      width: 14px; height: 14px;
+      margin-left: auto;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .menu-item.expanded .arrow { transform: rotate(90deg); }
+    .sidebar.collapsed .arrow { opacity: 0; width: 0; margin: 0; }
+
+    .submenu {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.25s ease-out;
+      padding-left: 14px;
+    }
+    .submenu.open { max-height: 500px; }
+    .submenu .menu-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .submenu .menu-item.active { background: var(--primary); color: #fff; }
 
     /* 主区域 */
     .main {
@@ -204,11 +227,26 @@
     }
     .page-frame.active { display: block; }
     .placeholder.hidden { display: none; }
+
+    /* 外链提示条 */
+    .external-tip {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 14px;
+      gap: 12px;
+    }
+    .external-tip.active { display: flex; }
+    .external-tip a { color: var(--primary); text-decoration: none; }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- 左侧路由按钮 -->
+    <!-- 左侧路由 -->
     <aside class="sidebar" id="sidebar">
       <div class="logo">
         <div class="logo-icon">导</div>
@@ -239,6 +277,11 @@
       </header>
 
       <main class="content">
+        <div class="external-tip" id="externalTip">
+          <span>该页面为外部系统，将在新标签页中打开。如未自动跳转，请点击：</span>
+          <a href="#" id="externalLink" target="_blank">打开链接</a>
+        </div>
+
         <!-- 首页缺省图 -->
         <div class="placeholder" id="placeholder">
           <svg class="placeholder-img" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
@@ -249,7 +292,7 @@
             <rect x="260" y="270" width="120" height="12" rx="6" fill="#d7e1f9"/>
           </svg>
           <h2 id="page-title">首页</h2>
-          <p>点击左侧路由按钮，打开对应的 HTML 页面</p>
+          <p>点击左侧路由按钮，打开对应的页面</p>
         </div>
 
         <!-- 页面 iframe -->
@@ -259,62 +302,143 @@
   </div>
 
   <script>
-    // GitHub Pages 项目根地址（根据仓库 https://github.com/LiBOOM666/paike 推导）
     const BASE_URL = 'https://liboom666.github.io/paike/';
 
-    // 每个 HTML 文件对应一个中文路由按钮（排除 guangchang.html）
-    const routes = [
-      { title: '首页', type: 'home' },
-      { title: '幼儿园排课系统', file: 'paike.html' },
-      { title: '学期计划管理', file: 'jihua_guanli.html' },
-      { title: '时段管理', file: 'shiduan.html' },
-      { title: '学期管理', file: 'xueqi.html' },
-      { title: '活动方案库', file: 'hdfa.html' }
+    // 一二级路由结构
+    const menu = [
+      { title: '首页', type: 'home', icon: 'home' },
+      { title: '排课系统', file: 'paike.html', icon: 'calendar' },
+      { title: '学期计划管理', file: 'jihua_guanli.html', icon: 'plan' },
+      { title: '智能体广场', file: 'agents.html', icon: 'robot' },
+      {
+        title: '园所资源', icon: 'resource', children: [
+          { title: '活动方案库', file: 'hdfa.html' },
+          { title: '素材资源库', file: 'ziyuanku.html' }
+        ]
+      },
+      {
+        title: '园所管理', icon: 'manage', children: [
+          { title: '用户管理', url: 'https://datacenter.qiaozhihui.net/setpark/user' },
+          { title: '组织管理', url: 'https://datacenter.qiaozhihui.net/setpark/dept' },
+          { title: '角色管理', url: 'https://datacenter.qiaozhihui.net/setpark/role' },
+          { title: '学期管理', file: 'xueqi.html' },
+          { title: '时段管理', file: 'shiduan.html' }
+        ]
+      }
     ];
 
     const icons = {
       home: '<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
-      file: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>'
+      calendar: '<svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>',
+      plan: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>',
+      robot: '<svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72v1.28h5c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V9c0-1.1.9-2 2-2h5V5.72A2.001 2.001 0 0 1 12 2zm-4 9c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>',
+      resource: '<svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>',
+      manage: '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
+      file: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+      link: '<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>'
     };
 
-    let activeIndex = 0;
+    let activeKey = 'home';
+    let expandedKeys = new Set();
 
     function renderMenu() {
       const menuEl = document.getElementById('menu');
-      menuEl.innerHTML = routes.map((route, index) => `
-        <div class="menu-item ${index === activeIndex ? 'active' : ''}" data-index="${index}">
-          ${route.type === 'home' ? icons.home : icons.file}
-          <span class="menu-title">${route.title}</span>
-        </div>
-      `).join('');
+      menuEl.innerHTML = menu.map((group, gIndex) => {
+        const groupKey = `group-${gIndex}`;
+        const hasChildren = Array.isArray(group.children);
+        const isGroupActive = activeKey === groupKey || (hasChildren && group.children.some(c => c.key === activeKey));
+        const isExpanded = expandedKeys.has(groupKey);
 
+        return `
+          <div class="menu-group">
+            <div class="menu-item ${isGroupActive ? 'active' : ''} ${isExpanded ? 'expanded' : ''}" data-group="${gIndex}" data-key="${groupKey}">
+              ${icons[group.icon] || icons.file}
+              <span class="menu-title">${group.title}</span>
+              ${hasChildren ? `<svg class="arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>` : ''}
+            </div>
+            ${hasChildren ? `
+              <div class="submenu ${isExpanded ? 'open' : ''}" data-submenu="${gIndex}">
+                ${group.children.map((child, cIndex) => {
+                  const childKey = `child-${gIndex}-${cIndex}`;
+                  child.key = childKey;
+                  return `
+                    <div class="menu-item ${activeKey === childKey ? 'active' : ''}" data-group="${gIndex}" data-child="${cIndex}" data-key="${childKey}">
+                      ${child.url ? icons.link : icons.file}
+                      <span class="menu-title">${child.title}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      // 绑定事件
       menuEl.querySelectorAll('.menu-item').forEach(el => {
         el.addEventListener('click', function () {
-          activeIndex = Number(this.dataset.index);
-          renderMenu();
-          navigate(routes[activeIndex]);
+          const gIndex = Number(this.dataset.group);
+          const cIndex = this.dataset.child !== undefined ? Number(this.dataset.child) : null;
+          const group = menu[gIndex];
+
+          if (cIndex !== null) {
+            // 点击二级菜单
+            const child = group.children[cIndex];
+            activeKey = child.key;
+            navigate(child, group.title);
+            renderMenu();
+          } else if (group.children) {
+            // 点击一级菜单：展开/收起
+            const key = `group-${gIndex}`;
+            expandedKeys.has(key) ? expandedKeys.delete(key) : expandedKeys.add(key);
+            renderMenu();
+          } else {
+            // 点击一级叶子菜单
+            activeKey = `group-${gIndex}`;
+            navigate(group, null);
+            renderMenu();
+          }
         });
       });
     }
 
-    function navigate(route) {
+    function navigate(item, parentTitle) {
       const placeholder = document.getElementById('placeholder');
       const frame = document.getElementById('pageFrame');
       const title = document.getElementById('page-title');
       const breadcrumb = document.getElementById('breadcrumb');
+      const externalTip = document.getElementById('externalTip');
+      const externalLink = document.getElementById('externalLink');
 
-      if (route.type === 'home') {
+      externalTip.classList.remove('active');
+      externalLink.href = '#';
+
+      if (item.type === 'home') {
         placeholder.classList.remove('hidden');
         frame.classList.remove('active');
         frame.src = '';
         title.textContent = '首页';
         breadcrumb.innerHTML = '<span>首页</span>';
-      } else {
+        return;
+      }
+
+      const pathParts = ['<span>首页</span>'];
+      if (parentTitle) pathParts.push(`<span>${parentTitle}</span>`);
+      pathParts.push(`<span>${item.title}</span>`);
+      breadcrumb.innerHTML = pathParts.join('');
+      title.textContent = item.title;
+
+      if (item.url) {
+        // 外部链接：iframe 加载 + 提供新标签页打开入口
         placeholder.classList.add('hidden');
         frame.classList.add('active');
-        frame.src = BASE_URL + route.file;
-        title.textContent = route.title;
-        breadcrumb.innerHTML = `<span>首页</span><span>${route.title}</span>`;
+        frame.src = item.url;
+        externalTip.classList.add('active');
+        externalLink.href = item.url;
+      } else if (item.file) {
+        placeholder.classList.add('hidden');
+        frame.classList.add('active');
+        frame.src = BASE_URL + item.file;
       }
     }
 
@@ -326,7 +450,7 @@
 
     // 初始化
     renderMenu();
-    navigate(routes[0]);
+    navigate(menu[0], null);
   </script>
 </body>
 </html>
