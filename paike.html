@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>幼儿园排课系统 - 演示</title>
+  <title>每周计划</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -262,6 +262,104 @@
       overflow: auto;
       display: flex;
       flex-direction: column;
+    }
+
+    /* 周主题与工作重点 */
+    .week-info-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .week-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .week-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .week-info-item.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .week-info-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .week-info-value {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .week-info-input,
+    .week-info-textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    .week-info-input:focus,
+    .week-info-textarea:focus { border-color: var(--primary); }
+
+    .week-info-textarea {
+      resize: vertical;
+      min-height: 90px;
+      line-height: 1.6;
+    }
+
+    /* 本周工作小结与反思 */
+    .weekly-summary-section {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-light);
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .weekly-summary-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .weekly-summary-content {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .weekly-summary-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      line-height: 1.7;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .weekly-summary-textarea:focus { border-color: var(--primary); }
+
+    @media (max-width: 900px) {
+      .week-info-grid { grid-template-columns: 1fr; }
     }
 
     .schedule-table {
@@ -620,7 +718,7 @@
   <!-- 顶部导航 -->
   <header class="header">
     <div class="header-left">
-      <div class="header-title">幼儿园排课系统</div>
+      <div class="header-title">每周计划</div>
     </div>
     <div class="header-center">
       <div class="date-nav">
@@ -684,7 +782,9 @@
 
     <!-- 右侧课表 -->
     <section class="schedule-panel" id="schedulePanel">
+      <div class="week-info-section" id="weekInfoSection"></div>
       <div class="schedule-table" id="scheduleTable"></div>
+      <div class="weekly-summary-section" id="weeklySummarySection"></div>
     </section>
   </div>
 
@@ -765,90 +865,223 @@
     /* ================= 数据 ================= */
     const teachers = ['王老师', '李老师', '张老师', '陈老师', '赵老师', '刘老师', '周老师', '吴老师'];
 
-    const timeSlots = ['08:00-09:00', '09:00-10:00', '10:00-11:00', '14:00-15:00'];
+    const timeSlots = ['07:45-08:45', '08:45-09:30', '09:30-10:15', '10:15-11:00', '11:40-14:50', '14:50-15:30', '15:30-16:10', '16:30-17:00'];
 
     const activities = [
       {
-        id: 'a1', name: '晨间律动', type: '健康', category: '运动', source: 'institution',
-        color: '#52c41a', teacher: '王老师', duration: 60,
-        description: '通过欢快的音乐与简单的肢体动作，帮助幼儿舒展身体、激活一天活力。',
-        targetAge: '3-4岁', objectives: '1. 能跟随音乐节奏做简单动作\n2. 愿意参与集体活动',
-        materials: [{ name: '律动音乐.mp3', url: '#' }, { name: '动作示范图', url: '#' }]
+        id: 'ruyuan', name: '入园、晨检、早锻、早操、早餐', type: '生活', category: '生活', source: 'institution',
+        color: '#8c8c8c', teacher: '徐桂玉', duration: 60,
+        description: '幼儿入园、晨检、早锻炼、早操及早餐环节，帮助幼儿顺利开启一天。',
+        targetAge: '小班', objectives: '1. 能愉快入园\n2. 积极参与早锻炼',
+        materials: [{ name: '晨检记录表', url: '#' }]
       },
       {
-        id: 'a2', name: '绘本故事会', type: '语言', category: '学习', source: 'my',
-        color: '#1890ff', teacher: '李老师', duration: 60,
-        description: '精选适合幼儿的绘本，通过教师讲述与互动提问，发展语言表达能力。',
-        targetAge: '3-4岁', objectives: '1. 能安静倾听故事\n2. 能用简单语言表达感受',
-        materials: [{ name: '绘本《小熊请客》', url: '#' }, { name: '故事PPT', url: '#' }]
+        id: 'chenhui', name: '晨会活动', type: '语言', category: '学习', source: 'institution',
+        color: '#faad14', teacher: '陈敏', duration: 45,
+        description: '通过晨会谈话、分享，培养幼儿倾听与表达能力。',
+        targetAge: '小班', objectives: '1. 愿意在集体中表达\n2. 能安静倾听同伴',
+        materials: [{ name: '晨会话题卡', url: '#' }]
       },
       {
-        id: 'a3', name: '角色扮演区', type: '社会', category: '游戏', source: 'platform',
-        color: '#fa8c16', teacher: '张老师', duration: 60,
-        description: '设置医院、超市、餐厅等情境，让幼儿在角色扮演中学习社会交往规则。',
-        targetAge: '4-5岁', objectives: '1. 体验不同社会角色\n2. 学习与同伴协商',
-        materials: [{ name: '角色服装', url: '#' }, { name: '场景道具清单', url: '#' }]
+        id: 'huwai1', name: '户外自选活动：砖块件、体操圈、跳绳、平衡木', type: '健康', category: '运动', source: 'institution',
+        color: '#52c41a', teacher: '曾紫钒', duration: 45,
+        description: '利用户外器械开展自选体育活动，发展大肌肉力量与身体协调性。',
+        targetAge: '小班', objectives: '1. 能自主选择器械\n2. 发展平衡与协调能力',
+        materials: [{ name: '器械清单', url: '#' }]
       },
       {
-        id: 'a4', name: '自然观察', type: '科学', category: '学习', source: 'institution',
-        color: '#13c2c2', teacher: '陈老师', duration: 60,
-        description: '带领幼儿观察植物、天气、小动物等自然现象，激发探究兴趣。',
-        targetAge: '4-5岁', objectives: '1. 能用感官观察自然物\n2. 愿意提出简单问题',
-        materials: [{ name: '观察记录表', url: '#' }, { name: '放大镜使用说明', url: '#' }]
+        id: 'quyu_meishu', name: '区域活动：重点指导美工区', type: '艺术', category: '游戏', source: 'institution',
+        color: '#eb2f96', teacher: '何铭津', duration: 45,
+        description: '在美工区投放丰富材料，支持幼儿进行主题相关创作。',
+        targetAge: '小班', objectives: '1. 愿意尝试多种材料\n2. 能用作品表达想法',
+        materials: [{ name: '美工材料包', url: '#' }]
       },
       {
-        id: 'a5', name: '创意美术', type: '艺术', category: '学习', source: 'my',
-        color: '#eb2f96', teacher: '赵老师', duration: 60,
-        description: '提供多种美术材料，鼓励幼儿自由表达，发展想象力和动手能力。',
-        targetAge: '3-4岁', objectives: '1. 愿意尝试多种绘画方式\n2. 能大胆用色',
-        materials: [{ name: '美术素材包', url: '#' }, { name: '作品展示模板', url: '#' }]
+        id: 'wucan', name: '餐前准备、午餐、午睡', type: '生活', category: '生活', source: 'institution',
+        color: '#8c8c8c', teacher: '徐桂玉', duration: 190,
+        description: '午餐、午睡及餐前准备环节，培养幼儿良好生活习惯。',
+        targetAge: '小班', objectives: '1. 养成光盘习惯\n2. 能安静午睡',
+        materials: [{ name: '午睡巡查表', url: '#' }]
       },
       {
-        id: 'a6', name: '生活自理', type: '健康', category: '生活', source: 'institution',
-        color: '#722ed1', teacher: '刘老师', duration: 60,
-        description: '通过情景练习，帮助幼儿掌握洗手、穿衣、整理物品等基本生活技能。',
-        targetAge: '3-4岁', objectives: '1. 能独立完成简单自理行为\n2. 形成良好卫生习惯',
-        materials: [{ name: '洗手步骤图', url: '#' }]
+        id: 'tiyu_shabao', name: '体育活动：《沙堡》', type: '健康', category: '运动', source: 'institution',
+        color: '#f5222d', teacher: '陈敏', duration: 40,
+        description: '在大沙池开展沙堡建构与体育活动，发展手部力量与合作能力。',
+        targetAge: '小班', objectives: '1. 能与同伴合作建构\n2. 体验沙水游戏乐趣',
+        materials: [{ name: '沙堡工具', url: '#' }]
       },
       {
-        id: 'a7', name: '户外体能', type: '健康', category: '运动', source: 'platform',
-        color: '#f5222d', teacher: '周老师', duration: 60,
-        description: '利用户外器械开展跑、跳、钻、爬等综合体能活动，增强体质。',
-        targetAge: '4-5岁', objectives: '1. 能协调完成基本动作\n2. 喜欢参加体育活动',
-        materials: [{ name: '器械使用安全须知', url: '#' }, { name: '活动路线图', url: '#' }]
+        id: 'yuyan_xiaohuangya', name: '语言活动：《寻找小黄鸭》', type: '语言', category: '学习', source: 'institution',
+        color: '#1890ff', teacher: '曾紫钒', duration: 40,
+        description: '通过绘本《寻找小黄鸭》，发展幼儿语言表达与理解能力。',
+        targetAge: '小班', objectives: '1. 能理解故事情节\n2. 愿意大胆表达',
+        materials: [{ name: '绘本《寻找小黄鸭》', url: '#' }]
       },
       {
-        id: 'a8', name: '音乐游戏', type: '艺术', category: '游戏', source: 'my',
-        color: '#2f54eb', teacher: '吴老师', duration: 60,
-        description: '结合歌曲与游戏，让幼儿在唱唱跳跳中感受音乐节奏与旋律。',
-        targetAge: '3-4岁', objectives: '1. 能随音乐做游戏\n2. 感受音乐带来的快乐',
-        materials: [{ name: '歌曲音频', url: '#' }, { name: '游戏玩法说明', url: '#' }]
+        id: 'liyuan', name: '离园前整理活动', type: '生活', category: '生活', source: 'institution',
+        color: '#8c8c8c', teacher: '何铭津', duration: 30,
+        description: '整理个人物品、回顾一天活动，为离园做好准备。',
+        targetAge: '小班', objectives: '1. 能整理自己的物品\n2. 回顾今日收获',
+        materials: [{ name: '离园检查表', url: '#' }]
+      },
+      {
+        id: 'quyu_shuxue', name: '区域活动：重点指导数学区', type: '科学', category: '游戏', source: 'institution',
+        color: '#13c2c2', teacher: '徐桂玉', duration: 45,
+        description: '在数学区投放操作材料，支持幼儿感知数量关系。',
+        targetAge: '小班', objectives: '1. 对数学游戏感兴趣\n2. 初步感知数量',
+        materials: [{ name: '数学操作材料', url: '#' }]
+      },
+      {
+        id: 'huwai2', name: '户外自选活动：体能垫、彩色圆桶、安吉梯', type: '健康', category: '运动', source: 'institution',
+        color: '#52c41a', teacher: '陈敏', duration: 45,
+        description: '利用体能垫、圆桶、安吉梯等器械开展户外自选运动。',
+        targetAge: '小班', objectives: '1. 能大胆尝试多种器械\n2. 发展攀爬与平衡能力',
+        materials: [{ name: '安吉梯使用说明', url: '#' }]
+      },
+      {
+        id: 'tiyu_lanqiu', name: '分组活动：体育活动《篮球接力赛》', type: '健康', category: '运动', source: 'institution',
+        color: '#f5222d', teacher: '曾紫钒', duration: 45,
+        description: '分组开展篮球接力赛，培养团队合作与快速反应能力。',
+        targetAge: '小班', objectives: '1. 学习接力规则\n2. 体验团队合作的乐趣',
+        materials: [{ name: '篮球', url: '#' }]
+      },
+      {
+        id: 'huwai3', name: '户外自选活动：体操垫、体能棒、雪糕筒、跨栏', type: '健康', category: '运动', source: 'institution',
+        color: '#52c41a', teacher: '何铭津', duration: 40,
+        description: '在篮球场开展体能器械自选活动，发展跑跳与跨跳能力。',
+        targetAge: '小班', objectives: '1. 能连续跑跳\n2. 尝试跨跳动作',
+        materials: [{ name: '跨栏器械', url: '#' }]
+      },
+      {
+        id: 'xinli_baobao', name: '心理健康活动：《爱的抱抱》', type: '社会', category: '学习', source: 'institution',
+        color: '#722ed1', teacher: '徐桂玉', duration: 40,
+        description: '通过拥抱、表达感谢等活动，帮助幼儿感受爱与温暖，建立安全感。',
+        targetAge: '小班', objectives: '1. 愿意表达爱与感谢\n2. 感受集体温暖',
+        materials: [{ name: '情绪卡片', url: '#' }]
+      },
+      {
+        id: 'huwai4', name: '户外自主游戏：手推车、海洋球、体能垫、接力棒', type: '健康', category: '游戏', source: 'institution',
+        color: '#52c41a', teacher: '陈敏', duration: 45,
+        description: '户外自主游戏中运用手推车、海洋球等材料，发展大肌肉动作。',
+        targetAge: '小班', objectives: '1. 能自主选择游戏\n2. 发展手臂力量',
+        materials: [{ name: '海洋球', url: '#' }]
+      },
+      {
+        id: 'yinyue_shuyadan', name: '分组活动：音乐活动《数鸭蛋》', type: '艺术', category: '学习', source: 'institution',
+        color: '#2f54eb', teacher: '曾紫钒', duration: 45,
+        description: '学唱歌曲《数鸭蛋》，感受音乐节奏与旋律。',
+        targetAge: '小班', objectives: '1. 能跟随音乐演唱\n2. 感受音乐游戏的快乐',
+        materials: [{ name: '歌曲音频', url: '#' }]
+      },
+      {
+        id: 'kexue_wuguan', name: '分组活动：科学活动《谁的五官》', type: '科学', category: '学习', source: 'institution',
+        color: '#13c2c2', teacher: '何铭津', duration: 45,
+        description: '通过观察与比较，认识五官的特征与作用。',
+        targetAge: '小班', objectives: '1. 认识五官\n2. 能用感官探索',
+        materials: [{ name: '五官图卡', url: '#' }]
+      },
+      {
+        id: 'tiyu_papan', name: '体育活动：《攀爬网架》', type: '健康', category: '运动', source: 'institution',
+        color: '#f5222d', teacher: '徐桂玉', duration: 40,
+        description: '在小木屋前开展攀爬网架活动，发展上肢力量与勇气。',
+        targetAge: '小班', objectives: '1. 能尝试攀爬\n2. 增强勇气与自信',
+        materials: [{ name: '攀爬网架', url: '#' }]
+      },
+      {
+        id: 'zhuti_yadang', name: '主题活动：《鸭蛋的变化》', type: '科学', category: '学习', source: 'institution',
+        color: '#fa8c16', teacher: '陈敏', duration: 40,
+        description: '观察鸭蛋孵化过程中的变化，激发幼儿对生命的好奇与探究。',
+        targetAge: '小班', objectives: '1. 能仔细观察并记录\n2. 萌发关爱生命的情感',
+        materials: [{ name: '鸭蛋观察记录表', url: '#' }]
+      },
+      {
+        id: 'tiyu_jiuweiba', name: '分组活动：体育活动《揪尾巴》', type: '健康', category: '运动', source: 'institution',
+        color: '#f5222d', teacher: '曾紫钒', duration: 45,
+        description: '在前跑道开展揪尾巴体育游戏，发展躲闪跑能力。',
+        targetAge: '小班', objectives: '1. 能灵活躲闪\n2. 遵守游戏规则',
+        materials: [{ name: '尾巴道具', url: '#' }]
+      },
+      {
+        id: 'quyu_jiangou', name: '区域活动：重点指导建构区', type: '科学', category: '游戏', source: 'institution',
+        color: '#13c2c2', teacher: '何铭津', duration: 45,
+        description: '在建构区投放材料，支持幼儿学习搭建技巧，发展空间思维。',
+        targetAge: '小班', objectives: '1. 尝试围合、垒高\n2. 学习与同伴合作',
+        materials: [{ name: '积木材料', url: '#' }]
+      },
+      {
+        id: 'huwai5', name: '户外自选活动：平衡木、油桶件、砖块件', type: '健康', category: '运动', source: 'institution',
+        color: '#52c41a', teacher: '徐桂玉', duration: 40,
+        description: '在左跑道开展平衡木、油桶等器械活动，发展平衡能力。',
+        targetAge: '小班', objectives: '1. 能在平衡木上行走\n2. 提高身体控制力',
+        materials: [{ name: '平衡木', url: '#' }]
+      },
+      {
+        id: 'shehui_maomaochong', name: '社会活动：《毛毛虫变蝴蝶》', type: '社会', category: '学习', source: 'institution',
+        color: '#722ed1', teacher: '陈敏', duration: 40,
+        description: '了解毛毛虫变蝴蝶的过程，感受生命的成长与变化。',
+        targetAge: '小班', objectives: '1. 了解蝴蝶生长过程\n2. 萌发爱护生命的情感',
+        materials: [{ name: '毛毛虫变蝴蝶图卡', url: '#' }]
+      },
+      {
+        id: 'huwai6', name: '户外自主游戏：体能垫、轮胎、跳圈、雪糕筒、海绵棒', type: '健康', category: '游戏', source: 'institution',
+        color: '#52c41a', teacher: '曾紫钒', duration: 45,
+        description: '利用户外多种器械开展自主游戏，发展跑跳与协调能力。',
+        targetAge: '小班', objectives: '1. 能自主选择器械组合\n2. 发展综合运动能力',
+        materials: [{ name: '户外器械组合', url: '#' }]
+      },
+      {
+        id: 'meishu_xiaohuangfeng', name: '分组活动：美术活动《小黄蜂的花纹》', type: '艺术', category: '学习', source: 'institution',
+        color: '#eb2f96', teacher: '何铭津', duration: 45,
+        description: '观察小黄蜂的花纹，尝试用线条和色彩进行表现。',
+        targetAge: '小班', objectives: '1. 能观察花纹特征\n2. 大胆用色与造型',
+        materials: [{ name: '绘画材料', url: '#' }]
+      },
+      {
+        id: 'shuxue_guailv', name: '分组活动：数学活动《找规律》', type: '科学', category: '学习', source: 'institution',
+        color: '#13c2c2', teacher: '徐桂玉', duration: 45,
+        description: '通过操作材料发现简单规律，发展逻辑思维能力。',
+        targetAge: '小班', objectives: '1. 能发现简单规律\n2. 尝试按规律排列',
+        materials: [{ name: '规律操作卡', url: '#' }]
+      },
+      {
+        id: 'tiyu_jielibang', name: '体育活动：《接力棒赛跑》', type: '健康', category: '运动', source: 'institution',
+        color: '#f5222d', teacher: '陈敏', duration: 40,
+        description: '在前操场开展接力棒赛跑，发展快速跑与传接棒能力。',
+        targetAge: '小班', objectives: '1. 学习传接棒\n2. 体验竞赛乐趣',
+        materials: [{ name: '接力棒', url: '#' }]
+      },
+      {
+        id: 'anquan_fangcaita', name: '安全教育活动：《防踩踏》', type: '健康', category: '学习', source: 'institution',
+        color: '#ff4d4f', teacher: '曾紫钒', duration: 40,
+        description: '通过情境模拟，帮助幼儿掌握防踩踏安全知识与自护方法。',
+        targetAge: '小班', objectives: '1. 了解防踩踏常识\n2. 学会自我保护',
+        materials: [{ name: '防踩踏教育视频', url: '#' }]
       }
     ];
 
-    // 主题数据：2026年6月
+    // 主题数据
     const themes = {
       month: '2026-06',
-      monthTheme: '夏日探索',
+      monthTheme: '动物朋友',
       weeks: [
-        { start: '2026-06-01', end: '2026-06-07', theme: '夏天的颜色' },
-        { start: '2026-06-08', end: '2026-06-14', theme: '清凉一夏' },
-        { start: '2026-06-15', end: '2026-06-21', theme: '水的旅行' },
-        { start: '2026-06-22', end: '2026-06-28', theme: '夏日昆虫' },
+        { start: '2026-06-01', end: '2026-06-07', theme: '春天的小动物' },
+        { start: '2026-06-08', end: '2026-06-14', theme: '柯尔鸭和新朋友-小鸭小鹅' },
+        { start: '2026-06-15', end: '2026-06-21', theme: '小鸭成长记' },
+        { start: '2026-06-22', end: '2026-06-28', theme: '夏日探索' },
         { start: '2026-06-29', end: '2026-07-05', theme: '快乐暑假' }
       ],
       dayThemes: {
-        '2026-06-15': '认识水滴',
-        '2026-06-16': '水的三态',
-        '2026-06-17': '小雨滴旅行记',
-        '2026-06-18': '节约用水',
-        '2026-06-19': '夏日戏水'
+        '2026-06-08': '观察鸭蛋',
+        '2026-06-09': '小黄鸭绘本',
+        '2026-06-10': '鸭蛋的变化',
+        '2026-06-11': '毛毛虫变蝴蝶',
+        '2026-06-12': '安全防踩踏'
       }
     };
 
     /* ================= 状态 ================= */
     let state = {
-      currentDate: new Date(),
+      currentDate: new Date(2026, 5, 8),
       isEditMode: false,
       filters: { source: 'all', type: 'all', category: 'all' },
       searchKeyword: ''
@@ -856,26 +1089,76 @@
 
     const scheduleData = {}; // key: date|timeSlot -> { activityId, assignedPerson }
     const dailyEditData = {}; // key: dateStr -> { theme, slots }
+    const weeklyMetaData = {}; // key: weekStartStr -> { monthTheme, weekTheme, weekFocus, leadTeacher }
+    const weeklySummaryData = {}; // key: weekStartStr -> string
 
-    // 示例数据：本周一、二部分时段预填充
-    const today = normalizeDate(new Date());
-    const monday = getMonday(today);
-    const tuesday = addDays(monday, 1);
+    // 示例数据：2026年6月8日—12日（第15周）
+    const demoWeekStart = new Date(2026, 5, 8);
+    const demoWeekStartStr = formatDate(demoWeekStart);
+
+    weeklyMetaData[demoWeekStartStr] = {
+      monthTheme: '动物朋友',
+      weekTheme: '柯尔鸭和新朋友-小鸭小鹅',
+      weekFocus: '1. 主题学习目标：引导幼儿观察柯尔鸭蛋的孵化过程中鸭蛋的变化，并尝试记录变化。\n2. 生活、习惯重点：引导幼儿养成光盘，不剩饭粒的良好习惯，提升自我服务能力与生活常规意识。\n3. 区域学习重点：鼓励幼儿在观察他人作品后学习搭建技巧，发展动手能力、逻辑思维能力。\n4. 环境及材料投放目标：投放绘本《寻找小黄鸭》、鸭蛋观察记录表支持幼儿主题探索、记录。\n5. 其他：通过“防踩踏”安全教育增强幼儿安全防护意识。\n6. 家长工作：引导家长配合主题活动，和幼儿搜索孵蛋的技巧，同步培养幼儿良好生活习惯，助力家园共育。',
+      leadTeacher: '徐桂玉 陈敏 曾紫钒 何铭津'
+    };
+
+    weeklySummaryData[demoWeekStartStr] = '本周围绕“柯尔鸭和新朋友-小鸭小鹅”主题，幼儿通过观察鸭蛋孵化过程，初步了解了生命成长的变化。在区域活动中，幼儿尝试运用多种材料进行搭建与创作，动手能力和逻辑思维有所提升。生活方面，持续培养光盘习惯和自我服务意识。安全教育中，幼儿增强了防踩踏意识。下周将继续深化主题探究，加强家园共育。';
 
     const sampleSchedule = {
-      [key(monday, '08:00-09:00')]: { activityId: 'a1', assignedPerson: '王老师' },
-      [key(monday, '09:00-10:00')]: { activityId: 'a2', assignedPerson: '李老师' },
-      [key(monday, '10:00-11:00')]: { activityId: 'a4', assignedPerson: '陈老师' },
-      [key(tuesday, '08:00-09:00')]: { activityId: 'a3', assignedPerson: '张老师' },
-      [key(tuesday, '09:00-10:00')]: { activityId: 'a5', assignedPerson: '赵老师' }
+      // 周一
+      [key(addDays(demoWeekStart, 0), '07:45-08:45')]: { activityId: 'ruyuan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 0), '08:45-09:30')]: { activityId: 'chenhui', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 0), '09:30-10:15')]: { activityId: 'huwai1', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 0), '10:15-11:00')]: { activityId: 'quyu_meishu', assignedPerson: '何铭津' },
+      [key(addDays(demoWeekStart, 0), '11:40-14:50')]: { activityId: 'wucan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 0), '14:50-15:30')]: { activityId: 'tiyu_shabao', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 0), '15:30-16:10')]: { activityId: 'yuyan_xiaohuangya', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 0), '16:30-17:00')]: { activityId: 'liyuan', assignedPerson: '何铭津' },
+      // 周二
+      [key(addDays(demoWeekStart, 1), '07:45-08:45')]: { activityId: 'ruyuan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 1), '08:45-09:30')]: { activityId: 'quyu_shuxue', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 1), '09:30-10:15')]: { activityId: 'huwai2', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 1), '10:15-11:00')]: { activityId: 'tiyu_lanqiu', assignedPerson: '何铭津' },
+      [key(addDays(demoWeekStart, 1), '11:40-14:50')]: { activityId: 'wucan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 1), '14:50-15:30')]: { activityId: 'huwai3', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 1), '15:30-16:10')]: { activityId: 'xinli_baobao', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 1), '16:30-17:00')]: { activityId: 'liyuan', assignedPerson: '何铭津' },
+      // 周三
+      [key(addDays(demoWeekStart, 2), '07:45-08:45')]: { activityId: 'ruyuan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 2), '08:45-09:30')]: { activityId: 'huwai4', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 2), '09:30-10:15')]: { activityId: 'yinyue_shuyadan', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 2), '10:15-11:00')]: { activityId: 'kexue_wuguan', assignedPerson: '何铭津' },
+      [key(addDays(demoWeekStart, 2), '11:40-14:50')]: { activityId: 'wucan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 2), '14:50-15:30')]: { activityId: 'tiyu_papan', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 2), '15:30-16:10')]: { activityId: 'zhuti_yadang', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 2), '16:30-17:00')]: { activityId: 'liyuan', assignedPerson: '何铭津' },
+      // 周四
+      [key(addDays(demoWeekStart, 3), '07:45-08:45')]: { activityId: 'ruyuan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 3), '08:45-09:30')]: { activityId: 'tiyu_jiuweiba', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 3), '09:30-10:15')]: { activityId: 'yinyue_shuyadan', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 3), '10:15-11:00')]: { activityId: 'quyu_jiangou', assignedPerson: '何铭津' },
+      [key(addDays(demoWeekStart, 3), '11:40-14:50')]: { activityId: 'wucan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 3), '14:50-15:30')]: { activityId: 'huwai5', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 3), '15:30-16:10')]: { activityId: 'shehui_maomaochong', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 3), '16:30-17:00')]: { activityId: 'liyuan', assignedPerson: '何铭津' },
+      // 周五
+      [key(addDays(demoWeekStart, 4), '07:45-08:45')]: { activityId: 'ruyuan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 4), '08:45-09:30')]: { activityId: 'huwai6', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 4), '09:30-10:15')]: { activityId: 'meishu_xiaohuangfeng', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 4), '10:15-11:00')]: { activityId: 'shuxue_guailv', assignedPerson: '何铭津' },
+      [key(addDays(demoWeekStart, 4), '11:40-14:50')]: { activityId: 'wucan', assignedPerson: '徐桂玉' },
+      [key(addDays(demoWeekStart, 4), '14:50-15:30')]: { activityId: 'tiyu_jielibang', assignedPerson: '陈敏' },
+      [key(addDays(demoWeekStart, 4), '15:30-16:10')]: { activityId: 'anquan_fangcaita', assignedPerson: '曾紫钒' },
+      [key(addDays(demoWeekStart, 4), '16:30-17:00')]: { activityId: 'liyuan', assignedPerson: '何铭津' }
     };
     Object.assign(scheduleData, sampleSchedule);
 
-    dailyEditData[formatDate(monday)] = {
-      theme: '认识水滴',
+    dailyEditData[formatDate(addDays(demoWeekStart, 0))] = {
+      theme: '观察鸭蛋',
       slots: {
-        '08:00-09:00': '晨间集合，做好运动准备',
-        '09:00-10:00': '绘本导入，激发兴趣'
+        '08:45-09:30': '晨会分享：你见过鸭蛋吗？',
+        '14:50-15:30': '体育游戏：合作堆沙堡'
       }
     };
 
@@ -1161,13 +1444,120 @@
       });
     }
 
+    function getCurrentWeekStart() {
+      return formatDate(getMonday(state.currentDate));
+    }
+
+    function ensureWeeklyMeta(weekStart) {
+      if (!weeklyMetaData[weekStart]) {
+        weeklyMetaData[weekStart] = { monthTheme: '', weekTheme: '', weekFocus: '', leadTeacher: '' };
+      }
+      return weeklyMetaData[weekStart];
+    }
+
+    function renderWeekInfo() {
+      const container = document.getElementById('weekInfoSection');
+      const weekStart = getCurrentWeekStart();
+      const meta = weeklyMetaData[weekStart] || { monthTheme: '', weekTheme: '', weekFocus: '', leadTeacher: '' };
+
+      if (state.isEditMode) {
+        container.innerHTML = `
+          <div class="week-info-grid">
+            <div class="week-info-item">
+              <span class="week-info-label">本月主题</span>
+              <input type="text" class="week-info-input" id="monthThemeInput" value="${escapeHtml(meta.monthTheme || '')}" placeholder="请输入本月主题">
+            </div>
+            <div class="week-info-item">
+              <span class="week-info-label">本周主题</span>
+              <input type="text" class="week-info-input" id="weekThemeInput" value="${escapeHtml(meta.weekTheme || '')}" placeholder="请输入本周主题">
+            </div>
+            <div class="week-info-item">
+              <span class="week-info-label">执教老师</span>
+              <input type="text" class="week-info-input" id="leadTeacherInput" value="${escapeHtml(meta.leadTeacher || '')}" placeholder="请输入执教老师">
+            </div>
+            <div class="week-info-item full-width">
+              <span class="week-info-label">本周重点工作</span>
+              <textarea class="week-info-textarea" id="weekFocusInput" placeholder="请输入本周重点工作">${escapeHtml(meta.weekFocus || '')}</textarea>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('monthThemeInput').addEventListener('input', e => {
+          ensureWeeklyMeta(weekStart).monthTheme = e.target.value;
+        });
+        document.getElementById('weekThemeInput').addEventListener('input', e => {
+          ensureWeeklyMeta(weekStart).weekTheme = e.target.value;
+        });
+        document.getElementById('leadTeacherInput').addEventListener('input', e => {
+          ensureWeeklyMeta(weekStart).leadTeacher = e.target.value;
+        });
+        document.getElementById('weekFocusInput').addEventListener('input', e => {
+          ensureWeeklyMeta(weekStart).weekFocus = e.target.value;
+        });
+      } else {
+        container.innerHTML = `
+          <div class="week-info-grid">
+            <div class="week-info-item">
+              <span class="week-info-label">本月主题</span>
+              <div class="week-info-value">${meta.monthTheme ? escapeHtml(meta.monthTheme) : '<span style="color:var(--text-disabled)">未设置</span>'}</div>
+            </div>
+            <div class="week-info-item">
+              <span class="week-info-label">本周主题</span>
+              <div class="week-info-value">${meta.weekTheme ? escapeHtml(meta.weekTheme) : '<span style="color:var(--text-disabled)">未设置</span>'}</div>
+            </div>
+            <div class="week-info-item">
+              <span class="week-info-label">执教老师</span>
+              <div class="week-info-value">${meta.leadTeacher ? escapeHtml(meta.leadTeacher) : '<span style="color:var(--text-disabled)">未设置</span>'}</div>
+            </div>
+            <div class="week-info-item full-width">
+              <span class="week-info-label">本周重点工作</span>
+              <div class="week-info-value">${meta.weekFocus ? escapeHtml(meta.weekFocus) : '<span style="color:var(--text-disabled)">未设置</span>'}</div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function renderWeeklySummary() {
+      const container = document.getElementById('weeklySummarySection');
+      const weekStart = getCurrentWeekStart();
+      const summary = weeklySummaryData[weekStart] || '';
+
+      if (state.isEditMode) {
+        container.innerHTML = `
+          <div class="weekly-summary-title">本周工作小结与反思</div>
+          <textarea class="weekly-summary-textarea" id="weeklySummaryInput" placeholder="请输入本周工作小结与反思">${escapeHtml(summary)}</textarea>
+        `;
+        document.getElementById('weeklySummaryInput').addEventListener('input', e => {
+          weeklySummaryData[weekStart] = e.target.value;
+        });
+      } else {
+        container.innerHTML = `
+          <div class="weekly-summary-title">本周工作小结与反思</div>
+          <div class="weekly-summary-content">${summary ? escapeHtml(summary) : '<span style="color:var(--text-disabled)">暂无内容</span>'}</div>
+        `;
+      }
+    }
+
+    function escapeHtml(text) {
+      if (text == null) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     function renderAll() {
       const main = document.getElementById('main');
       main.classList.toggle('preview-mode', !state.isEditMode);
       main.classList.toggle('edit-mode', state.isEditMode);
       renderHeaderButtons();
       renderActivityList();
+      renderWeekInfo();
       renderSchedule();
+      renderWeeklySummary();
     }
 
     /* ================= 拖拽排课 ================= */

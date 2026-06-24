@@ -55,10 +55,17 @@
       padding: 0 28px;
       z-index: 90;
     }
+    .header-search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 720px;
+    }
     .search-box {
       position: relative;
-      width: 520px;
-      max-width: 100%;
+      flex: 1;
+      min-width: 0;
     }
     .search-box input {
       width: 100%;
@@ -66,7 +73,7 @@
       border-radius: 20px;
       border: 1px solid var(--border);
       background: #fff;
-      padding: 0 16px 0 40px;
+      padding: 0 64px 0 40px;
       font-size: 14px;
       color: var(--text);
       outline: none;
@@ -77,13 +84,73 @@
       box-shadow: 0 0 0 3px rgba(67, 119, 253, 0.12);
     }
     .search-box input::placeholder { color: var(--text-tertiary); }
-    .search-box svg {
+    .search-box .search-icon {
       position: absolute;
       left: 14px;
       top: 50%;
       transform: translateY(-50%);
       width: 18px; height: 18px;
       fill: var(--text-tertiary);
+      pointer-events: none;
+    }
+    .search-clear {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px; height: 20px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-clear.visible {
+      display: flex;
+    }
+    .search-clear svg {
+      width: 14px; height: 14px;
+      fill: var(--text-tertiary);
+    }
+    .search-clear:hover {
+      background: var(--hover-bg);
+    }
+    .search-clear:hover svg {
+      fill: var(--text-secondary);
+    }
+    .search-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .search-btn {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .search-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .search-btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .search-btn.primary:hover {
+      background: #3065f0;
     }
 
     .content {
@@ -382,6 +449,35 @@
     }
     .chat-bubble li { margin: 5px 0; }
     .chat-bubble strong { color: var(--text); }
+    .chat-bubble .card-grid {
+      margin-top: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 12px;
+    }
+    .chat-bubble .card {
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .chat-bubble .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      border-color: rgba(67, 119, 253, 0.25);
+    }
+    .chat-bubble .card-icon {
+      width: 38px; height: 38px;
+      border-radius: 9px;
+      font-size: 18px;
+    }
+    .chat-bubble .card-title {
+      font-size: 14px;
+    }
+    .chat-bubble .card-desc {
+      font-size: 11px;
+      -webkit-line-clamp: 2;
+    }
+    .chat-bubble .card-tags {
+      margin-top: 8px;
+    }
 
     .message-actions {
       display: flex;
@@ -455,6 +551,140 @@
       fill: currentColor;
     }
 
+    /* ========== 教案参数填写页 ========== */
+    .form-page {
+      position: fixed;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      background: var(--bg);
+      z-index: 200;
+    }
+    .form-page.active { display: flex; }
+    .form-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 20px;
+    }
+    .form-wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 32px;
+    }
+    .form-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .form-subtitle {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-bottom: 28px;
+    }
+    .form-group {
+      margin-bottom: 22px;
+    }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .form-label .optional {
+      font-weight: normal;
+      color: var(--text-tertiary);
+      margin-left: 4px;
+    }
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 119, 253, 0.12);
+    }
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 18px;
+      padding-right: 36px;
+    }
+    .form-file {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .form-file:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .form-file input {
+      display: none;
+    }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .form-btn {
+      height: 40px;
+      padding: 0 24px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .form-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .form-btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .form-btn.primary:hover {
+      background: #3065f0;
+    }
+
     /* 滚动条 */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -467,9 +697,13 @@
     @media (max-width: 768px) {
       .header { padding: 0 20px; }
       .content { padding: 20px; }
-      .search-box { width: 100%; }
+      .header-search-wrap { gap: 8px; }
+      .search-btn { padding: 0 10px; font-size: 13px; height: 32px; }
       .chat-header-title { margin-right: 60px; font-size: 15px; }
       .chat-content { max-width: 85%; }
+      .form-wrapper { padding: 24px; }
+      .form-actions { flex-direction: column-reverse; }
+      .form-actions .form-btn { width: 100%; }
     }
   </style>
 </head>
@@ -478,9 +712,18 @@
   <div class="home-page" id="homePage">
     <main class="main">
       <header class="header">
-        <div class="search-box">
-          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          <input type="text" id="searchInput" placeholder="搜索幼儿园 AI 智能体，如：观察记录、教案设计…">
+        <div class="header-search-wrap">
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="searchInput" placeholder="搜索幼儿园 AI 智能体，如：观察记录、教案设计…">
+            <button class="search-clear" id="searchClear" type="button" aria-label="清空">
+              <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+          </div>
+          <div class="search-actions">
+            <button class="search-btn" id="queryBtn" type="button">查询</button>
+            <button class="search-btn primary" id="askBtn" type="button">问问小叮</button>
+          </div>
         </div>
       </header>
 
@@ -793,6 +1036,61 @@
     </main>
   </div>
 
+  <!-- 教案参数填写页 -->
+  <div class="form-page" id="formPage">
+    <header class="chat-header">
+      <button class="back-btn" id="backFromForm">
+        <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        返回
+      </button>
+      <div class="chat-header-title">公开课教案设计</div>
+    </header>
+
+    <main class="form-container">
+      <div class="form-wrapper">
+        <h2 class="form-title">填写公开课教案参数</h2>
+        <p class="form-subtitle">完善以下信息后，AI 将为您生成一份完整的集体教学活动方案。</p>
+        <form id="lessonForm">
+          <div class="form-group">
+            <label class="form-label" for="lessonArea">重点领域</label>
+            <select class="form-select" id="lessonArea" name="area" required>
+              <option value="" disabled selected>请选择领域</option>
+              <option value="语言">语言</option>
+              <option value="社会">社会</option>
+              <option value="健康">健康</option>
+              <option value="科学">科学</option>
+              <option value="艺术">艺术</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lessonAge">适用年龄段</label>
+            <input class="form-input" type="text" id="lessonAge" name="age" placeholder="例如：大班/5-6岁" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lessonName">活动名称</label>
+            <input class="form-input" type="text" id="lessonName" name="name" placeholder="例如：神奇的水" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lessonGoals">活动目标</label>
+            <textarea class="form-textarea" id="lessonGoals" name="goals" placeholder="例如：&#10;知识目标：感知膨胀现象&#10;能力目标：能用比较的方法观察事物&#10;情感目标：激发科学探究兴趣" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lessonFile">参考文件上传 <span class="optional">（选填）</span></label>
+            <label class="form-file" for="lessonFile">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+              <span id="fileLabelText">点击上传参考教案或格式文件</span>
+            </label>
+            <input type="file" id="lessonFile" name="file" accept=".doc,.docx,.pdf,.txt">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="form-btn" id="cancelForm">取消</button>
+            <button type="submit" class="form-btn primary">生成教案</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
   <!-- 二级对话页 -->
   <div class="chat-page" id="chatPage">
     <header class="chat-header">
@@ -804,12 +1102,12 @@
     </header>
 
     <main class="chat-container" id="chatContainer">
-      <div class="chat-wrapper">
+      <div class="chat-wrapper" id="chatWrapper">
         <div class="chat-item user">
           <div class="chat-avatar">我</div>
           <div class="chat-content">
-            <div class="chat-bubble">
-              请帮我设计一份小班语言领域《小熊拔牙》的教案，包含活动目标、准备、过程和延伸活动。
+            <div class="chat-bubble" id="userQuestion">
+              请帮我设计一份大班科学领域《有趣的膨胀》的公开课教案，包含设计意图、活动目标、重点与难点、活动准备、活动过程、活动反思。
             </div>
           </div>
         </div>
@@ -818,36 +1116,60 @@
           <div class="chat-avatar">AI</div>
           <div class="chat-content">
             <div class="chat-bubble" id="lessonResult">
-<h4>小班语言活动：小熊拔牙</h4>
-<p><strong>一、活动目标</strong></p>
+<h4>活动方案：《有趣的膨胀》</h4>
+<p><strong>适用年龄段：</strong>大班</p>
+<p><strong>活动类型：</strong>集体教学活动</p>
+<p><strong>重点领域：</strong>科学</p>
+<p><strong>设计意图：</strong></p>
+<p>本次活动旨在通过让幼儿观察和比较物体在遇水时的膨胀现象，帮助幼儿理解物体膨胀的条件。活动基于《指南》中的科学领域关键经验，培养幼儿的初步探究能力，尤其是通过观察和比较发现事物变化的能力。活动设计考虑到幼儿的兴趣和发展需求，利用生活中常见的膨胀现象，如胖大海、海带等，激发他们的好奇心和探索欲望。通过操作和讨论，幼儿能够在动手过程中观察并记录物体变化，促进他们的观察力和思维能力的发展。创新之处在于通过互动性较强的操作环节，引导幼儿自主进行比较和分析，激发他们的科学探究兴趣，并让他们在实际操作中体会科学原理。</p>
+<p><strong>活动目标：</strong></p>
+<ol>
+<li>感知食物遇水膨胀现象，初步了解膨胀的条件。</li>
+<li>尝试用比较观察的方法，发现食物膨胀的变化和差异。</li>
+<li>激发对膨胀现象的兴趣，并初步理解其在生活中的应用。</li>
+</ol>
+<p><strong>重点与难点：</strong></p>
+<p>重点：感知膨胀现象，理解物体遇水或遇热膨胀的条件。</p>
+<p>难点：用比较的方法观察事物，理解不同物体膨胀的异同。</p>
+<p><strong>活动准备：</strong></p>
+<p>1.经验准备：</p>
 <ul>
-<li>理解故事内容，知道刷牙的重要性，养成早晚刷牙的好习惯。</li>
-<li>能跟随教师用简单语言复述故事主要情节。</li>
-<li>愿意参与角色扮演，大胆表达自己的想法。</li>
+<li>幼儿对生活中常见的膨胀现象已有初步了解（如：雨天积水膨胀、食物膨胀等）。</li>
+<li>幼儿曾在日常生活中接触过水使食物发生变化的现象。</li>
 </ul>
-<p><strong>二、活动准备</strong></p>
+<p>2.物质准备：</p>
 <ul>
-<li>教具：小熊手偶、牙齿模型、牙刷道具、PPT 课件。</li>
-<li>学具：幼儿用书《小熊拔牙》、画纸、彩笔。</li>
-<li>环境：布置“小熊家”场景。</li>
+<li>实验材料：温水、海带、紫菜、银耳、木耳、吸水珠、积木、橡皮、压缩面膜、石头等。</li>
+<li>辅助工具：透明杯子、托盘、毛巾、食物称重器等操作材料。</li>
+<li>记录工具：观察记录表、笔。</li>
+<li>环境准备：适合操作的湿润空间。</li>
 </ul>
-<p><strong>三、活动过程</strong></p>
-<p><strong>1. 情境导入（3分钟）</strong></p>
-<p>教师出示小熊手偶：“小朋友们，今天小熊来找我们玩，可是它捂着嘴，看起来很难受，发生了什么事呢？”引导幼儿猜测，激发兴趣。</p>
-<p><strong>2. 讲述故事（8分钟）</strong></p>
-<p>教师结合 PPT 生动地讲述《小熊拔牙》故事，提问：小熊为什么牙疼？最后是谁帮助了它？我们应该怎样保护牙齿？</p>
-<p><strong>3. 讨论与表达（5分钟）</strong></p>
-<p>组织幼儿讨论：自己有没有早晚刷牙？不刷牙会怎么样？鼓励幼儿大胆表达。</p>
-<p><strong>4. 角色扮演（7分钟）</strong></p>
-<p>分组进行角色扮演，幼儿分别扮演小熊、兔医生、小松鼠，学说故事中的简单对话。</p>
-<p><strong>5. 总结延伸（2分钟）</strong></p>
-<p>教师总结：刷牙能保护牙齿，我们要每天早晚刷牙，饭后漱口。</p>
-<p><strong>四、延伸活动</strong></p>
+<p><strong>活动过程：</strong></p>
+<p><strong>一、导入环节</strong></p>
+<p>1.故事导入</p>
+<p>引导幼儿认识“干紫菜”，通过描述“干紫菜”遇水膨胀的变化，激发幼儿对膨胀现象的兴趣。</p>
+<p>2.了解膨胀现象</p>
+<p>展示干紫菜的变化过程，说明它是如何吸水膨胀变大的。</p>
+<p><strong>二、实验环节</strong></p>
+<p>1.展示材料</p>
+<p>提供不同材料（海带、银耳、木耳等），引导幼儿描述未膨胀前，食物的特征，教师统一记录幼儿说的话。</p>
+<p>教师提供记录单，请幼儿记录未膨胀前食物的重量，表征食物的体积和形态。</p>
+<p>2.实验操作</p>
+<p>幼儿将材料放入水中观察其变化，记录其膨胀所需要的时间、膨胀后的重量、体积形态；填入记录表。</p>
+<p>3.对比讨论</p>
+<p>带领幼儿讨论同一种食物，膨胀前后，并与自己的观察结果对比。</p>
+<p>比较同一食材膨胀前后的差异：体积、颜色、形态变化。</p>
+<p>比较不同食材的膨胀异同：如干银耳和干木耳，虽然都膨胀，但银耳变得透明且柔软，而木耳变得更加松软，体积也有所增加；这几种食材需要的膨胀时间可能也会有差异。</p>
+<p><strong>三、总结与延伸</strong></p>
+<p>1.小结：</p>
 <ul>
-<li>美工区：画一画“我会刷牙”。</li>
-<li>生活区：学习正确刷牙方法，开展“刷牙小能手”打卡。</li>
-<li>家园共育：请家长配合督促幼儿坚持刷牙。</li>
+<li>带领幼儿回顾今天观察的食物，比较它们膨胀前后的异同，强调水对膨胀现象的影响。</li>
+<li>鼓励幼儿分享自己观察到的有趣现象。</li>
 </ul>
+<p>2.活动延伸：</p>
+<p>鼓励幼儿回家后用常温水或温水泡发其他干货食材（如干菊花、干蘑菇等），并记录它们的膨胀情况，明天带来分享。</p>
+<p><strong>四、活动反思</strong></p>
+<p>活动实施后，大部分幼儿能够通过观察不同食物的膨胀现象，理解食物遇水膨胀的基本原理。通过比较同一食物膨胀前后的差异，以及不同食物之间膨胀的异同，幼儿的观察力和思维能力得到了发展，达成了活动的主要目标。然而，部分幼儿在记录膨胀时间和观察细节时尚显不足，可能需要进一步加强对观察方法的引导。此外，活动中的食物选择可以进一步优化，挑选膨胀明显且能够在较短时间内观察到的食物，以便更好地适应幼儿园课堂的实际操作。同时，活动的延伸环节可以通过更多的家庭参与和指导，帮助幼儿巩固所学知识，提高活动的趣味性和参与度。</p>
             </div>
             <div class="message-actions">
               <button class="download-btn" id="downloadLesson">
@@ -874,10 +1196,21 @@
     (function () {
       // ========== 首页逻辑 ==========
       const searchInput = document.getElementById('searchInput');
+      const searchClear = document.getElementById('searchClear');
+      const queryBtn = document.getElementById('queryBtn');
+      const askBtn = document.getElementById('askBtn');
       const quickTags = document.querySelectorAll('#quickTags .quick-tag');
       const cards = document.querySelectorAll('.card');
       const sections = document.querySelectorAll('.section');
       const emptyTip = document.getElementById('emptyTip');
+
+      // 教案表单相关
+      const formPage = document.getElementById('formPage');
+      const lessonForm = document.getElementById('lessonForm');
+      const backFromForm = document.getElementById('backFromForm');
+      const cancelForm = document.getElementById('cancelForm');
+      const lessonFile = document.getElementById('lessonFile');
+      const fileLabelText = document.getElementById('fileLabelText');
 
       // 标签点击快速导航
       quickTags.forEach(tag => {
@@ -892,9 +1225,9 @@
         });
       });
 
-      // 搜索实时过滤
-      searchInput.addEventListener('input', function () {
-        const keyword = this.value.trim().toLowerCase();
+      // 搜索过滤
+      function doSearch() {
+        const keyword = searchInput.value.trim().toLowerCase();
         let visibleCount = 0;
 
         cards.forEach(card => {
@@ -913,6 +1246,32 @@
         });
 
         emptyTip.classList.toggle('visible', visibleCount === 0);
+        searchClear.classList.toggle('visible', searchInput.value.length > 0);
+      }
+
+      searchInput.addEventListener('input', doSearch);
+      searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') doSearch();
+      });
+
+      // 清空搜索
+      searchClear.addEventListener('click', function () {
+        searchInput.value = '';
+        searchInput.focus();
+        doSearch();
+      });
+
+      // 查询按钮
+      queryBtn.addEventListener('click', doSearch);
+
+      // 问问小叮：进入智能体推荐模式
+      askBtn.addEventListener('click', function () {
+        homePage.classList.add('hidden');
+        chatPage.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        if (chatHeaderTitle) chatHeaderTitle.textContent = '问问小叮';
+        renderRecommendationChat();
+        chatContainer.scrollTop = chatContainer.scrollHeight;
       });
 
       // 滚动时同步高亮标签
@@ -948,36 +1307,147 @@
       const chatPage = document.getElementById('chatPage');
       const backToHome = document.getElementById('backToHome');
       const chatContainer = document.getElementById('chatContainer');
+      const chatWrapper = document.getElementById('chatWrapper');
+      const chatHeaderTitle = chatPage.querySelector('.chat-header-title');
+      const lessonChatHTML = chatWrapper.innerHTML;
+
+      const recommendationHTML = `
+        <div class="chat-item user">
+          <div class="chat-avatar">我</div>
+          <div class="chat-content">
+            <div class="chat-bubble">我想设计一节有趣的科学活动，能帮我推荐合适的智能体吗？</div>
+          </div>
+        </div>
+        <div class="chat-item ai">
+          <div class="chat-avatar">AI</div>
+          <div class="chat-content">
+            <div class="chat-bubble">
+              <p>根据您的需求，为您推荐以下智能体：</p>
+              <div class="card-grid">
+                <div class="card rec-to-lesson">
+                  <div class="card-header">
+                    <div class="card-icon green">📘</div>
+                    <div>
+                      <div class="card-title">幼儿园教案设计</div>
+                      <div class="card-desc">按主题、领域生成完整教案与活动目标</div>
+                    </div>
+                  </div>
+                  <div class="card-tags"><span class="card-tag hot">推荐</span><span class="card-tag">教学资源</span></div>
+                </div>
+                <div class="card rec-to-lesson">
+                  <div class="card-header">
+                    <div class="card-icon cyan">🔬</div>
+                    <div>
+                      <div class="card-title">科学小实验</div>
+                      <div class="card-desc">推荐安全有趣的幼儿科学探索活动</div>
+                    </div>
+                  </div>
+                  <div class="card-tags"><span class="card-tag">科学</span><span class="card-tag free">免费</span></div>
+                </div>
+                <div class="card rec-to-lesson">
+                  <div class="card-header">
+                    <div class="card-icon orange">🧩</div>
+                    <div>
+                      <div class="card-title">区角活动设计</div>
+                      <div class="card-desc">根据主题生成美工、建构、角色等区域方案</div>
+                    </div>
+                  </div>
+                  <div class="card-tags"><span class="card-tag">区角</span><span class="card-tag">游戏</span></div>
+                </div>
+                <div class="card rec-to-lesson">
+                  <div class="card-header">
+                    <div class="card-icon pink">🐾</div>
+                    <div>
+                      <div class="card-title">户外游戏方案</div>
+                      <div class="card-desc">设计适合不同年龄段的户外体育游戏</div>
+                    </div>
+                  </div>
+                  <div class="card-tags"><span class="card-tag">户外</span><span class="card-tag free">免费</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      function renderLessonChat() {
+        chatWrapper.innerHTML = lessonChatHTML;
+        // 重新绑定 DOM 引用，因为 innerHTML 已替换
+        const newUserQuestion = document.getElementById('userQuestion');
+        const newLessonResult = document.getElementById('lessonResult');
+        document.getElementById('downloadLesson').addEventListener('click', function () {
+          const titleEl = newLessonResult.querySelector('h4');
+          const title = titleEl ? titleEl.innerText : '公开课教案';
+          const content = newLessonResult.innerText;
+          const blob = new Blob([title + '\n\n' + content], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = title.replace(/[\\/:*?"<>|]/g, '-') + '.txt';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+        return newUserQuestion;
+      }
+
+      function renderRecommendationChat() {
+        chatWrapper.innerHTML = recommendationHTML;
+        chatWrapper.querySelectorAll('.rec-to-lesson').forEach(card => {
+          card.addEventListener('click', function () {
+            chatPage.classList.remove('active');
+            showFormPage();
+          });
+        });
+      }
+
+      function showFormPage() {
+        homePage.classList.add('hidden');
+        formPage.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        lessonForm.reset();
+        fileLabelText.textContent = '点击上传参考教案或格式文件';
+      }
+
+      function closeFormBackToHome() {
+        formPage.classList.remove('active');
+        homePage.classList.remove('hidden');
+        document.body.style.overflow = '';
+      }
 
       document.querySelectorAll('.open-lesson').forEach(card => {
-        card.addEventListener('click', function () {
-          homePage.classList.add('hidden');
-          chatPage.classList.add('active');
-          document.body.style.overflow = 'hidden';
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        });
+        card.addEventListener('click', showFormPage);
+      });
+
+      backFromForm.addEventListener('click', closeFormBackToHome);
+      cancelForm.addEventListener('click', closeFormBackToHome);
+
+      lessonFile.addEventListener('change', function () {
+        const file = this.files[0];
+        fileLabelText.textContent = file ? `已选择：${file.name}` : '点击上传参考教案或格式文件';
+      });
+
+      lessonForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const area = document.getElementById('lessonArea').value;
+        const age = document.getElementById('lessonAge').value.trim();
+        const name = document.getElementById('lessonName').value.trim();
+        const goals = document.getElementById('lessonGoals').value.trim();
+
+        const currentUserQuestion = renderLessonChat();
+        currentUserQuestion.textContent = `请帮我设计一份${age}${area}领域《${name}》的公开课教案，包含设计意图、活动目标、重点与难点、活动准备、活动过程、活动反思。活动目标：${goals}`;
+        if (chatHeaderTitle) chatHeaderTitle.textContent = name;
+
+        formPage.classList.remove('active');
+        chatPage.classList.add('active');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
       });
 
       backToHome.addEventListener('click', function () {
         chatPage.classList.remove('active');
         homePage.classList.remove('hidden');
         document.body.style.overflow = '';
-      });
-
-      // ========== 下载教案 ==========
-      const lessonResult = document.getElementById('lessonResult');
-      document.getElementById('downloadLesson').addEventListener('click', function () {
-        const title = '小班语言活动：小熊拔牙';
-        const content = lessonResult.innerText;
-        const blob = new Blob([title + '\n\n' + content], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = '小班语言活动-小熊拔牙.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
       });
     })();
   </script>
