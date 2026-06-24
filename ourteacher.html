@@ -585,6 +585,33 @@
       color: var(--text-tertiary);
       margin-bottom: 28px;
     }
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .form-header-text {
+      flex: 1;
+    }
+    .form-header .example-btn {
+      flex-shrink: 0;
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 17px;
+      border: 1px solid var(--primary);
+      background: #fff;
+      color: var(--primary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .form-header .example-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
     .form-group {
       margin-bottom: 22px;
     }
@@ -1048,8 +1075,13 @@
 
     <main class="form-container">
       <div class="form-wrapper">
-        <h2 class="form-title">填写公开课教案参数</h2>
-        <p class="form-subtitle">完善以下信息后，AI 将为您生成一份完整的集体教学活动方案。</p>
+        <div class="form-header">
+          <div class="form-header-text">
+            <h2 class="form-title">填写公开课教案参数</h2>
+            <p class="form-subtitle">完善以下信息后，AI 将为您生成一份完整的集体教学活动方案。</p>
+          </div>
+          <button type="button" class="example-btn" id="fillExampleBtn">填入示例</button>
+        </div>
         <form id="lessonForm">
           <div class="form-group">
             <label class="form-label" for="lessonArea">重点领域</label>
@@ -1211,6 +1243,7 @@
       const cancelForm = document.getElementById('cancelForm');
       const lessonFile = document.getElementById('lessonFile');
       const fileLabelText = document.getElementById('fileLabelText');
+      const fillExampleBtn = document.getElementById('fillExampleBtn');
 
       // 标签点击快速导航
       quickTags.forEach(tag => {
@@ -1426,6 +1459,14 @@
       lessonFile.addEventListener('change', function () {
         const file = this.files[0];
         fileLabelText.textContent = file ? `已选择：${file.name}` : '点击上传参考教案或格式文件';
+      });
+
+      // 填入示例
+      fillExampleBtn.addEventListener('click', function () {
+        document.getElementById('lessonArea').value = '科学';
+        document.getElementById('lessonAge').value = '大班';
+        document.getElementById('lessonName').value = '有趣的膨胀';
+        document.getElementById('lessonGoals').value = '知识目标：感知食物遇水膨胀现象，初步了解膨胀的条件。\n能力目标：尝试用比较观察的方法，发现食物膨胀的变化和差异。\n情感目标：激发对膨胀现象的兴趣，并初步理解其在生活中的应用。';
       });
 
       lessonForm.addEventListener('submit', function (e) {
