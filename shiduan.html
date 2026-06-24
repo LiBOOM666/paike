@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>时段管理</title>
+  <title>作息表</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -373,7 +373,7 @@
     }
 
     .period-category-select {
-      width: 80px;
+      width: 130px;
       height: 40px;
       padding: 0 6px;
       border: 1px solid #D9D9D9;
@@ -570,7 +570,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>时段管理</h1>
+    <h1>作息表</h1>
 
     <div class="search-bar">
       <div class="search-wrapper">
@@ -652,42 +652,26 @@
     let timePeriodSets = [
       {
         id: 'tps_001',
-        name: '标准作息',
-        description: '适用于小班的标准日常作息时间',
+        name: '小班作息',
+        description: '入园晨检·早操锻炼·早餐·区域活动·分组活动·盥洗水果餐·户外自主游戏·午餐午睡·下午活动·离园整理',
         status: 'active',
         periods: [
-          { index: 1, timeRange: '08:00-09:00', category: '学习' },
-          { index: 2, timeRange: '09:00-10:00', category: '运动' },
-          { index: 3, timeRange: '10:00-11:00', category: '游戏' },
-          { index: 4, timeRange: '14:00-15:00', category: '生活' }
-        ]
-      },
-      {
-        id: 'tps_002',
-        name: '午休专用时段',
-        description: '仅用于午休及安静活动安排',
-        status: 'inactive',
-        periods: [
-          { index: 1, timeRange: '12:00-14:00', category: '生活' }
-        ]
-      },
-      {
-        id: 'tps_003',
-        name: '大班扩展时段',
-        description: '大班下午增加兴趣活动时段',
-        status: 'active',
-        periods: [
-          { index: 1, timeRange: '08:00-09:00', category: '学习' },
-          { index: 2, timeRange: '09:00-10:00', category: '运动' },
-          { index: 3, timeRange: '10:00-11:00', category: '游戏' },
-          { index: 4, timeRange: '14:00-15:00', category: '学习' },
-          { index: 5, timeRange: '15:00-16:00', category: '生活' }
+          { index: 1, timeRange: '07:45-08:00', category: '入园晨检' },
+          { index: 2, timeRange: '08:00-08:30', category: '早操锻炼' },
+          { index: 3, timeRange: '08:30-08:45', category: '早餐' },
+          { index: 4, timeRange: '08:45-09:45', category: '区域活动' },
+          { index: 5, timeRange: '09:45-10:30', category: '分组活动' },
+          { index: 6, timeRange: '10:30-10:50', category: '盥洗·水果餐' },
+          { index: 7, timeRange: '10:50-11:40', category: '户外自主游戏' },
+          { index: 8, timeRange: '11:40-14:50', category: '午餐·午睡' },
+          { index: 9, timeRange: '14:50-16:30', category: '下午活动' },
+          { index: 10, timeRange: '16:30-17:00', category: '离园整理' }
         ]
       }
     ];
 
-    const CATEGORIES = ['生活', '运动', '游戏', '学习'];
-    const DEFAULT_CATEGORY = '生活';
+    const CATEGORIES = ['入园晨检', '早操锻炼', '早餐', '区域活动', '分组活动', '盥洗·水果餐', '户外自主游戏', '午餐·午睡', '下午活动', '离园整理'];
+    const DEFAULT_CATEGORY = '入园晨检';
 
     let editingId = null;
     let confirmCallback = null;
