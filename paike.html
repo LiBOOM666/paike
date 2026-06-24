@@ -642,11 +642,52 @@
     .slot-note-row { margin-bottom: 12px; }
     .slot-note-row:last-child { margin-bottom: 0; }
 
-    .detail-row { margin-bottom: 10px; line-height: 1.6; }
-    .detail-label { color: var(--text-secondary); font-size: 13px; }
-    .detail-value { color: var(--text); }
-    .detail-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
-    .detail-tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #f0f0f0; color: var(--text-secondary); }
+    .detail-row { display: flex; margin-bottom: 12px; align-items: flex-start; }
+    .detail-label { width: 80px; font-size: 13px; color: #8c8c8c; flex-shrink: 0; margin-top: 2px; }
+    .detail-value { font-size: 14px; color: #262626; flex: 1; line-height: 1.5; }
+    .detail-value .tag { margin-right: 4px; }
+
+    .detail-multiline {
+      background: #f5f7fa;
+      padding: 10px 12px;
+      border-radius: 6px;
+      min-height: 60px;
+      white-space: pre-wrap;
+    }
+
+    .detail-files { display: flex; flex-direction: column; gap: 6px; }
+    .detail-file-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #f6ffed;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #262626;
+    }
+    .detail-file-icon { font-size: 14px; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .tag-type-health { background: #f6ffed; color: #52c41a; }
+    .tag-type-language { background: #e6fffb; color: #13c2c2; }
+    .tag-type-social { background: #fff0f6; color: #eb2f96; }
+    .tag-type-science { background: #fff2e8; color: #fa541c; }
+    .tag-type-art { background: #f9f0ff; color: #722ed1; }
+    .tag-category-life { background: #fff7e6; color: #fa8c16; }
+    .tag-category-sport { background: #f0f5ff; color: #2f54eb; }
+    .tag-category-game { background: #e6f7ff; color: #1890ff; }
+    .tag-category-study { background: #f6ffed; color: #52c41a; }
+    .tag-grade { background: #f5f5f5; color: #595959; }
+
+    .modal-header-actions { display: flex; align-items: center; gap: 10px; }
+    .detail-modal { width: 480px; }
 
     .materials-list { margin-top: 8px; }
     .material-link {
@@ -796,14 +837,17 @@
 
   <!-- 弹窗：活动详情 -->
   <div class="modal-overlay" id="activityDetailModal">
-    <div class="modal">
+    <div class="modal detail-modal">
       <div class="modal-header">
-        <span>活动详情</span>
-        <button class="modal-close" data-close="activityDetailModal">×</button>
+        <span class="modal-title">活动详情</span>
+        <div class="modal-header-actions">
+          <button class="btn btn-primary" id="joinPlanBtn" style="height:28px;padding:0 12px;font-size:13px;">+ 加入计划</button>
+          <button class="modal-close" data-close="activityDetailModal">✕</button>
+        </div>
       </div>
       <div class="modal-body" id="activityDetailBody"></div>
       <div class="modal-footer">
-        <button class="btn" data-close="activityDetailModal">关闭</button>
+        <button class="btn btn-primary" data-close="activityDetailModal">关闭</button>
       </div>
     </div>
   </div>
@@ -873,189 +917,378 @@
         color: '#8c8c8c', teacher: '徐桂玉', duration: 60,
         description: '幼儿入园、晨检、早锻炼、早操及早餐环节，帮助幼儿顺利开启一天。',
         targetAge: '小班', objectives: '1. 能愉快入园\n2. 积极参与早锻炼',
-        materials: [{ name: '晨检记录表', url: '#' }]
+        materials: [{ name: '晨检记录表', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '徐桂玉',
+        createTime: '2026-05-20',
+        courses: ["ai园宠"],
+        resources: []
       },
       {
         id: 'chenhui', name: '晨会活动', type: '语言', category: '学习', source: 'institution',
         color: '#faad14', teacher: '陈敏', duration: 45,
         description: '通过晨会谈话、分享，培养幼儿倾听与表达能力。',
         targetAge: '小班', objectives: '1. 愿意在集体中表达\n2. 能安静倾听同伴',
-        materials: [{ name: '晨会话题卡', url: '#' }]
+        materials: [{ name: '晨会话题卡', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '陈敏',
+        createTime: '2026-05-20',
+        courses: ["故事绘"],
+        resources: []
       },
       {
         id: 'huwai1', name: '户外自选活动：砖块件、体操圈、跳绳、平衡木', type: '健康', category: '运动', source: 'institution',
         color: '#52c41a', teacher: '曾紫钒', duration: 45,
         description: '利用户外器械开展自选体育活动，发展大肌肉力量与身体协调性。',
         targetAge: '小班', objectives: '1. 能自主选择器械\n2. 发展平衡与协调能力',
-        materials: [{ name: '器械清单', url: '#' }]
+        materials: [{ name: '器械清单', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '曾紫钒',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'quyu_meishu', name: '区域活动：重点指导美工区', type: '艺术', category: '游戏', source: 'institution',
         color: '#eb2f96', teacher: '何铭津', duration: 45,
         description: '在美工区投放丰富材料，支持幼儿进行主题相关创作。',
         targetAge: '小班', objectives: '1. 愿意尝试多种材料\n2. 能用作品表达想法',
-        materials: [{ name: '美工材料包', url: '#' }]
+        materials: [{ name: '美工材料包', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '何铭津',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'wucan', name: '餐前准备、午餐、午睡', type: '生活', category: '生活', source: 'institution',
         color: '#8c8c8c', teacher: '徐桂玉', duration: 190,
         description: '午餐、午睡及餐前准备环节，培养幼儿良好生活习惯。',
         targetAge: '小班', objectives: '1. 养成光盘习惯\n2. 能安静午睡',
-        materials: [{ name: '午睡巡查表', url: '#' }]
+        materials: [{ name: '午睡巡查表', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '徐桂玉',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'tiyu_shabao', name: '体育活动：《沙堡》', type: '健康', category: '运动', source: 'institution',
         color: '#f5222d', teacher: '陈敏', duration: 40,
         description: '在大沙池开展沙堡建构与体育活动，发展手部力量与合作能力。',
         targetAge: '小班', objectives: '1. 能与同伴合作建构\n2. 体验沙水游戏乐趣',
-        materials: [{ name: '沙堡工具', url: '#' }]
+        materials: [{ name: '沙堡工具', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '陈敏',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'yuyan_xiaohuangya', name: '语言活动：《寻找小黄鸭》', type: '语言', category: '学习', source: 'institution',
         color: '#1890ff', teacher: '曾紫钒', duration: 40,
         description: '通过绘本《寻找小黄鸭》，发展幼儿语言表达与理解能力。',
         targetAge: '小班', objectives: '1. 能理解故事情节\n2. 愿意大胆表达',
-        materials: [{ name: '绘本《寻找小黄鸭》', url: '#' }]
+        materials: [{ name: '绘本《寻找小黄鸭》', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '曾紫钒',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: [{"name": "绘本《寻找小黄鸭》", "category": "绘本", "size": "5MB"}]
       },
       {
         id: 'liyuan', name: '离园前整理活动', type: '生活', category: '生活', source: 'institution',
         color: '#8c8c8c', teacher: '何铭津', duration: 30,
         description: '整理个人物品、回顾一天活动，为离园做好准备。',
         targetAge: '小班', objectives: '1. 能整理自己的物品\n2. 回顾今日收获',
-        materials: [{ name: '离园检查表', url: '#' }]
+        materials: [{ name: '离园检查表', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '何铭津',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'quyu_shuxue', name: '区域活动：重点指导数学区', type: '科学', category: '游戏', source: 'institution',
         color: '#13c2c2', teacher: '徐桂玉', duration: 45,
         description: '在数学区投放操作材料，支持幼儿感知数量关系。',
         targetAge: '小班', objectives: '1. 对数学游戏感兴趣\n2. 初步感知数量',
-        materials: [{ name: '数学操作材料', url: '#' }]
+        materials: [{ name: '数学操作材料', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '徐桂玉',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'huwai2', name: '户外自选活动：体能垫、彩色圆桶、安吉梯', type: '健康', category: '运动', source: 'institution',
         color: '#52c41a', teacher: '陈敏', duration: 45,
         description: '利用体能垫、圆桶、安吉梯等器械开展户外自选运动。',
         targetAge: '小班', objectives: '1. 能大胆尝试多种器械\n2. 发展攀爬与平衡能力',
-        materials: [{ name: '安吉梯使用说明', url: '#' }]
+        materials: [{ name: '安吉梯使用说明', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '陈敏',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'tiyu_lanqiu', name: '分组活动：体育活动《篮球接力赛》', type: '健康', category: '运动', source: 'institution',
         color: '#f5222d', teacher: '曾紫钒', duration: 45,
         description: '分组开展篮球接力赛，培养团队合作与快速反应能力。',
         targetAge: '小班', objectives: '1. 学习接力规则\n2. 体验团队合作的乐趣',
-        materials: [{ name: '篮球', url: '#' }]
+        materials: [{ name: '篮球', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '曾紫钒',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: [{"name": "体育器械使用说明", "category": "视频", "size": "8MB"}]
       },
       {
         id: 'huwai3', name: '户外自选活动：体操垫、体能棒、雪糕筒、跨栏', type: '健康', category: '运动', source: 'institution',
         color: '#52c41a', teacher: '何铭津', duration: 40,
         description: '在篮球场开展体能器械自选活动，发展跑跳与跨跳能力。',
         targetAge: '小班', objectives: '1. 能连续跑跳\n2. 尝试跨跳动作',
-        materials: [{ name: '跨栏器械', url: '#' }]
+        materials: [{ name: '跨栏器械', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '何铭津',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'xinli_baobao', name: '心理健康活动：《爱的抱抱》', type: '社会', category: '学习', source: 'institution',
         color: '#722ed1', teacher: '徐桂玉', duration: 40,
         description: '通过拥抱、表达感谢等活动，帮助幼儿感受爱与温暖，建立安全感。',
         targetAge: '小班', objectives: '1. 愿意表达爱与感谢\n2. 感受集体温暖',
-        materials: [{ name: '情绪卡片', url: '#' }]
+        materials: [{ name: '情绪卡片', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '徐桂玉',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'huwai4', name: '户外自主游戏：手推车、海洋球、体能垫、接力棒', type: '健康', category: '游戏', source: 'institution',
         color: '#52c41a', teacher: '陈敏', duration: 45,
         description: '户外自主游戏中运用手推车、海洋球等材料，发展大肌肉动作。',
         targetAge: '小班', objectives: '1. 能自主选择游戏\n2. 发展手臂力量',
-        materials: [{ name: '海洋球', url: '#' }]
+        materials: [{ name: '海洋球', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '陈敏',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'yinyue_shuyadan', name: '分组活动：音乐活动《数鸭蛋》', type: '艺术', category: '学习', source: 'institution',
         color: '#2f54eb', teacher: '曾紫钒', duration: 45,
         description: '学唱歌曲《数鸭蛋》，感受音乐节奏与旋律。',
         targetAge: '小班', objectives: '1. 能跟随音乐演唱\n2. 感受音乐游戏的快乐',
-        materials: [{ name: '歌曲音频', url: '#' }]
+        materials: [{ name: '歌曲音频', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '曾紫钒',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: [{"name": "歌曲《数鸭蛋》音频", "category": "音乐", "size": "3MB"}]
       },
       {
         id: 'kexue_wuguan', name: '分组活动：科学活动《谁的五官》', type: '科学', category: '学习', source: 'institution',
         color: '#13c2c2', teacher: '何铭津', duration: 45,
         description: '通过观察与比较，认识五官的特征与作用。',
         targetAge: '小班', objectives: '1. 认识五官\n2. 能用感官探索',
-        materials: [{ name: '五官图卡', url: '#' }]
+        materials: [{ name: '五官图卡', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '何铭津',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'tiyu_papan', name: '体育活动：《攀爬网架》', type: '健康', category: '运动', source: 'institution',
         color: '#f5222d', teacher: '徐桂玉', duration: 40,
         description: '在小木屋前开展攀爬网架活动，发展上肢力量与勇气。',
         targetAge: '小班', objectives: '1. 能尝试攀爬\n2. 增强勇气与自信',
-        materials: [{ name: '攀爬网架', url: '#' }]
+        materials: [{ name: '攀爬网架', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '徐桂玉',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: [{"name": "体育器械使用说明", "category": "视频", "size": "8MB"}]
       },
       {
         id: 'zhuti_yadang', name: '主题活动：《鸭蛋的变化》', type: '科学', category: '学习', source: 'institution',
         color: '#fa8c16', teacher: '陈敏', duration: 40,
         description: '观察鸭蛋孵化过程中的变化，激发幼儿对生命的好奇与探究。',
         targetAge: '小班', objectives: '1. 能仔细观察并记录\n2. 萌发关爱生命的情感',
-        materials: [{ name: '鸭蛋观察记录表', url: '#' }]
+        materials: [{ name: '鸭蛋观察记录表', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '陈敏',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: [{"name": "鸭蛋孵化观察视频", "category": "视频", "size": "45MB"}]
       },
       {
         id: 'tiyu_jiuweiba', name: '分组活动：体育活动《揪尾巴》', type: '健康', category: '运动', source: 'institution',
         color: '#f5222d', teacher: '曾紫钒', duration: 45,
         description: '在前跑道开展揪尾巴体育游戏，发展躲闪跑能力。',
         targetAge: '小班', objectives: '1. 能灵活躲闪\n2. 遵守游戏规则',
-        materials: [{ name: '尾巴道具', url: '#' }]
+        materials: [{ name: '尾巴道具', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '曾紫钒',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'quyu_jiangou', name: '区域活动：重点指导建构区', type: '科学', category: '游戏', source: 'institution',
         color: '#13c2c2', teacher: '何铭津', duration: 45,
         description: '在建构区投放材料，支持幼儿学习搭建技巧，发展空间思维。',
         targetAge: '小班', objectives: '1. 尝试围合、垒高\n2. 学习与同伴合作',
-        materials: [{ name: '积木材料', url: '#' }]
+        materials: [{ name: '积木材料', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '何铭津',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'huwai5', name: '户外自选活动：平衡木、油桶件、砖块件', type: '健康', category: '运动', source: 'institution',
         color: '#52c41a', teacher: '徐桂玉', duration: 40,
         description: '在左跑道开展平衡木、油桶等器械活动，发展平衡能力。',
         targetAge: '小班', objectives: '1. 能在平衡木上行走\n2. 提高身体控制力',
-        materials: [{ name: '平衡木', url: '#' }]
+        materials: [{ name: '平衡木', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '徐桂玉',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'shehui_maomaochong', name: '社会活动：《毛毛虫变蝴蝶》', type: '社会', category: '学习', source: 'institution',
         color: '#722ed1', teacher: '陈敏', duration: 40,
         description: '了解毛毛虫变蝴蝶的过程，感受生命的成长与变化。',
         targetAge: '小班', objectives: '1. 了解蝴蝶生长过程\n2. 萌发爱护生命的情感',
-        materials: [{ name: '毛毛虫变蝴蝶图卡', url: '#' }]
+        materials: [{ name: '毛毛虫变蝴蝶图卡', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '陈敏',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'huwai6', name: '户外自主游戏：体能垫、轮胎、跳圈、雪糕筒、海绵棒', type: '健康', category: '游戏', source: 'institution',
         color: '#52c41a', teacher: '曾紫钒', duration: 45,
         description: '利用户外多种器械开展自主游戏，发展跑跳与协调能力。',
         targetAge: '小班', objectives: '1. 能自主选择器械组合\n2. 发展综合运动能力',
-        materials: [{ name: '户外器械组合', url: '#' }]
+        materials: [{ name: '户外器械组合', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '曾紫钒',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'meishu_xiaohuangfeng', name: '分组活动：美术活动《小黄蜂的花纹》', type: '艺术', category: '学习', source: 'institution',
         color: '#eb2f96', teacher: '何铭津', duration: 45,
         description: '观察小黄蜂的花纹，尝试用线条和色彩进行表现。',
         targetAge: '小班', objectives: '1. 能观察花纹特征\n2. 大胆用色与造型',
-        materials: [{ name: '绘画材料', url: '#' }]
+        materials: [{ name: '绘画材料', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '何铭津',
+        createTime: '2026-05-20',
+        courses: ["ai小画家"],
+        resources: [{"name": "小黄蜂花纹参考图", "category": "图片", "size": "2MB"}]
       },
       {
         id: 'shuxue_guailv', name: '分组活动：数学活动《找规律》', type: '科学', category: '学习', source: 'institution',
         color: '#13c2c2', teacher: '徐桂玉', duration: 45,
         description: '通过操作材料发现简单规律，发展逻辑思维能力。',
         targetAge: '小班', objectives: '1. 能发现简单规律\n2. 尝试按规律排列',
-        materials: [{ name: '规律操作卡', url: '#' }]
+        materials: [{ name: '规律操作卡', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '徐桂玉',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: []
       },
       {
         id: 'tiyu_jielibang', name: '体育活动：《接力棒赛跑》', type: '健康', category: '运动', source: 'institution',
         color: '#f5222d', teacher: '陈敏', duration: 40,
         description: '在前操场开展接力棒赛跑，发展快速跑与传接棒能力。',
         targetAge: '小班', objectives: '1. 学习传接棒\n2. 体验竞赛乐趣',
-        materials: [{ name: '接力棒', url: '#' }]
+        materials: [{ name: '接力棒', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '陈敏',
+        createTime: '2026-05-20',
+        courses: [],
+        resources: [{"name": "体育器械使用说明", "category": "视频", "size": "8MB"}]
       },
       {
         id: 'anquan_fangcaita', name: '安全教育活动：《防踩踏》', type: '健康', category: '学习', source: 'institution',
         color: '#ff4d4f', teacher: '曾紫钒', duration: 40,
         description: '通过情境模拟，帮助幼儿掌握防踩踏安全知识与自护方法。',
         targetAge: '小班', objectives: '1. 了解防踩踏常识\n2. 学会自我保护',
-        materials: [{ name: '防踩踏教育视频', url: '#' }]
+        materials: [{ name: '防踩踏教育视频', url: '#' }],
+      
+        grade: '小班',
+        ownership: '园所',
+        creator: '曾紫钒',
+        createTime: '2026-05-20',
+        courses: ["安全教育"],
+        resources: [{"name": "防踩踏动画", "category": "视频", "size": "12MB"}]
       }
     ];
 
@@ -1563,6 +1796,7 @@
     /* ================= 拖拽排课 ================= */
     let draggedActivityId = null;
     let draggedSourceKey = null;
+    let currentDetailActivity = null;
 
     function onActivityDragStart(e) {
       if (!state.isEditMode) {
@@ -1668,40 +1902,88 @@
     function openActivityDetail(id) {
       const a = getActivity(id);
       if (!a) return;
-      const sourceMap = { my: '我的', institution: '园所', platform: '平台' };
+
+      const typeColorMap = {
+        '健康': 'tag-type-health',
+        '语言': 'tag-type-language',
+        '社会': 'tag-type-social',
+        '科学': 'tag-type-science',
+        '艺术': 'tag-type-art'
+      };
+
+      const categoryColorMap = {
+        '生活': 'tag-category-life',
+        '运动': 'tag-category-sport',
+        '游戏': 'tag-category-game',
+        '学习': 'tag-category-study'
+      };
+
+      const materialsHtml = a.materials && a.materials.length > 0
+        ? a.materials.map(m => `<div class="detail-file-item"><span class="detail-file-icon">📄</span>${escapeHtml(m.name)}</div>`).join('')
+        : '<span style="color:#8c8c8c">暂无资料</span>';
+
+      const resourcesHtml = a.resources && a.resources.length > 0
+        ? a.resources.map(r => `<div class="detail-file-item"><span class="detail-file-icon">🗂️</span>${escapeHtml(r.name)}</div>`).join('')
+        : '<span style="color:#8c8c8c">暂无资源</span>';
+
       document.getElementById('activityDetailBody').innerHTML = `
         <div class="detail-row">
-          <span class="detail-label">活动名称：</span>
-          <span class="detail-value">${a.name}</span>
+          <div class="detail-label">活动名称</div>
+          <div class="detail-value" style="font-weight:600;font-size:15px;">${escapeHtml(a.name)}</div>
         </div>
         <div class="detail-row">
-          <span class="detail-label">标签：</span>
-          <div class="detail-tags">
-            <span class="detail-tag">领域：${a.type}</span>
-            <span class="detail-tag">类型：${a.category}</span>
-            <span class="detail-tag">来源：${sourceMap[a.source] || a.source}</span>
-            <span class="detail-tag">时长：${a.duration}分钟</span>
+          <div class="detail-label">活动领域</div>
+          <div class="detail-value"><span class="tag ${typeColorMap[a.type] || ''}">${escapeHtml(a.type)}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">活动类型</div>
+          <div class="detail-value"><span class="tag ${categoryColorMap[a.category] || ''}">${escapeHtml(a.category)}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">年级</div>
+          <div class="detail-value"><span class="tag tag-grade">${escapeHtml(a.grade || '-')}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">归属</div>
+          <div class="detail-value">${escapeHtml(a.ownership || '-')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">创建人</div>
+          <div class="detail-value">${escapeHtml(a.creator || '-')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">创建时间</div>
+          <div class="detail-value">${escapeHtml(a.createTime || '-')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">活动简介</div>
+          <div class="detail-value">
+            <div class="detail-multiline">${escapeHtml(a.description || '—')}</div>
           </div>
         </div>
         <div class="detail-row">
-          <span class="detail-label">适用年龄：</span>
-          <span class="detail-value">${a.targetAge}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">活动简介：</span>
-          <div class="detail-value">${a.description}</div>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">教学目标：</span>
-          <div class="detail-value" style="white-space: pre-line">${a.objectives}</div>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">课程资料：</span>
-          <div class="materials-list">
-            ${a.materials.map(m => `<a class="material-link" href="${m.url}" target="_blank">${m.name}</a>`).join('')}
+          <div class="detail-label">教学目标</div>
+          <div class="detail-value">
+            <div class="detail-multiline">${escapeHtml(a.objectives || '—')}</div>
           </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">课程资料</div>
+          <div class="detail-value detail-files">${materialsHtml}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">使用课件</div>
+          <div class="detail-value">
+            ${a.courses && a.courses.length > 0 ? a.courses.map(c => `<span class="tag" style="background:#e6f7ff;color:#1890ff;border:1px solid #bae7ff;margin-right:4px;">${escapeHtml(c)}</span>`).join('') : '<span style="color:#8c8c8c">—</span>'}
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">课程资源</div>
+          <div class="detail-value detail-files">${resourcesHtml}</div>
         </div>
       `;
+
+      currentDetailActivity = a;
       showModal('activityDetailModal');
     }
 
@@ -1766,6 +2048,32 @@
       overlay.addEventListener('click', e => {
         if (e.target === overlay) hideModal(overlay.id);
       });
+    });
+
+    // 活动详情弹窗：加入计划
+    document.getElementById('joinPlanBtn').addEventListener('click', () => {
+      if (!currentDetailActivity) return;
+      const weekStart = getMonday(state.currentDate);
+      const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+      let added = false;
+      for (const date of weekDays) {
+        for (const slot of timeSlots) {
+          const k = key(date, slot);
+          if (!scheduleData[k]) {
+            scheduleData[k] = { activityId: currentDetailActivity.id, assignedPerson: currentDetailActivity.teacher || '' };
+            added = true;
+            break;
+          }
+        }
+        if (added) break;
+      }
+      if (added) {
+        hideModal('activityDetailModal');
+        renderSchedule();
+        showToast(`已将“${currentDetailActivity.name}”加入本周计划`, 'success');
+      } else {
+        showToast('本周已无空时段', 'warning');
+      }
     });
 
     /* ================= 表头主题 Tooltip ================= */
