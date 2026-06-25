@@ -719,6 +719,185 @@
     .day-option .day-name { font-weight: 600; }
     .day-option .day-date { font-size: 12px; color: var(--text-secondary); }
 
+    /* ===== 空格子：拖拽引导 + 新增活动方案按钮 ===== */
+    .slot-cell .empty-actions {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .main.edit-mode .slot-cell.empty:hover .empty-actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .slot-cell .empty-hint {
+      color: var(--text-disabled);
+      font-size: 11px;
+      pointer-events: none;
+    }
+    .add-activity-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--primary);
+      font-size: 12px;
+      text-decoration: underline;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+    .add-activity-btn:hover { color: var(--primary-hover); }
+
+    /* ===== 新增活动方案表单（移植自活动方案库） ===== */
+    .form-label .required { color: var(--danger); margin-left: 2px; }
+
+    .form-select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+    .form-select:focus { border-color: var(--primary); }
+
+    /* 标签选择（chips） */
+    .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #fff;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      user-select: none;
+      line-height: 1.2;
+    }
+    .chip:hover { border-color: var(--primary); color: var(--primary); }
+    .chip.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .chip-group.error .chip { border-color: var(--danger); }
+
+    /* 多选下拉 */
+    .multi-select { position: relative; }
+    .multi-select-trigger {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .multi-select-trigger:hover,
+    .multi-select-trigger.active { border-color: var(--primary); }
+    .multi-select-trigger .placeholder { color: #bfbfbf; }
+    .multi-select-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+    .multi-select-dropdown.show { display: block; }
+    .multi-select-option {
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .multi-select-option:hover { background: #f0f7ff; }
+    .multi-select-option input[type="checkbox"] {
+      width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);
+    }
+    .multi-select-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .multi-select-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #e6f7ff;
+      color: var(--primary);
+      border: 1px solid #bae7ff;
+    }
+    .multi-select-tag .remove { cursor: pointer; font-size: 12px; line-height: 1; }
+    .multi-select-tag .remove:hover { color: var(--danger); }
+
+    /* AI 生成按钮 */
+    .ai-generate-btn {
+      height: 32px;
+      padding: 0 14px;
+      font-size: 13px;
+      color: var(--ai);
+      border-color: #d3adf7;
+      background: #f9f0ff;
+      gap: 4px;
+    }
+    .ai-generate-btn:hover { color: var(--ai); border-color: var(--ai); background: #f4e8ff; }
+    .ai-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* 表单错误提示 */
+    .error-msg { color: var(--danger); font-size: 12px; margin-top: 4px; display: none; }
+    .error-msg.show { display: block; }
+    .form-input.error, .form-select.error, .form-textarea.error { border-color: var(--danger); }
+
+    /* 文件上传 */
+    .upload-area {
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 10px;
+    }
+    .upload-area:hover { border-color: var(--primary); }
+    .upload-text { font-size: 14px; color: var(--text-secondary); }
+    .file-list { display: flex; flex-direction: column; gap: 8px; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .file-name { color: var(--text); word-break: break-all; }
+    .file-remove {
+      width: 20px; height: 20px;
+      border: none; background: transparent;
+      cursor: pointer; color: var(--text-disabled);
+      font-size: 14px; flex-shrink: 0; margin-left: 8px;
+    }
+    .file-remove:hover { color: var(--danger); }
+
     /* Toast */
     .toast-container {
       position: fixed;
@@ -864,6 +1043,112 @@
         <button class="btn" id="dailyEditCancel">取消</button>
         <button class="btn btn-success" id="dailyEditSave">保存</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：新增活动方案（移植自活动方案库，保存后双写：入库 + 落到目标格子） -->
+  <div class="modal-overlay" id="newActivityModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span>新增活动方案</span>
+        <button class="modal-close" data-close="newActivityModal">×</button>
+      </div>
+      <form id="newActivityForm">
+        <div class="modal-body">
+          <div class="form-row">
+            <label class="form-label">活动名称<span class="required">*</span></label>
+            <input type="text" class="form-input" id="naName" placeholder="请输入活动名称">
+            <div class="error-msg" id="naErrName">请输入活动名称</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">活动领域<span class="required">*</span></label>
+            <div class="chip-group" id="naDomainChips">
+              <div class="chip" data-value="健康">健康</div>
+              <div class="chip" data-value="语言">语言</div>
+              <div class="chip" data-value="社会">社会</div>
+              <div class="chip" data-value="科学">科学</div>
+              <div class="chip" data-value="艺术">艺术</div>
+            </div>
+            <div class="error-msg" id="naErrDomain">请选择活动领域</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">活动类型<span class="required">*</span></label>
+            <div class="chip-group" id="naCategoryChips">
+              <div class="chip" data-value="生活">生活</div>
+              <div class="chip" data-value="运动">运动</div>
+              <div class="chip" data-value="游戏">游戏</div>
+              <div class="chip" data-value="学习">学习</div>
+              <div class="chip" data-value="其他">其他</div>
+            </div>
+            <div class="error-msg" id="naErrCategory">请选择活动类型</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">年级<span class="required">*</span></label>
+            <div class="chip-group" id="naGradeChips">
+              <div class="chip" data-value="托班">托班</div>
+              <div class="chip" data-value="小班">小班</div>
+              <div class="chip" data-value="中班">中班</div>
+              <div class="chip" data-value="大班">大班</div>
+            </div>
+            <div class="error-msg" id="naErrGrade">请选择年级</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">归属<span class="required">*</span></label>
+            <div class="chip-group" id="naOwnershipChips">
+              <div class="chip" data-value="个人">个人</div>
+              <div class="chip" data-value="园所">园所</div>
+            </div>
+            <div class="error-msg" id="naErrOwnership">请选择归属</div>
+          </div>
+          <div class="form-row">
+            <button type="button" class="btn ai-generate-btn" id="naBtnAiGenerate">✨ AI 生成</button>
+          </div>
+          <div class="form-row">
+            <label class="form-label">活动简介</label>
+            <textarea class="form-textarea" id="naDescription" placeholder="请输入活动简介"></textarea>
+          </div>
+          <div class="form-row">
+            <label class="form-label">教学目标</label>
+            <textarea class="form-textarea" id="naObjectives" placeholder="请输入教学目标"></textarea>
+          </div>
+          <div class="form-row">
+            <label class="form-label">课程资料</label>
+            <div class="file-list" id="naFileList"></div>
+            <div class="upload-area" id="naUploadArea">
+              <span class="upload-text">+ 上传资料</span>
+            </div>
+            <input type="file" id="naFileInput" style="display:none;" multiple>
+          </div>
+          <div class="form-row">
+            <label class="form-label">使用课件</label>
+            <div class="multi-select" id="naCourseMultiSelect">
+              <div class="multi-select-trigger" id="naCourseTrigger">
+                <span class="placeholder">请选择课件</span>
+                <span>▼</span>
+              </div>
+              <div class="multi-select-dropdown" id="naCourseDropdown">
+                <div class="multi-select-option" data-value="创想无限">
+                  <input type="checkbox" value="创想无限"> 创想无限
+                </div>
+                <div class="multi-select-option" data-value="ai园宠">
+                  <input type="checkbox" value="ai园宠"> ai园宠
+                </div>
+                <div class="multi-select-option" data-value="故事绘">
+                  <input type="checkbox" value="故事绘"> 故事绘
+                </div>
+                <div class="multi-select-option" data-value="ai小画家">
+                  <input type="checkbox" value="ai小画家"> ai小画家
+                </div>
+              </div>
+              <div class="multi-select-tags" id="naCourseTags"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" id="naCancel">取消</button>
+          <button type="submit" class="btn btn-primary">确认保存</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1325,6 +1610,24 @@
     const weeklyMetaData = {}; // key: weekStartStr -> { monthTheme, weekTheme, weekFocus, leadTeacher }
     const weeklySummaryData = {}; // key: weekStartStr -> string
 
+    // 领域配色（与活动方案库一致）
+    const domainColors = {
+      '健康': '#52C41A',
+      '语言': '#13C2C2',
+      '社会': '#EB2F96',
+      '科学': '#FA541C',
+      '艺术': '#722ED1'
+    };
+
+    // 新增活动方案表单状态
+    let naSelectedDomain = '';
+    let naSelectedCategory = '';
+    let naSelectedGrades = [];
+    let naSelectedOwnership = '';
+    let naSelectedCourses = [];
+    let naTempMaterials = [];
+    let naTargetSlot = null; // { date, slot }：保存后落入的目标格子
+
     // 示例数据：2026年6月8日—12日（第15周）
     const demoWeekStart = new Date(2026, 5, 8);
     const demoWeekStartStr = formatDate(demoWeekStart);
@@ -1608,7 +1911,12 @@
           } else {
             html += `
               <div class="slot-cell ${dragOverClass}" data-date="${formatDate(date)}" data-slot="${slot}">
-                ${state.isEditMode ? '<div class="empty-placeholder">拖拽活动到此处</div>' : ''}
+                ${state.isEditMode ? `
+                  <div class="empty-actions">
+                    <div class="empty-hint">拖拽活动到此处</div>
+                    <button type="button" class="add-activity-btn" data-add-date="${formatDate(date)}" data-add-slot="${slot}">+ 新增活动方案</button>
+                  </div>
+                ` : ''}
               </div>
             `;
           }
@@ -1636,11 +1944,16 @@
           cell.addEventListener('dragover', onSlotDragOver);
           cell.addEventListener('dragleave', onSlotDragLeave);
           cell.addEventListener('drop', onSlotDrop);
-          cell.addEventListener('click', e => {
-            if (e.target.closest('.slot-activity') || e.target.closest('.slot-person')) return;
-            openDailyEdit(parseDate(cell.dataset.date));
-          });
+          // 改动二：单击空格子本体不再有交互，仅“新增活动方案”按钮可点
         }
+      });
+
+      // 空格子内“新增活动方案”按钮
+      table.querySelectorAll('.add-activity-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          openNewActivityModal(parseDate(btn.dataset.addDate), btn.dataset.addSlot);
+        });
       });
 
       // 负责人变更
@@ -1994,17 +2307,12 @@
       if (!state.isEditMode) return;
       editingDate = date;
       const d = dailyEditData[formatDate(date)] || { theme: '', slots: {} };
+      // 改动二：仅保留“今日主题”，删除按时段逐个填写的时段说明文本框
       document.getElementById('dailyEditBody').innerHTML = `
         <div class="form-row">
           <label class="form-label">今日主题</label>
           <input type="text" class="form-input" id="dailyTheme" value="${d.theme || ''}" placeholder="请输入今日主题">
         </div>
-        ${timeSlots.map(slot => `
-          <div class="slot-note-row">
-            <label class="form-label">${slot} 时段说明</label>
-            <textarea class="form-textarea daily-slot-note" data-slot="${slot}" placeholder="请输入时段说明">${d.slots && d.slots[slot] ? d.slots[slot] : ''}</textarea>
-          </div>
-        `).join('')}
       `;
       showModal('dailyEditModal');
     }
@@ -2013,13 +2321,9 @@
       if (!editingDate) return;
       const dateStr = formatDate(editingDate);
       const theme = document.getElementById('dailyTheme').value.trim();
-      const slots = {};
-      document.querySelectorAll('.daily-slot-note').forEach(ta => {
-        const v = ta.value.trim();
-        slots[ta.dataset.slot] = v;
-        if (!v) delete slots[ta.dataset.slot];
-      });
-      dailyEditData[dateStr] = { theme, slots };
+      // 保留原有时段说明数据（仅展示，不再可录入）
+      const existing = dailyEditData[dateStr] || {};
+      dailyEditData[dateStr] = { theme, slots: existing.slots || {} };
       hideModal('dailyEditModal');
       renderSchedule();
       showToast('每日计划已保存', 'success');
