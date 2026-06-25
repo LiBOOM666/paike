@@ -189,15 +189,7 @@
     <div class="view" id="detailView">
       <div class="detail-header">
         <button class="btn" id="btnBack">◀ 返回列表</button>
-      </div>
-      <div class="filter-bar">
-        <div class="filter-item"><label>学期</label><select class="filter-select" id="detailTerm"></select></div>
-        <div class="filter-item"><label>年级</label><select class="filter-select" id="detailGrade">
-          <option value="托班">托班</option><option value="小班">小班</option><option value="中班">中班</option><option value="大班">大班</option>
-        </select></div>
-        <div class="filter-item"><label>班级</label><select class="filter-select" id="detailClass">
-          <option value="1班">1班</option><option value="2班">2班</option><option value="3班">3班</option>
-        </select></div>
+        <button class="btn btn-primary" id="btnAiPlan" style="margin-left:auto;">✨ AI 帮排学期计划</button>
       </div>
       <div class="canvas-wrapper">
         <div class="canvas" id="canvas">
@@ -403,10 +395,7 @@
     const filterStart = document.getElementById('filterStart');
     const filterEnd = document.getElementById('filterEnd');
 
-    // 详情筛选
-    const detailTerm = document.getElementById('detailTerm');
-    const detailGrade = document.getElementById('detailGrade');
-    const detailClass = document.getElementById('detailClass');
+    // 详情画布
     const canvas = document.getElementById('canvas');
     const linesLayer = document.getElementById('linesLayer');
     const nodesLayer = document.getElementById('nodesLayer');
@@ -734,7 +723,7 @@
         const plan = getOrCreatePlan(termId, grade, className);
         if (plan) { plan.periodRule = periodId; showToast('计划已创建'); }
       }
-      closeFormModal(); renderTable();
+      closeFormModal(); renderTable(); goDetail(key);
     }
 
     // ============ 管理列表 ============
@@ -770,9 +759,6 @@
       currentDetail.className = parts.pop();
       currentDetail.grade = parts.pop();
       currentDetail.termId = parts.join('_');
-      detailTerm.value = currentDetail.termId;
-      detailGrade.value = currentDetail.grade;
-      detailClass.value = currentDetail.className;
       listView.classList.remove('active');
       detailView.classList.add('active');
       pageTitle.textContent = '学期计划';
@@ -820,9 +806,6 @@
       pageTitle.textContent = '学期计划管理';
       renderTable();
     });
-    detailTerm.addEventListener('change', () => { currentDetail.termId = detailTerm.value; renderCanvas(); });
-    detailGrade.addEventListener('change', () => { currentDetail.grade = detailGrade.value; renderCanvas(); });
-    detailClass.addEventListener('change', () => { currentDetail.className = detailClass.value; renderCanvas(); });
 
     // 思维导图事件
     nodesLayer.addEventListener('mouseover', (e) => {
@@ -868,6 +851,68 @@
     let resizeTimer;
     window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderCanvas, 200); });
 
+    // ============ AI 帮排学期计划 ============
+    // 预置示例内容库（前端 mock）：覆盖学期 / 月份 / 周三个层级，按月份给一套预设主题
+    const AI_TERM_PRESET = {
+      theme: '探索四季，快乐成长',
+      plan: '本学期围绕季节变化与幼儿生活经验，通过主题探究、游戏体验和动手实践，循序渐进地发展幼儿的认知、语言、社交与艺术能力，让孩子在探索中收获成长。'
+    };
+    // key = 月份(1-12)
+    const AI_MONTH_PRESET = {
+      1:  { theme: '冬日暖阳',   plan: '感受冬季气候特点，开展迎新年主题活动，体验传统年俗文化。', weeks: ['腊月里的故事','红红的灯笼','迎接新年','送上祝福','寒假准备'] },
+      2:  { theme: '新年新气象', plan: '迎接新学期，感受春节与元宵的热闹氛围，重建良好的一日生活常规。', weeks: ['开学第一课','热闹元宵节','认识新伙伴','我长大一岁','春天的脚步'] },
+      3:  { theme: '春暖花开',   plan: '观察春天万物复苏，开展植树护绿与亲近自然的活动，萌发关爱自然的意识。', weeks: ['春姑娘来了','种子的秘密','植树护绿','小雨沙沙','花儿朵朵'] },
+      4:  { theme: '亲近自然',   plan: '走进春日田野，探索动植物生长变化，体验观察与劳动的乐趣。', weeks: ['春游踏青','小蝌蚪找妈妈','勤劳的蚂蚁','美丽的蝴蝶','劳动最光荣'] },
+      5:  { theme: '感恩与爱',   plan: '结合劳动节与母亲节，体验劳动光荣，学会感恩并向身边人表达爱。', weeks: ['我爱劳动','妈妈的爱','能干的小手','快乐的我们','初夏物语'] },
+      6:  { theme: '快乐六月',   plan: '欢度六一儿童节，开展庆祝与才艺展示活动，体验成长的快乐与自信。', weeks: ['快乐六一','我的小本领','夏天来了','清凉一夏','期末汇演'] },
+      7:  { theme: '炎炎夏日',   plan: '了解夏季特征与防暑常识，开展水主题游戏，做好迎接暑假的准备。', weeks: ['夏日炎炎','玩水真快乐','防暑小妙招','暑假安全','快乐放暑假'] },
+      8:  { theme: '快乐暑期',   plan: '开展暑期主题活动，丰富假期生活，做好升班与开学的衔接准备。', weeks: ['夏日时光','亲子时刻','旅行见闻','开学准备','期待新学期'] },
+      9:  { theme: '适应新环境', plan: '帮助幼儿适应集体生活，建立安全感与规则意识，认识班级新朋友。', weeks: ['认识新朋友','幼儿园的一天','我的小标记','安全我知道','常规养成'] },
+      10: { theme: '金色的秋天', plan: '引导幼儿观察秋季自然变化，感受丰收的喜悦与节日氛围。', weeks: ['国庆欢乐多','树叶变颜色','丰收的季节','秋天的动物','秋日畅想'] },
+      11: { theme: '感恩与分享', plan: '培养幼儿的感恩之心，在分享与互助中体验关爱他人的快乐。', weeks: ['感谢身边的人','分享真快乐','小小志愿者','温暖的家','勤劳的小手'] },
+      12: { theme: '冬日乐趣',   plan: '感受冬季特色，体验冰雪与节日活动，回顾一年的点滴成长。', weeks: ['冬天穿什么','雪花飘飘','冬至到啦','新年倒计时','成长回顾'] }
+    };
+    // 判断某个值是否为空 / 占位文案
+    function isAiEmpty(v) { return !v || !v.trim() || v === '暂无主题' || v === '暂无计划'; }
+    // 执行 AI 填充：仅替换占位/空白内容，保留老师已手动编辑的部分
+    function aiFillPlan(plan) {
+      if (isAiEmpty(plan.termTheme)) plan.termTheme = AI_TERM_PRESET.theme;
+      if (isAiEmpty(plan.termPlan)) plan.termPlan = AI_TERM_PRESET.plan;
+      plan.months.forEach(m => {
+        const mNum = parseInt((m.month || '').split('-')[1], 10);
+        const preset = AI_MONTH_PRESET[mNum];
+        if (!preset) return;
+        if (isAiEmpty(m.theme)) m.theme = preset.theme;
+        if (isAiEmpty(m.plan)) m.plan = preset.plan;
+        m.weeks.forEach(w => {
+          const wt = preset.weeks[(w.weekNumber - 1) % preset.weeks.length];
+          if (isAiEmpty(w.theme)) w.theme = wt;
+          if (isAiEmpty(w.plan)) w.plan = `围绕"${wt}"开展主题活动，引导幼儿在游戏与体验中获得发展。`;
+        });
+      });
+    }
+    const btnAiPlan = document.getElementById('btnAiPlan');
+    btnAiPlan.addEventListener('click', () => {
+      const plan = getOrCreatePlan(currentDetail.termId, currentDetail.grade, currentDetail.className);
+      if (!plan) return;
+      // loading 过渡，营造"生成中"效果
+      btnAiPlan.disabled = true;
+      const originalText = btnAiPlan.textContent;
+      btnAiPlan.textContent = '✨ 生成中…';
+      btnAiPlan.style.opacity = '0.7';
+      btnAiPlan.style.cursor = 'wait';
+      setTimeout(() => {
+        aiFillPlan(plan);
+        renderCanvas();
+        renderTable();
+        btnAiPlan.disabled = false;
+        btnAiPlan.textContent = originalText;
+        btnAiPlan.style.opacity = '';
+        btnAiPlan.style.cursor = '';
+        showToast('✨ AI 已生成整份学期计划');
+      }, 1200);
+    });
+
     // 列表筛选事件
     [filterTerm, filterGrade, filterClass, filterStart, filterEnd].forEach(el => el.addEventListener('change', renderTable));
     filterCreator.addEventListener('input', renderTable);
@@ -886,14 +931,12 @@
     terms.forEach(t => {
       const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name;
       filterTerm.appendChild(opt.cloneNode(true));
-      detailTerm.appendChild(opt.cloneNode(true));
       formTerm.appendChild(opt.cloneNode(true));
     });
     timePeriodSets.forEach(p => {
       const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.name;
       formPeriod.appendChild(opt);
     });
-    detailTerm.value = 'term_001';
     renderTable();
   </script>
 </body>
