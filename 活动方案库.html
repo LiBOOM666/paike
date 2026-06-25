@@ -258,6 +258,7 @@
     .tag-category-sport { background: #f0f5ff; color: #2f54eb; }
     .tag-category-game { background: #e6f7ff; color: #1890ff; }
     .tag-category-study { background: #f6ffed; color: #52c41a; }
+    .tag-category-other { background: #f5f0e8; color: #8c6e4a; }
 
     .tag-grade { background: #f5f5f5; color: #595959; }
 
@@ -430,6 +431,58 @@
     }
 
     .multi-select-tag .remove:hover { color: #ff4d4f; }
+
+    /* 标签选择（chips） */
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 7px 16px;
+      border: 1px solid #d9d9d9;
+      border-radius: 16px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #fff;
+      color: #595959;
+      transition: all 0.15s;
+      user-select: none;
+      line-height: 1.2;
+    }
+
+    .chip:hover { border-color: #1890ff; color: #1890ff; }
+
+    .chip.selected {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: #fff;
+    }
+
+    .chip-group.error .chip { border-color: #ff4d4f; }
+
+    /* AI 生成按钮 */
+    .ai-generate-btn {
+      height: 32px;
+      padding: 0 14px;
+      font-size: 13px;
+      color: #722ed1;
+      border-color: #d3adf7;
+      background: #f9f0ff;
+      gap: 4px;
+    }
+
+    .ai-generate-btn:hover {
+      color: #722ed1;
+      border-color: #722ed1;
+      background: #f4e8ff;
+    }
+
+    .ai-generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
     .form-label {
       display: block;
@@ -957,6 +1010,7 @@
             <option value="运动">运动</option>
             <option value="游戏">游戏</option>
             <option value="学习">学习</option>
+            <option value="其他">其他</option>
           </select>
         </div>
         <div class="filter-group">
@@ -1033,50 +1087,48 @@
           <input type="text" class="form-input" id="formName" placeholder="请输入活动名称">
           <div class="error-msg" id="errName">请输入活动名称</div>
         </div>
-        <div class="form-row-flex">
-          <div class="form-row">
-            <label class="form-label">活动领域<span class="required">*</span></label>
-            <select class="form-select" id="formType">
-              <option value="">请选择</option>
-              <option value="健康">健康</option>
-              <option value="语言">语言</option>
-              <option value="社会">社会</option>
-              <option value="科学">科学</option>
-              <option value="艺术">艺术</option>
-            </select>
-            <div class="error-msg" id="errType">请选择活动领域</div>
+        <div class="form-row">
+          <label class="form-label">活动领域<span class="required">*</span></label>
+          <div class="chip-group" id="domainChips">
+            <div class="chip" data-value="健康">健康</div>
+            <div class="chip" data-value="语言">语言</div>
+            <div class="chip" data-value="社会">社会</div>
+            <div class="chip" data-value="科学">科学</div>
+            <div class="chip" data-value="艺术">艺术</div>
           </div>
-          <div class="form-row">
-            <label class="form-label">活动类型<span class="required">*</span></label>
-            <select class="form-select" id="formCategory">
-              <option value="">请选择</option>
-              <option value="生活">生活</option>
-              <option value="运动">运动</option>
-              <option value="游戏">游戏</option>
-              <option value="学习">学习</option>
-            </select>
-            <div class="error-msg" id="errCategory">请选择活动类型</div>
+          <div class="error-msg" id="errType">请选择活动领域</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">活动类型<span class="required">*</span></label>
+          <div class="chip-group" id="categoryChips">
+            <div class="chip" data-value="生活">生活</div>
+            <div class="chip" data-value="运动">运动</div>
+            <div class="chip" data-value="游戏">游戏</div>
+            <div class="chip" data-value="学习">学习</div>
+            <div class="chip" data-value="其他">其他</div>
           </div>
+          <div class="error-msg" id="errCategory">请选择活动类型</div>
         </div>
         <div class="form-row">
           <label class="form-label">年级<span class="required">*</span></label>
-          <select class="form-select" id="formGrade">
-            <option value="">请选择</option>
-            <option value="托班">托班</option>
-            <option value="小班">小班</option>
-            <option value="中班">中班</option>
-            <option value="大班">大班</option>
-          </select>
+          <div class="chip-group" id="gradeChips">
+            <div class="chip" data-value="托班">托班</div>
+            <div class="chip" data-value="小班">小班</div>
+            <div class="chip" data-value="中班">中班</div>
+            <div class="chip" data-value="大班">大班</div>
+          </div>
           <div class="error-msg" id="errGrade">请选择年级</div>
         </div>
         <div class="form-row">
           <label class="form-label">归属<span class="required">*</span></label>
-          <select class="form-select" id="formOwnership">
-            <option value="">请选择</option>
-            <option value="个人">个人</option>
-            <option value="园所">园所</option>
-          </select>
+          <div class="chip-group" id="ownershipChips">
+            <div class="chip" data-value="个人">个人</div>
+            <div class="chip" data-value="园所">园所</div>
+          </div>
           <div class="error-msg" id="errOwnership">请选择归属</div>
+        </div>
+        <div class="form-row">
+          <button type="button" class="btn ai-generate-btn" id="btnAiGenerate">✨ AI 生成</button>
         </div>
         <div class="form-row">
           <label class="form-label">活动简介</label>
@@ -1236,7 +1288,7 @@
         name: '我的美术课',
         type: '艺术',
         category: '游戏',
-        grade: '小班',
+        grade: ['小班'],
         ownership: '个人',
         creator: '王老师',
         createTime: '2026-06-01',
@@ -1258,7 +1310,7 @@
         name: '晨间体能',
         type: '健康',
         category: '运动',
-        grade: '中班',
+        grade: ['中班'],
         ownership: '园所',
         creator: '李老师',
         createTime: '2026-05-28',
@@ -1278,7 +1330,7 @@
         name: '睡前绘本',
         type: '语言',
         category: '学习',
-        grade: '小班',
+        grade: ['小班'],
         ownership: '个人',
         creator: '陈老师',
         createTime: '2026-06-05',
@@ -1336,7 +1388,8 @@
       '生活': 'tag-category-life',
       '运动': 'tag-category-sport',
       '游戏': 'tag-category-game',
-      '学习': 'tag-category-study'
+      '学习': 'tag-category-study',
+      '其他': 'tag-category-other'
     };
 
     const domainColors = {
@@ -1351,6 +1404,10 @@
     let pendingDeleteId = null;
     let tempMaterials = [];
     let selectedCourses = [];
+    let selectedDomain = '';
+    let selectedCategory = '';
+    let selectedGrades = [];
+    let selectedOwnership = '';
     let currentDetailActivity = null;
     let tempResources = [];
     let pendingResources = [];
@@ -1401,9 +1458,10 @@
     function filterActivities() {
       const f = getFilters();
       return activities.filter(a => {
+        const grades = Array.isArray(a.grade) ? a.grade : [a.grade];
         if (f.type !== 'all' && a.type !== f.type) return false;
         if (f.category !== 'all' && a.category !== f.category) return false;
-        if (f.grade !== 'all' && a.grade !== f.grade) return false;
+        if (f.grade !== 'all' && !grades.includes(f.grade)) return false;
         if (f.ownership !== 'all' && a.ownership !== f.ownership) return false;
         if (f.startDate && a.createTime < f.startDate) return false;
         if (f.endDate && a.createTime > f.endDate) return false;
@@ -1436,12 +1494,15 @@
       }
 
       empty.style.display = 'none';
-      tbody.innerHTML = filtered.map(a => `
+      tbody.innerHTML = filtered.map(a => {
+        const grades = Array.isArray(a.grade) ? a.grade : [a.grade];
+        const gradeHtml = grades.map(g => `<span class="tag tag-grade">${g}</span>`).join(' ');
+        return `
         <tr>
           <td style="font-weight:500;">${a.name}</td>
           <td><span class="tag ${typeColorMap[a.type] || ''}">${a.type}</span></td>
           <td><span class="tag ${categoryColorMap[a.category] || ''}">${a.category}</span></td>
-          <td><span class="tag tag-grade">${a.grade}</span></td>
+          <td>${gradeHtml}</td>
           <td>${a.ownership || '-'}</td>
           <td>${a.creator}</td>
           <td>${a.createTime}</td>
@@ -1453,7 +1514,8 @@
             </div>
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
     }
 
     // ================== 新增/编辑弹窗 ==================
@@ -1479,6 +1541,11 @@
       renderCourseTags();
       updateCourseCheckboxes();
       closeCourseDropdown();
+      selectedDomain = '';
+      selectedCategory = '';
+      selectedGrades = [];
+      selectedOwnership = '';
+      syncChipGroups();
       tempResources = [];
       pendingResources = [];
       resourceSearchTerm = '';
@@ -1492,7 +1559,98 @@
     function clearErrors() {
       document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
       document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => el.classList.remove('error'));
+      document.querySelectorAll('.chip-group').forEach(el => el.classList.remove('error'));
     }
+
+    // ================== 标签选择（领域/类型/归属 单选，年级 多选）==================
+    const domainChips = document.getElementById('domainChips');
+    const categoryChips = document.getElementById('categoryChips');
+    const gradeChips = document.getElementById('gradeChips');
+    const ownershipChips = document.getElementById('ownershipChips');
+
+    function syncChipGroups() {
+      domainChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', c.dataset.value === selectedDomain));
+      categoryChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', c.dataset.value === selectedCategory));
+      gradeChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', selectedGrades.includes(c.dataset.value)));
+      ownershipChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', c.dataset.value === selectedOwnership));
+    }
+
+    domainChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        selectedDomain = chip.dataset.value;
+        syncChipGroups();
+        domainChips.classList.remove('error');
+        document.getElementById('errType').classList.remove('show');
+      });
+    });
+
+    categoryChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        selectedCategory = chip.dataset.value;
+        syncChipGroups();
+        categoryChips.classList.remove('error');
+        document.getElementById('errCategory').classList.remove('show');
+      });
+    });
+
+    gradeChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const val = chip.dataset.value;
+        if (selectedGrades.includes(val)) {
+          selectedGrades = selectedGrades.filter(g => g !== val);
+        } else {
+          selectedGrades.push(val);
+        }
+        syncChipGroups();
+        if (selectedGrades.length > 0) {
+          gradeChips.classList.remove('error');
+          document.getElementById('errGrade').classList.remove('show');
+        }
+      });
+    });
+
+    ownershipChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        selectedOwnership = chip.dataset.value;
+        syncChipGroups();
+        ownershipChips.classList.remove('error');
+        document.getElementById('errOwnership').classList.remove('show');
+      });
+    });
+
+    // ================== AI 生成（前端 mock）==================
+    function buildAiContent(name, domain, category, grades) {
+      const gradeText = grades.join('、');
+      const desc =
+        `【活动简介】本活动「${name}」围绕${domain}领域设计，结合${category}形式，引导幼儿在真实情境中主动观察、操作与体验，激发探索兴趣。\n` +
+        `【活动形式】以小组互动与游戏体验为主，教师引导与幼儿自主参与相结合，鼓励同伴间交流合作。\n` +
+        `【建议时长】约 25-30 分钟，适合${gradeText}开展。`;
+      const obj =
+        `1. 认知目标：在${domain}领域获得相关经验，初步理解活动中的核心概念。\n` +
+        `2. 能力目标：通过${category}活动锻炼动手操作、观察与语言表达能力。\n` +
+        `3. 情感目标：体验参与的乐趣，养成积极合作、专注投入的良好习惯。`;
+      return { desc, obj };
+    }
+
+    document.getElementById('btnAiGenerate').addEventListener('click', () => {
+      const name = document.getElementById('formName').value.trim();
+      const ownership = selectedOwnership;
+      if (!name || !selectedDomain || !selectedCategory || selectedGrades.length === 0 || !ownership) {
+        showToast('请先填写完整活动名称、领域、类型、年级、归属后再尝试 AI 生成');
+        return;
+      }
+      const btn = document.getElementById('btnAiGenerate');
+      btn.disabled = true;
+      btn.textContent = '生成中…';
+      setTimeout(() => {
+        const { desc, obj } = buildAiContent(name, selectedDomain, selectedCategory, selectedGrades);
+        document.getElementById('formDescription').value = desc;
+        document.getElementById('formObjectives').value = obj;
+        btn.disabled = false;
+        btn.innerHTML = '✨ AI 生成';
+        showToast('AI 已生成内容，可继续编辑');
+      }, 800);
+    });
 
     function showFieldError(id, show) {
       const el = document.getElementById(id);
@@ -1799,6 +1957,17 @@
       renderFileList();
       tempResources = [];
       renderFormResourceList();
+      selectedDomain = '';
+      selectedCategory = '';
+      selectedGrades = [];
+      selectedOwnership = '';
+      syncChipGroups();
+      selectedCourses = [];
+      renderCourseTags();
+      updateCourseCheckboxes();
+      document.getElementById('formDescription').value = '';
+      document.getElementById('formObjectives').value = '';
+      document.getElementById('formName').value = '';
       clearErrors();
       openFormModal('新增活动方案');
     });
@@ -1820,13 +1989,13 @@
       clearErrors();
 
       document.getElementById('formName').value = a.name;
-      document.getElementById('formType').value = a.type;
-      document.getElementById('formCategory').value = a.category;
-      document.getElementById('formGrade').value = a.grade;
+      selectedDomain = a.type || '';
+      selectedCategory = a.category || '';
+      selectedGrades = Array.isArray(a.grade) ? [...a.grade] : (a.grade ? [a.grade] : []);
+      selectedOwnership = a.ownership || '';
+      syncChipGroups();
       document.getElementById('formDescription').value = a.description || '';
       document.getElementById('formObjectives').value = a.objectives || '';
-
-      document.getElementById('formOwnership').value = a.ownership || '';
 
       selectedCourses = a.courses ? [...a.courses] : [];
       renderCourseTags();
@@ -1840,19 +2009,19 @@
       clearErrors();
 
       const name = document.getElementById('formName').value.trim();
-      const type = document.getElementById('formType').value;
-      const category = document.getElementById('formCategory').value;
-      const grade = document.getElementById('formGrade').value;
-      const ownership = document.getElementById('formOwnership').value;
+      const type = selectedDomain;
+      const category = selectedCategory;
+      const grade = [...selectedGrades];
+      const ownership = selectedOwnership;
       const description = document.getElementById('formDescription').value.trim();
       const objectives = document.getElementById('formObjectives').value.trim();
 
       let valid = true;
       if (!name) { showFieldError('formName', true); valid = false; }
-      if (!type) { showFieldError('formType', true); valid = false; }
-      if (!category) { showFieldError('formCategory', true); valid = false; }
-      if (!grade) { showFieldError('formGrade', true); valid = false; }
-      if (!ownership) { showFieldError('formOwnership', true); valid = false; }
+      if (!type) { domainChips.classList.add('error'); document.getElementById('errType').classList.add('show'); valid = false; }
+      if (!category) { categoryChips.classList.add('error'); document.getElementById('errCategory').classList.add('show'); valid = false; }
+      if (grade.length === 0) { gradeChips.classList.add('error'); document.getElementById('errGrade').classList.add('show'); valid = false; }
+      if (!ownership) { ownershipChips.classList.add('error'); document.getElementById('errOwnership').classList.add('show'); valid = false; }
       if (!valid) return;
 
       const color = domainColors[type] || '#1890ff';
@@ -1924,7 +2093,7 @@
         </div>
         <div class="detail-row">
           <div class="detail-label">年级</div>
-          <div class="detail-value"><span class="tag tag-grade">${a.grade}</span></div>
+          <div class="detail-value">${(Array.isArray(a.grade) ? a.grade : [a.grade]).map(g => `<span class="tag tag-grade" style="margin-right:4px;">${g}</span>`).join('')}</div>
         </div>
         <div class="detail-row">
           <div class="detail-label">归属</div>
