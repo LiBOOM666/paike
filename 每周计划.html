@@ -624,6 +624,10 @@
     .modal-body { padding: 20px; overflow-y: auto; }
     .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 10px; }
 
+    /* 新增活动方案弹窗：表单撑满高度，使 modal-body 可滚动、footer 固定 */
+    #newActivityForm { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+    #newActivityForm .modal-body { flex: 1; min-height: 0; }
+
     .form-row { margin-bottom: 16px; }
     .form-row:last-child { margin-bottom: 0; }
     .form-label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
@@ -732,10 +736,11 @@
       transition: opacity 0.2s;
       pointer-events: none;
     }
-    .main.edit-mode .slot-cell.empty:hover .empty-actions {
+    .main.edit-mode .slot-cell.empty .empty-actions {
       opacity: 1;
       pointer-events: auto;
     }
+    .main.edit-mode .slot-cell.empty:hover .empty-hint { color: var(--text-secondary); }
     .slot-cell .empty-hint {
       color: var(--text-disabled);
       font-size: 11px;
@@ -898,6 +903,110 @@
     }
     .file-remove:hover { color: var(--danger); }
 
+    /* ===== 选择课程资源弹窗 ===== */
+    .modal.na-resource-modal { width: 1100px; max-width: 95vw; }
+    .resource-body { display: flex; gap: 20px; min-height: 480px; }
+    .resource-sidebar { flex: 0 0 110px; display: flex; flex-direction: column; gap: 8px; }
+    .resource-category {
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      border: 1px solid transparent;
+    }
+    .resource-category:hover { background: #f0f7ff; color: var(--primary); }
+    .resource-category.active { background: var(--primary); color: #fff; }
+    .resource-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .resource-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .resource-toolbar .form-input { width: 260px; }
+    .resource-page-info { font-size: 13px; color: var(--text-disabled); white-space: nowrap; }
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      flex: 1;
+      align-content: flex-start;
+    }
+    .resource-card {
+      position: relative;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #fff;
+    }
+    .resource-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(24,144,255,0.12); }
+    .resource-card.selected { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+    .resource-card .check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: transparent;
+      transition: all 0.15s;
+      z-index: 2;
+    }
+    .resource-card.selected .check { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .resource-cover {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: var(--bg);
+    }
+    .resource-name-wrap {
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--text);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .resource-empty { grid-column: 1 / -1; color: var(--text-disabled); text-align: center; padding: 80px 0; font-size: 14px; }
+    .resource-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
+    .resource-pagination .page-btn {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+    .resource-pagination .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .resource-pagination .page-btn:disabled { cursor: not-allowed; color: #bfbfbf; background: #f5f5f5; }
+    .resource-pagination .page-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
     /* Toast */
     .toast-container {
       position: fixed;
@@ -957,7 +1066,7 @@
   <div class="main preview-mode" id="main">
     <!-- 左侧活动面板 -->
     <aside class="activity-panel" id="activityPanel">
-      <div class="panel-title">活动资源库</div>
+      <div class="panel-title">活动方案库</div>
 
       <div class="filter-section">
         <div class="filter-label">来源</div>
@@ -1143,12 +1252,44 @@
               <div class="multi-select-tags" id="naCourseTags"></div>
             </div>
           </div>
+          <div class="form-row">
+            <label class="form-label">课程资源</label>
+            <div class="file-list" id="naResourceFormList"></div>
+            <button type="button" class="btn" id="naBtnSelectResource" style="width:100%;">+ 选择资源</button>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn" id="naCancel">取消</button>
           <button type="submit" class="btn btn-primary">确认保存</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- 弹窗：选择课程资源（移植自活动方案库） -->
+  <div class="modal-overlay" id="naResourceModal">
+    <div class="modal na-resource-modal">
+      <div class="modal-header">
+        <span>选择课程资源</span>
+        <button class="modal-close" data-close="naResourceModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="resource-body">
+          <div class="resource-sidebar" id="naResourceSidebar"></div>
+          <div class="resource-main">
+            <div class="resource-toolbar">
+              <input type="text" class="form-input" id="naResourceSearch" placeholder="搜索资源名称">
+              <div class="resource-page-info" id="naResourcePageInfo"></div>
+            </div>
+            <div class="resource-grid" id="naResourceGrid"></div>
+            <div class="resource-pagination" id="naResourcePagination"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="naResourceCancel">取消</button>
+        <button class="btn btn-primary" id="naResourceConfirm">确定</button>
+      </div>
     </div>
   </div>
 
@@ -1597,6 +1738,40 @@
       }
     };
 
+    // 课程资源库（移植自活动方案库）
+    const resourceLibrary = [
+      { id: 'r1', name: '幼儿美术启蒙视频', category: '视频', size: '45MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r2', name: '色彩认知互动课件', category: '绘本', size: '8MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r3', name: '水彩画步骤图', category: '图片', size: '2MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r4', name: '幼儿歌曲集', category: '音乐', size: '12MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r5', name: '美术作品展示模板', category: '绘本', size: '1MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r6', name: '动物世界短片', category: '视频', size: '30MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r7', name: '睡前故事绘本', category: '绘本', size: '5MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r8', name: '儿歌律动音频', category: '音乐', size: '8MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r9', name: '自然风景图集', category: '图片', size: '4MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r10', name: '手工折纸教程', category: '视频', size: '22MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r11', name: '数字认知卡片', category: '绘本', size: '3MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r12', name: '轻音乐合集', category: '音乐', size: '18MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r13', name: '交通工具图片', category: '图片', size: '2MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r14', name: '科学小实验视频', category: '视频', size: '55MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r15', name: '情绪管理绘本', category: '绘本', size: '6MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r16', name: '英文启蒙儿歌', category: '音乐', size: '10MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r17', name: '水果认知图片', category: '图片', size: '1MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r18', name: '舞蹈教学视频', category: '视频', size: '38MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r19', name: '安全教育绘本', category: '绘本', size: '4MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r20', name: '古典音乐欣赏', category: '音乐', size: '25MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r21', name: '季节变换图片', category: '图片', size: '3MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r22', name: '体育游戏视频', category: '视频', size: '28MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r23', name: '习惯养成绘本', category: '绘本', size: '7MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r24', name: '民族音乐精选', category: '音乐', size: '14MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r25', name: '动物剪影图片', category: '图片', size: '2MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r26', name: '乐高搭建视频', category: '视频', size: '42MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' },
+      { id: 'r27', name: '童话故事绘本', category: '绘本', size: '9MB', cover: 'https://placehold.co/160x120/f6ffed/52c41a?text=%E7%BB%98%E6%9C%AC' },
+      { id: 'r28', name: '奥尔夫音乐', category: '音乐', size: '11MB', cover: 'https://placehold.co/160x120/e6fffb/13c2c2?text=%E9%9F%B3%E4%B9%90' },
+      { id: 'r29', name: '植物成长图片', category: '图片', size: '3MB', cover: 'https://placehold.co/160x120/f9f0ff/722ed1?text=%E5%9B%BE%E7%89%87' },
+      { id: 'r30', name: '绘本动画视频', category: '视频', size: '50MB', cover: 'https://placehold.co/160x120/fff2e8/fa541c?text=%E8%A7%86%E9%A2%91' }
+    ];
+
     /* ================= 状态 ================= */
     let state = {
       currentDate: new Date(2026, 5, 8),
@@ -1627,6 +1802,12 @@
     let naSelectedCourses = [];
     let naTempMaterials = [];
     let naTargetSlot = null; // { date, slot }：保存后落入的目标格子
+    // 课程资源选择状态
+    let naTempResources = [];
+    let naPendingResources = [];
+    let naResourceSearchTerm = '';
+    let naResourceCategory = '全部';
+    let naResourcePage = 1;
 
     // 示例数据：2026年6月8日—12日（第15周）
     const demoWeekStart = new Date(2026, 5, 8);
@@ -1913,8 +2094,9 @@
               <div class="slot-cell ${dragOverClass}" data-date="${formatDate(date)}" data-slot="${slot}">
                 ${state.isEditMode ? `
                   <div class="empty-actions">
-                    <div class="empty-hint">拖拽活动到此处</div>
-                    <button type="button" class="add-activity-btn" data-add-date="${formatDate(date)}" data-add-slot="${slot}">+ 新增活动方案</button>
+                    <div class="empty-hint">拖拽方案到此处</div>
+                    <div class="empty-hint">或</div>
+                    <button type="button" class="add-activity-btn" data-add-date="${formatDate(date)}" data-add-slot="${slot}">创建新方案并填入</button>
                   </div>
                 ` : ''}
               </div>
@@ -2100,10 +2282,20 @@
       main.classList.toggle('preview-mode', !state.isEditMode);
       main.classList.toggle('edit-mode', state.isEditMode);
       renderHeaderButtons();
+      updateDateNavState();
       renderActivityList();
       renderWeekInfo();
       renderSchedule();
       renderWeeklySummary();
+    }
+
+    // 编辑态下禁用周/时间切换：保存只对当前这一周生效
+    function updateDateNavState() {
+      const lock = state.isEditMode;
+      ['prevWeek', 'currentWeek', 'nextWeek', 'dateInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = lock;
+      });
     }
 
     /* ================= 拖拽排课 ================= */
@@ -2180,6 +2372,466 @@
         renderSchedule();
       }
     }
+
+    /* ================= 新增活动方案弹窗（移植自活动方案库） ================= */
+    const naDomainChips = document.getElementById('naDomainChips');
+    const naCategoryChips = document.getElementById('naCategoryChips');
+    const naGradeChips = document.getElementById('naGradeChips');
+    const naOwnershipChips = document.getElementById('naOwnershipChips');
+    const naFileList = document.getElementById('naFileList');
+    const naFileInput = document.getElementById('naFileInput');
+    const naUploadArea = document.getElementById('naUploadArea');
+    const naCourseTrigger = document.getElementById('naCourseTrigger');
+    const naCourseDropdown = document.getElementById('naCourseDropdown');
+    const naCourseTags = document.getElementById('naCourseTags');
+    const naCourseOptions = document.querySelectorAll('#naCourseDropdown .multi-select-option');
+
+    function openNewActivityModal(date, slot) {
+      naTargetSlot = { date, slot };
+      // 重置表单
+      document.getElementById('newActivityForm').reset();
+      document.getElementById('naName').value = '';
+      document.getElementById('naDescription').value = '';
+      document.getElementById('naObjectives').value = '';
+      naSelectedDomain = '';
+      naSelectedCategory = '';
+      naSelectedGrades = [];
+      naSelectedOwnership = '';
+      naSelectedCourses = [];
+      naTempMaterials = [];
+      naTempResources = [];
+      naPendingResources = [];
+      syncNaChips();
+      renderNaFileList();
+      renderNaCourseTags();
+      updateNaCourseCheckboxes();
+      closeNaCourseDropdown();
+      renderNaResourceFormList();
+      clearNaErrors();
+      showModal('newActivityModal');
+      setTimeout(() => document.getElementById('naName').focus(), 50);
+    }
+
+    function clearNaErrors() {
+      document.querySelectorAll('#newActivityModal .error-msg').forEach(el => el.classList.remove('show'));
+      document.querySelectorAll('#newActivityModal .form-input, #newActivityModal .form-select, #newActivityModal .form-textarea').forEach(el => el.classList.remove('error'));
+      document.querySelectorAll('#newActivityModal .chip-group').forEach(el => el.classList.remove('error'));
+    }
+
+    function syncNaChips() {
+      naDomainChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', c.dataset.value === naSelectedDomain));
+      naCategoryChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', c.dataset.value === naSelectedCategory));
+      naGradeChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', naSelectedGrades.includes(c.dataset.value)));
+      naOwnershipChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', c.dataset.value === naSelectedOwnership));
+    }
+
+    naDomainChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        naSelectedDomain = chip.dataset.value;
+        syncNaChips();
+        naDomainChips.classList.remove('error');
+        document.getElementById('naErrDomain').classList.remove('show');
+      });
+    });
+
+    naCategoryChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        naSelectedCategory = chip.dataset.value;
+        syncNaChips();
+        naCategoryChips.classList.remove('error');
+        document.getElementById('naErrCategory').classList.remove('show');
+      });
+    });
+
+    naGradeChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const val = chip.dataset.value;
+        if (naSelectedGrades.includes(val)) {
+          naSelectedGrades = naSelectedGrades.filter(g => g !== val);
+        } else {
+          naSelectedGrades.push(val);
+        }
+        syncNaChips();
+        if (naSelectedGrades.length > 0) {
+          naGradeChips.classList.remove('error');
+          document.getElementById('naErrGrade').classList.remove('show');
+        }
+      });
+    });
+
+    naOwnershipChips.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        naSelectedOwnership = chip.dataset.value;
+        syncNaChips();
+        naOwnershipChips.classList.remove('error');
+        document.getElementById('naErrOwnership').classList.remove('show');
+      });
+    });
+
+    // 文件上传
+    function renderNaFileList() {
+      if (naTempMaterials.length === 0) {
+        naFileList.innerHTML = '';
+        return;
+      }
+      naFileList.innerHTML = naTempMaterials.map((f, i) => `
+        <div class="file-item">
+          <span class="file-name">📄 ${escapeHtml(f.name)}</span>
+          <button type="button" class="file-remove" onclick="removeNaFile(${i})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.removeNaFile = function(index) {
+      naTempMaterials.splice(index, 1);
+      renderNaFileList();
+    };
+
+    naUploadArea.addEventListener('click', () => naFileInput.click());
+
+    naFileInput.addEventListener('change', () => {
+      const files = Array.from(naFileInput.files);
+      files.forEach(file => {
+        if (naTempMaterials.length >= 10) {
+          showToast('最多上传 10 个文件', 'warning');
+          return;
+        }
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+        naTempMaterials.push({ name: file.name, size: sizeMB + 'MB' });
+      });
+      renderNaFileList();
+      naFileInput.value = '';
+    });
+
+    // 使用课件多选下拉
+    function openNaCourseDropdown() {
+      naCourseDropdown.classList.add('show');
+      naCourseTrigger.classList.add('active');
+    }
+    function closeNaCourseDropdown() {
+      naCourseDropdown.classList.remove('show');
+      naCourseTrigger.classList.remove('active');
+    }
+    function toggleNaCourseDropdown() {
+      if (naCourseDropdown.classList.contains('show')) closeNaCourseDropdown();
+      else openNaCourseDropdown();
+    }
+
+    function renderNaCourseTags() {
+      const ph = naCourseTrigger.querySelector('.placeholder');
+      if (naSelectedCourses.length === 0) {
+        naCourseTags.innerHTML = '';
+        ph.textContent = '请选择课件';
+        ph.style.color = '#bfbfbf';
+        return;
+      }
+      ph.textContent = `已选 ${naSelectedCourses.length} 项`;
+      ph.style.color = '#262626';
+      naCourseTags.innerHTML = naSelectedCourses.map(c => `
+        <span class="multi-select-tag">
+          ${escapeHtml(c)}
+          <span class="remove" onclick="removeNaCourse('${c}')">✕</span>
+        </span>
+      `).join('');
+    }
+
+    function updateNaCourseCheckboxes() {
+      naCourseOptions.forEach(opt => {
+        const cb = opt.querySelector('input[type="checkbox"]');
+        cb.checked = naSelectedCourses.includes(opt.dataset.value);
+      });
+    }
+
+    window.removeNaCourse = function(value) {
+      naSelectedCourses = naSelectedCourses.filter(c => c !== value);
+      renderNaCourseTags();
+      updateNaCourseCheckboxes();
+    };
+
+    naCourseTrigger.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleNaCourseDropdown();
+    });
+
+    naCourseOptions.forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        const cb = opt.querySelector('input[type="checkbox"]');
+        const val = opt.dataset.value;
+        cb.checked = !cb.checked;
+        if (cb.checked) {
+          if (!naSelectedCourses.includes(val)) naSelectedCourses.push(val);
+        } else {
+          naSelectedCourses = naSelectedCourses.filter(c => c !== val);
+        }
+        renderNaCourseTags();
+      });
+    });
+
+    document.addEventListener('click', e => {
+      if (!document.getElementById('naCourseMultiSelect').contains(e.target)) {
+        closeNaCourseDropdown();
+      }
+    });
+
+    // AI 生成（前端 mock）
+    function buildNaAiContent(name, domain, category, grades) {
+      const gradeText = grades.join('、');
+      const desc =
+        `【活动简介】本活动「${name}」围绕${domain}领域设计，结合${category}形式，引导幼儿在真实情境中主动观察、操作与体验，激发探索兴趣。\n` +
+        `【活动形式】以小组互动与游戏体验为主，教师引导与幼儿自主参与相结合，鼓励同伴间交流合作。\n` +
+        `【建议时长】约 25-30 分钟，适合${gradeText}开展。`;
+      const obj =
+        `1. 认知目标：在${domain}领域获得相关经验，初步理解活动中的核心概念。\n` +
+        `2. 能力目标：通过${category}活动锻炼动手操作、观察与语言表达能力。\n` +
+        `3. 情感目标：体验参与的乐趣，养成积极合作、专注投入的良好习惯。`;
+      return { desc, obj };
+    }
+
+    document.getElementById('naBtnAiGenerate').addEventListener('click', () => {
+      const name = document.getElementById('naName').value.trim();
+      if (!name || !naSelectedDomain || !naSelectedCategory || naSelectedGrades.length === 0 || !naSelectedOwnership) {
+        showToast('请先填写完整活动名称、领域、类型、年级、归属后再尝试 AI 生成', 'warning');
+        return;
+      }
+      const btn = document.getElementById('naBtnAiGenerate');
+      btn.disabled = true;
+      btn.textContent = '生成中…';
+      setTimeout(() => {
+        const { desc, obj } = buildNaAiContent(name, naSelectedDomain, naSelectedCategory, naSelectedGrades);
+        document.getElementById('naDescription').value = desc;
+        document.getElementById('naObjectives').value = obj;
+        btn.disabled = false;
+        btn.innerHTML = '✨ AI 生成';
+        showToast('AI 已生成内容，可继续编辑', 'success');
+      }, 800);
+    });
+
+    // 取消按钮
+    document.getElementById('naCancel').addEventListener('click', () => {
+      hideModal('newActivityModal');
+      naTargetSlot = null;
+    });
+
+    /* ===== 课程资源选择 ===== */
+    const NA_RESOURCE_CATEGORIES = ['全部', '视频', '绘本', '音乐', '图片'];
+    const NA_RESOURCES_PER_PAGE = 18;
+    const naResourceSidebar = document.getElementById('naResourceSidebar');
+    const naResourceGrid = document.getElementById('naResourceGrid');
+    const naResourcePagination = document.getElementById('naResourcePagination');
+    const naResourcePageInfo = document.getElementById('naResourcePageInfo');
+    const naResourceSearch = document.getElementById('naResourceSearch');
+
+    function renderNaResourceFormList() {
+      const el = document.getElementById('naResourceFormList');
+      if (naTempResources.length === 0) {
+        el.innerHTML = '';
+        return;
+      }
+      el.innerHTML = naTempResources.map((r, i) => `
+        <div class="file-item">
+          <span class="file-name">🗂️ ${escapeHtml(r.name)}</span>
+          <button type="button" class="file-remove" onclick="removeNaFormResource(${i})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.removeNaFormResource = function(index) {
+      naTempResources.splice(index, 1);
+      renderNaResourceFormList();
+    };
+
+    function getNaFilteredResources() {
+      const term = naResourceSearchTerm.trim().toLowerCase();
+      return resourceLibrary.filter(r => {
+        if (term && !r.name.toLowerCase().includes(term)) return false;
+        if (naResourceCategory && naResourceCategory !== '全部' && r.category !== naResourceCategory) return false;
+        return true;
+      });
+    }
+
+    function renderNaResourceSidebar() {
+      naResourceSidebar.innerHTML = NA_RESOURCE_CATEGORIES.map(cat => `
+        <div class="resource-category ${cat === naResourceCategory ? 'active' : ''}" data-category="${cat}">${cat}</div>
+      `).join('');
+      naResourceSidebar.querySelectorAll('.resource-category').forEach(el => {
+        el.addEventListener('click', () => {
+          naResourceCategory = el.dataset.category;
+          naResourcePage = 1;
+          renderNaResourceSidebar();
+          renderNaResourceGrid();
+          renderNaResourcePagination();
+        });
+      });
+    }
+
+    function renderNaResourceGrid() {
+      const filtered = getNaFilteredResources();
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / NA_RESOURCES_PER_PAGE));
+      if (naResourcePage > totalPages) naResourcePage = totalPages;
+      const start = (naResourcePage - 1) * NA_RESOURCES_PER_PAGE;
+      const pageItems = filtered.slice(start, start + NA_RESOURCES_PER_PAGE);
+
+      naResourcePageInfo.textContent = total > 0 ? `共 ${total} 个资源，第 ${naResourcePage}/${totalPages} 页` : '共 0 个资源';
+
+      if (pageItems.length === 0) {
+        naResourceGrid.innerHTML = '<div class="resource-empty">未找到匹配资源</div>';
+        return;
+      }
+
+      naResourceGrid.innerHTML = pageItems.map(r => {
+        const checked = naPendingResources.some(pr => pr.id === r.id);
+        return `
+          <div class="resource-card ${checked ? 'selected' : ''}" data-id="${r.id}">
+            <div class="check">✓</div>
+            <img class="resource-cover" src="${r.cover}" alt="${escapeHtml(r.name)}" loading="lazy">
+            <div class="resource-name-wrap" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</div>
+          </div>
+        `;
+      }).join('');
+
+      naResourceGrid.querySelectorAll('.resource-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = card.dataset.id;
+          const checked = !card.classList.contains('selected');
+          toggleNaResourceSelection(id, checked);
+          card.classList.toggle('selected', checked);
+        });
+      });
+    }
+
+    function renderNaResourcePagination() {
+      const filtered = getNaFilteredResources();
+      const totalPages = Math.ceil(filtered.length / NA_RESOURCES_PER_PAGE);
+      if (totalPages <= 1) {
+        naResourcePagination.innerHTML = '';
+        return;
+      }
+      let html = `<button class="page-btn" id="naResPagePrev" ${naResourcePage === 1 ? 'disabled' : ''}><</button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === naResourcePage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      }
+      html += `<button class="page-btn" id="naResPageNext" ${naResourcePage === totalPages ? 'disabled' : ''}>></button>`;
+      naResourcePagination.innerHTML = html;
+
+      document.getElementById('naResPagePrev').addEventListener('click', () => {
+        if (naResourcePage > 1) { naResourcePage--; renderNaResourceGrid(); renderNaResourcePagination(); }
+      });
+      document.getElementById('naResPageNext').addEventListener('click', () => {
+        if (naResourcePage < totalPages) { naResourcePage++; renderNaResourceGrid(); renderNaResourcePagination(); }
+      });
+      naResourcePagination.querySelectorAll('.page-btn[data-page]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          naResourcePage = Number(btn.dataset.page);
+          renderNaResourceGrid();
+          renderNaResourcePagination();
+        });
+      });
+    }
+
+    function toggleNaResourceSelection(id, checked) {
+      const res = resourceLibrary.find(r => r.id === id);
+      if (!res) return;
+      if (checked) {
+        if (!naPendingResources.some(r => r.id === id)) naPendingResources.push(res);
+      } else {
+        naPendingResources = naPendingResources.filter(r => r.id !== id);
+      }
+    }
+
+    function openNaResourceModal() {
+      naPendingResources = naTempResources.map(r => ({ ...r }));
+      naResourceSearchTerm = '';
+      naResourceSearch.value = '';
+      naResourceCategory = '全部';
+      naResourcePage = 1;
+      showModal('naResourceModal');
+      renderNaResourceSidebar();
+      renderNaResourceGrid();
+      renderNaResourcePagination();
+    }
+
+    function closeNaResourceModal() {
+      hideModal('naResourceModal');
+      naPendingResources = [];
+      naResourceSearchTerm = '';
+      naResourceCategory = '全部';
+      naResourcePage = 1;
+    }
+
+    function confirmNaResourceSelection() {
+      naTempResources = naPendingResources.map(r => ({ ...r }));
+      renderNaResourceFormList();
+      closeNaResourceModal();
+    }
+
+    document.getElementById('naBtnSelectResource').addEventListener('click', openNaResourceModal);
+    document.getElementById('naResourceCancel').addEventListener('click', closeNaResourceModal);
+    document.querySelector('[data-close="naResourceModal"]').addEventListener('click', closeNaResourceModal);
+    document.getElementById('naResourceConfirm').addEventListener('click', confirmNaResourceSelection);
+
+    naResourceSearch.addEventListener('input', () => {
+      naResourceSearchTerm = naResourceSearch.value;
+      naResourcePage = 1;
+      renderNaResourceGrid();
+      renderNaResourcePagination();
+    });
+
+    // 表单提交：双写（入库 + 落到目标格子）
+    document.getElementById('newActivityForm').addEventListener('submit', e => {
+      e.preventDefault();
+      clearNaErrors();
+
+      const name = document.getElementById('naName').value.trim();
+      const description = document.getElementById('naDescription').value.trim();
+      const objectives = document.getElementById('naObjectives').value.trim();
+
+      let valid = true;
+      if (!name) {
+        document.getElementById('naName').classList.add('error');
+        document.getElementById('naErrName').classList.add('show');
+        valid = false;
+      }
+      if (!naSelectedDomain) { naDomainChips.classList.add('error'); document.getElementById('naErrDomain').classList.add('show'); valid = false; }
+      if (!naSelectedCategory) { naCategoryChips.classList.add('error'); document.getElementById('naErrCategory').classList.add('show'); valid = false; }
+      if (naSelectedGrades.length === 0) { naGradeChips.classList.add('error'); document.getElementById('naErrGrade').classList.add('show'); valid = false; }
+      if (!naSelectedOwnership) { naOwnershipChips.classList.add('error'); document.getElementById('naErrOwnership').classList.add('show'); valid = false; }
+      if (!valid) return;
+
+      const newId = 'na_' + Date.now();
+      const newActivity = {
+        id: newId,
+        name,
+        type: naSelectedDomain,
+        category: naSelectedCategory,
+        source: 'my',
+        color: domainColors[naSelectedDomain] || '#1890ff',
+        teacher: '',
+        duration: 0,
+        description,
+        objectives,
+        targetAge: naSelectedGrades[0] || '',
+        grade: naSelectedGrades.length === 1 ? naSelectedGrades[0] : [...naSelectedGrades],
+        ownership: naSelectedOwnership,
+        creator: '当前用户',
+        createTime: formatDate(new Date()),
+        materials: naTempMaterials.map(m => ({ name: m.name, size: m.size })),
+        courses: [...naSelectedCourses],
+        resources: naTempResources.map(r => ({ id: r.id, name: r.name, category: r.category, size: r.size, cover: r.cover }))
+      };
+      activities.unshift(newActivity);
+
+      if (naTargetSlot) {
+        scheduleData[key(naTargetSlot.date, naTargetSlot.slot)] = { activityId: newId, assignedPerson: '' };
+      }
+
+      hideModal('newActivityModal');
+      renderActivityList();
+      renderSchedule();
+      showToast('已新增活动方案并加入计划', 'success');
+      naTargetSlot = null;
+    });
 
     /* ================= 替换确认弹窗 ================= */
     let replaceState = null;
@@ -2491,22 +3143,26 @@
 
     /* ================= 顶部导航事件 ================= */
     document.getElementById('prevWeek').addEventListener('click', () => {
+      if (state.isEditMode) return;
       state.currentDate = addDays(state.currentDate, -7);
       renderAll();
     });
 
     document.getElementById('nextWeek').addEventListener('click', () => {
+      if (state.isEditMode) return;
       state.currentDate = addDays(state.currentDate, 7);
       renderAll();
     });
 
     document.getElementById('currentWeek').addEventListener('click', () => {
+      if (state.isEditMode) return;
       state.currentDate = new Date();
       renderAll();
     });
 
     const dateInput = document.getElementById('dateInput');
     dateInput.addEventListener('change', () => {
+      if (state.isEditMode) return;
       const date = parseDate(dateInput.value.trim());
       if (!date) {
         dateInput.classList.add('invalid');
