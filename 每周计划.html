@@ -1970,7 +1970,7 @@
           <button class="btn" id="btnCancel">取消</button>
           <button class="btn btn-success" id="btnSave">保存</button>
         `;
-        document.getElementById('btnAi').onclick = () => showToast('Ai帮排功能开发中', 'info');
+        document.getElementById('btnAi').onclick = aiAutoFill;
         document.getElementById('btnCancel').onclick = () => {
           state.isEditMode = false;
           renderAll();
@@ -1991,6 +1991,44 @@
           state.isEditMode = true;
           renderAll();
         };
+      }
+    }
+
+    // Ai帮排：给当前周一~周五的空白时段填入示例活动
+    function aiAutoFill() {
+      // 各时段的候选活动（按工作日轮换，营造一周排满的效果）
+      const aiTemplate = {
+        '07:45-08:45': ['ruyuan'],
+        '08:45-09:30': ['chenhui', 'quyu_shuxue', 'huwai4', 'tiyu_jiuweiba', 'huwai6'],
+        '09:30-10:15': ['huwai1', 'huwai2', 'yinyue_shuyadan', 'yinyue_shuyadan', 'meishu_xiaohuangfeng'],
+        '10:15-11:00': ['quyu_meishu', 'tiyu_lanqiu', 'kexue_wuguan', 'quyu_jiangou', 'shuxue_guailv'],
+        '11:40-14:50': ['wucan'],
+        '14:50-15:30': ['tiyu_shabao', 'huwai3', 'tiyu_papan', 'huwai5', 'tiyu_jielibang'],
+        '15:30-16:10': ['yuyan_xiaohuangya', 'xinli_baobao', 'zhuti_yadang', 'shehui_maomaochong', 'anquan_fangcaita'],
+        '16:30-17:00': ['liyuan']
+      };
+
+      const weekStart = getMonday(state.currentDate);
+      let filled = 0;
+      for (let d = 0; d < 5; d++) { // 仅周一~周五
+        const date = addDays(weekStart, d);
+        timeSlots.forEach((slot, si) => {
+          const k = key(date, slot);
+          if (scheduleData[k]) return; // 已有活动不覆盖
+          const candidates = aiTemplate[slot];
+          if (!candidates || !candidates.length) return;
+          const actId = candidates[d % candidates.length];
+          if (!getActivity(actId)) return;
+          scheduleData[k] = { activityId: actId, assignedPerson: teachers[(d + si) % teachers.length] };
+          filled++;
+        });
+      }
+
+      renderSchedule();
+      if (filled > 0) {
+        showToast(`Ai 已为本周填入 ${filled} 个示例活动`, 'success');
+      } else {
+        showToast('本周工作日时段已排满，无需补充', 'info');
       }
     }
 
@@ -2289,13 +2327,10 @@
       renderWeeklySummary();
     }
 
-    // 编辑态下禁用周/时间切换：保存只对当前这一周生效
+    // 编辑态下隐藏顶部周/时间切换区：保存只对当前这一周生效
     function updateDateNavState() {
-      const lock = state.isEditMode;
-      ['prevWeek', 'currentWeek', 'nextWeek', 'dateInput'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = lock;
-      });
+      const nav = document.querySelector('.date-nav');
+      if (nav) nav.style.display = state.isEditMode ? 'none' : 'flex';
     }
 
     /* ================= 拖拽排课 ================= */
