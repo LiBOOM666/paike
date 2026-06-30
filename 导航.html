@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>项目导航中心</title>
+  <title>数据中心管理系统</title>
   <style>
     :root {
       --sidebar-width: 260px;
@@ -249,8 +249,8 @@
     <!-- 左侧路由 -->
     <aside class="sidebar" id="sidebar">
       <div class="logo">
-        <div class="logo-icon">导</div>
-        <span class="logo-text">项目导航中心</span>
+        <div class="logo-icon">巧</div>
+        <span class="logo-text">数据中心管理系统</span>
       </div>
       <nav class="menu" id="menu"></nav>
     </aside>
@@ -307,6 +307,7 @@
     // 一二级路由结构
     const menu = [
       { title: '首页', type: 'home', icon: 'home' },
+      { title: '教师档案', file: '教师档案.html', icon: 'teacher', local: true },
       { title: '学期计划', file: '学期计划.html', icon: 'plan' },
       { title: '每周计划', file: '每周计划.html', icon: 'calendar' },
       { title: '智能体中心', file: '智能体中心.html', icon: 'robot' },
@@ -329,6 +330,7 @@
 
     const icons = {
       home: '<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
+      teacher: '<svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>',
       calendar: '<svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>',
       plan: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>',
       robot: '<svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72v1.28h5c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V9c0-1.1.9-2 2-2h5V5.72A2.001 2.001 0 0 1 12 2zm-4 9c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>',
@@ -439,7 +441,7 @@
       if (item.file) {
         placeholder.classList.add('hidden');
         frame.classList.add('active');
-        frame.src = BASE_URL + item.file;
+        frame.src = item.local ? item.file : BASE_URL + item.file;
         desc.textContent = '点击左侧路由按钮，打开对应的页面';
       }
     }

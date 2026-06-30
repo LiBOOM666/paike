@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师档案</title>
+  <style>
+    /* ===== 基础重置与变量 ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1890ff;
+      --primary-hover: #46a6ff;
+      --primary-active: #1682e6;
+      --primary-light: #e8f4ff;
+      --accent: #4377fd;
+      --success: #13ce66;
+      --warning: #ffba00;
+      --danger: #ff4949;
+      --text-main: #303133;
+      --text-normal: #606266;
+      --text-secondary: #909399;
+      --border-color: #dcdfe6;
+      --border-card: #e6ebf5;
+      --table-border: #dfe6ec;
+      --table-header-bg: #f8f8f9;
+      --table-header-text: #515a6e;
+      --table-hover: #f5f7fa;
+      --bg-main: #f4f7fe;
+      --bg-white: #ffffff;
+      --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.1);
+      --shadow-header: 0 1px 4px rgba(0, 21, 41, 0.08);
+      --radius: 4px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      font-size: 14px;
+      color: var(--text-main);
+      background: var(--bg-main);
+    }
+
+    /* ===== 顶部 Header ===== */
+    .app-header {
+      height: 60px;
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border-card);
+      box-shadow: var(--shadow-header);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .app-header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: var(--text-normal);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* ===== 面包屑 ===== */
+    .breadcrumb-bar {
+      display: none;
+      align-items: center;
+      padding: 16px 24px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .breadcrumb-bar.visible {
+      display: flex;
+    }
+
+    .breadcrumb-bar span + span::before {
+      content: '>';
+      margin: 0 8px;
+      color: var(--text-secondary);
+    }
+
+    .breadcrumb-bar a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .breadcrumb-bar a:hover {
+      color: var(--primary);
+    }
+
+    .breadcrumb-bar .current {
+      color: var(--text-main);
+    }
+
+    /* ===== 主内容区 ===== */
+    .main-content {
+      padding: 20px 24px;
+      min-height: calc(100vh - 60px);
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* ===== 通用卡片 ===== */
+    .card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .card-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--success);
+      border-radius: 2px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* ===== 按钮 ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 32px;
+      padding: 0 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      background: var(--bg-white);
+      color: var(--text-normal);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      opacity: 0.85;
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      border-color: var(--warning);
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    .btn-text {
+      border: none;
+      background: transparent;
+      padding: 0 6px;
+      color: var(--primary);
+    }
+
+    .btn-text:hover {
+      color: var(--primary-hover);
+    }
+
+    .btn-icon {
+      padding: 0 8px;
+    }
+
+    .btn-sm {
+      height: 28px;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    /* ===== 表单控件 ===== */
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .form-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-item {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-item.half {
+      flex: 0 0 calc(50% - 10px);
+    }
+
+    .form-label {
+      font-size: 13px;
+      color: var(--text-normal);
+    }
+
+    .form-label .required::before {
+      content: '*';
+      color: var(--danger);
+      margin-right: 4px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .form-textarea {
+      height: auto;
+      min-height: 80px;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+
+    .form-error {
+      font-size: 12px;
+      color: var(--danger);
+      display: none;
+    }
+
+    .form-error.visible {
+      display: block;
+    }
+
+    /* ===== 列表页搜索区 ===== */
+    .search-card {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .search-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 16px;
+    }
+
+    .search-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .search-item label {
+      font-size: 13px;
+      color: var(--text-normal);
+    }
+
+    .search-item input,
+    .search-item select {
+      width: 160px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-item input:focus,
+    .search-item select:focus {
+      border-color: var(--primary);
+    }
+
+    .search-actions {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    /* ===== 表格 ===== */
+    .table-card {
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      color: var(--text-normal);
+    }
+
+    .data-table thead {
+      background: var(--table-header-bg);
+    }
+
+    .data-table th {
+      height: 40px;
+      padding: 12px 10px;
+      text-align: left;
+      font-weight: 500;
+      color: var(--table-header-text);
+      font-size: 13px;
+      border-bottom: 1px solid var(--table-border);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--table-border);
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--table-hover);
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .status-tag.active {
+      background: #e7faf0;
+      color: var(--success);
+      border: 1px solid #a1ebc2;
+    }
+
+    .status-tag.inactive {
+      background: #f4f4f5;
+      color: var(--text-secondary);
+      border: 1px solid #e6ebf5;
+    }
+
+    /* ===== 分页 ===== */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-card);
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-normal);
+    }
+
+    .page-size-select {
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    .page-numbers {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      background: var(--bg-white);
+      color: var(--text-normal);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .page-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .page-btn.disabled {
+      cursor: not-allowed;
+      color: var(--text-secondary);
+      border-color: var(--border-color);
+    }
+
+    .page-btn.disabled:hover {
+      border-color: var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .page-go {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-go input {
+      width: 40px;
+      height: 28px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    /* ===== 详情页头部 ===== */
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .detail-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .detail-meta {
+      flex: 1;
+    }
+
+    .detail-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .detail-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .detail-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: var(--radius);
+      font-size: 13px;
+    }
+
+    /* ===== Tab 组件 ===== */
+    .detail-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px;
+      margin-bottom: 16px;
+    }
+
+    .tab-item {
+      height: 32px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      background: var(--bg-white);
+      color: var(--text-normal);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-item:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .tab-item.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ===== 信息展示网格 ===== */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px 24px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .info-value {
+      font-size: 14px;
+      color: var(--text-main);
+      word-break: break-all;
+    }
+
+    /* ===== 列表型卡片 ===== */
+    .list-section {
+      margin-bottom: 16px;
+    }
+
+    .list-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-card);
+      position: relative;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .list-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .list-item-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .list-item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .icon-btn.delete:hover {
+      background: #ffeded;
+      color: var(--danger);
+    }
+
+    .list-item-body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px 24px;
+      font-size: 13px;
+      color: var(--text-normal);
+    }
+
+    .list-item-body span {
+      color: var(--text-secondary);
+    }
+
+    .list-item-body strong {
+      color: var(--text-main);
+      font-weight: normal;
+    }
+
+    .empty-tip {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* ===== 年度计划时间线 ===== */
+    .plan-timeline {
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .plan-item {
+      position: relative;
+      padding-bottom: 24px;
+    }
+
+    .plan-item::before {
+      content: '';
+      position: absolute;
+      left: -14px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px var(--success);
+    }
+
+    .plan-item::after {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: 18px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border-card);
+    }
+
+    .plan-item:last-child::after {
+      display: none;
+    }
+
+    .plan-year {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .plan-content {
+      display: grid;
+      gap: 12px;
+    }
+
+    .plan-block {
+      background: #fafafa;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+    }
+
+    .plan-block-title {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .plan-block-text {
+      font-size: 14px;
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    /* ===== 弹窗 ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-white);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 18px;
+      border-radius: var(--radius);
+    }
+
+    .modal-close:hover {
+      background: var(--table-hover);
+      color: var(--text-main);
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-card);
+    }
+
+    /* ===== AI 生成按钮 ===== */
+    .ai-generate {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .ai-generate:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 1200px) {
+      .info-grid,
+      .list-item-body {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 12px;
+      }
+      .search-form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-item input,
+      .search-item select {
+        width: 100%;
+      }
+      .search-actions {
+        margin-left: 0;
+        justify-content: flex-end;
+      }
+      .info-grid,
+      .list-item-body {
+        grid-template-columns: 1fr;
+      }
+      .detail-tabs {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部 Header -->
+  <header class="app-header">
+    <div class="app-header-left">
+      <h1 class="app-title">教师档案</h1>
+    </div>
+    <div class="app-header-right"></div>
+  </header>
+
+  <!-- 面包屑 -->
+  <div class="breadcrumb-bar" id="breadcrumbBar">
+    <a onclick="showList()">教师管理</a>
+    <a onclick="showList()">教师列表</a>
+    <span class="current" id="breadcrumbCurrent">教师详情</span>
+  </div>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+    <!-- 列表页 -->
+    <div class="page active" id="page-list">
+      <div class="card search-card">
+        <div class="search-form">
+          <div class="search-item">
+            <label>姓名搜索</label>
+            <input type="text" id="searchName" placeholder="请输入姓名">
+          </div>
+          <div class="search-item">
+            <label>所属班级</label>
+            <select id="searchClass">
+              <option value="">全部</option>
+              <option value="大一班">大一班</option>
+              <option value="大二班">大二班</option>
+              <option value="中一班">中一班</option>
+              <option value="中二班">中二班</option>
+              <option value="小一班">小一班</option>
+              <option value="小二班">小二班</option>
+            </select>
+          </div>
+          <div class="search-item">
+            <label>岗位</label>
+            <select id="searchPosition">
+              <option value="">全部</option>
+              <option value="班主任">班主任</option>
+              <option value="配班老师">配班老师</option>
+              <option value="副班主任">副班主任</option>
+              <option value="实习老师">实习老师</option>
+            </select>
+          </div>
+          <div class="search-item">
+            <label>在职状态</label>
+            <select id="searchStatus">
+              <option value="">全部</option>
+              <option value="在职">在职</option>
+              <option value="离职">离职</option>
+              <option value="休假">休假</option>
+            </select>
+          </div>
+          <div class="search-actions">
+            <button class="btn btn-primary" onclick="handleSearch()">
+              <span>🔍</span> 搜索
+            </button>
+            <button class="btn" onclick="handleReset()">重置</button>
+            <button class="btn btn-warning" onclick="handleExport()">导出</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>教师姓名</th>
+              <th>所属班级</th>
+              <th>岗位</th>
+              <th>工龄</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="teacherTableBody">
+            <!-- JS 渲染 -->
+          </tbody>
+        </table>
+        <div class="pagination-bar">
+          <span>共 <strong id="totalCount">0</strong> 条</span>
+          <select class="page-size-select" id="pageSize" onchange="changePageSize()">
+            <option value="10">10条/页</option>
+            <option value="20">20条/页</option>
+            <option value="50">50条/页</option>
+          </select>
+          <div class="page-numbers" id="pageNumbers"></div>
+          <div class="page-go">
+            <span>前往</span>
+            <input type="number" id="goToPage" min="1" onkeydown="if(event.key==='Enter')goToPage()">
+            <span>页</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 详情页 -->
+    <div class="page" id="page-detail">
+      <div class="card detail-header">
+        <div class="detail-avatar" id="detailAvatar">张</div>
+        <div class="detail-meta">
+          <div class="detail-name" id="detailName">--</div>
+          <div class="detail-tags" id="detailTags">
+            <!-- JS 渲染 -->
+          </div>
+        </div>
+        <button class="btn" onclick="showList()">返回列表</button>
+      </div>
+
+      <div class="detail-tabs">
+        <div class="tab-item active" data-tab="info" onclick="switchTab('info')">教师信息</div>
+        <div class="tab-item" data-tab="honor" onclick="switchTab('honor')">荣誉成果</div>
+        <div class="tab-item" data-tab="plan" onclick="switchTab('plan')">年度计划</div>
+      </div>
+
+      <!-- 教师信息 -->
+      <div class="tab-panel active" id="tab-info">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">基础信息</div>
+            <div class="card-actions">
+              <button class="btn btn-sm" onclick="openModal('basicInfo')">
+                <span>✏️</span> 编辑
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="info-grid" id="basicInfoGrid">
+              <!-- JS 渲染 -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">资格证书</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('certificate', null, true)">+ 新增证书</button>
+            </div>
+          </div>
+          <div class="card-body" id="certificateList">
+            <!-- JS 渲染 -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">学历信息</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('education', null, true)">+ 新增学历</button>
+            </div>
+          </div>
+          <div class="card-body" id="educationList">
+            <!-- JS 渲染 -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">任职信息</div>
+            <div class="card-actions">
+              <button class="btn btn-sm" onclick="openModal('positionInfo')">
+                <span>✏️</span> 编辑
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="info-grid" id="positionInfoGrid">
+              <!-- JS 渲染 -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">职称信息</div>
+            <div class="card-actions">
+              <button class="btn btn-sm" onclick="openModal('titleInfo')">
+                <span>✏️</span> 编辑
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="info-grid" id="titleInfoGrid">
+              <!-- JS 渲染 -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 荣誉成果 -->
+      <div class="tab-panel" id="tab-honor">
+        <div class="card list-section">
+          <div class="card-header">
+            <div class="card-title">荣誉信息</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('honor', null, true)">+ 新增荣誉</button>
+            </div>
+          </div>
+          <div class="card-body" id="honorList"></div>
+        </div>
+
+        <div class="card list-section">
+          <div class="card-header">
+            <div class="card-title">科研成果</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('research', null, true)">+ 新增成果</button>
+            </div>
+          </div>
+          <div class="card-body" id="researchList"></div>
+        </div>
+
+        <div class="card list-section">
+          <div class="card-header">
+            <div class="card-title">获奖信息</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('award', null, true)">+ 新增获奖</button>
+            </div>
+          </div>
+          <div class="card-body" id="awardList"></div>
+        </div>
+
+        <div class="card list-section">
+          <div class="card-header">
+            <div class="card-title">论文</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('paper', null, true)">+ 新增论文</button>
+            </div>
+          </div>
+          <div class="card-body" id="paperList"></div>
+        </div>
+
+        <div class="card list-section">
+          <div class="card-header">
+            <div class="card-title">公开课</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('openClass', null, true)">+ 新增公开课</button>
+            </div>
+          </div>
+          <div class="card-body" id="openClassList"></div>
+        </div>
+      </div>
+
+      <!-- 年度计划 -->
+      <div class="tab-panel" id="tab-plan">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">年度计划</div>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-success" onclick="openModal('annualPlan', null, true)">+ 新增学年</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="plan-timeline" id="annualPlanList">
+              <!-- JS 渲染 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 弹窗 -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">编辑</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- JS 渲染表单 -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // 静态数据
+    // ============================================================
+    const TEACHERS_DATA = [
+      {
+        id: 1,
+        name: '孙小权',
+        className: '大一班',
+        position: '班主任',
+        years: 8,
+        status: '在职',
+        avatar: '孙',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1988-05-12',
+          age: 36,
+          politicalStatus: '党员',
+          education: '本科（学前教育专业）',
+          employmentStatus: '正式在编',
+          phone: '138-xxxx-8888',
+          address: '上海市徐汇区漕溪路xx号101室',
+          emergencyContact: '张建明（家属）',
+          emergencyPhone: '139-xxxx-9999'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2016370014200xxx', level: '幼儿园教师资格', issueDate: '2016-07-01' }
+        ],
+        educationList: [
+          { school: '华东师范大学', major: '教育管理', degree: '硕士研究生', graduationDate: '2021-06' },
+          { school: '上海师范大学', major: '学前教育', degree: '全日制本科', graduationDate: '2018-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '综合',
+          appointmentDate: '2020-09-01',
+          duties: '负责中班组教学计划制定、家园沟通及教研组长工作。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园一级教师',
+          titleDate: '2022-12',
+          attachment: '附件'
+        },
+        honors: [
+          { id: 1, title: '优秀班主任', level: '区级', date: '2023-09', issuer: '徐汇区教育局', attachment: '查看材料' }
+        ],
+        research: [
+          { id: 1, title: '幼儿园艺术教育园本化实施研究', level: '市级重点课题', date: '2021-10', role: '主持人', rank: 1, endDate: '2023-10', unit: '上海市教委' }
+        ],
+        awards: [
+          { id: 1, title: '青年教师技能大赛', level: '市级', grade: '一等奖', rank: 1, date: '2023-05' }
+        ],
+        papers: [
+          { id: 1, title: '《论现代幼儿教育中信息技术的融合》', journal: '学前教育研究', date: '2022-08', role: '第一作者', subject: '教育技术', awarded: '是' }
+        ],
+        openClasses: [
+          { id: 1, title: '大班数学活动：奇妙的图形组合', level: '市级观摩课', date: '2023-10', audience: '大班幼儿', count: 35, effect: '优秀' }
+        ],
+        annualPlans: [
+          {
+            id: 1,
+            year: '2023-2024',
+            plan: '在本学年中，我计划深化对“游戏化学习”在幼儿早期教育中的应用探索。重点关注如何通过情境创设激发幼儿的自主探究兴趣，特别是在中班数学领域。同时，计划每月组织一次跨年级教师交流研讨，共同打磨园本课程，目标是提升班级整体参与度。',
+            summary: '回顾过去的一年，基本达成了预设目标。通过实施“数学小剧场”系列活动，班级幼儿在逻辑推理方面的表现显著提升，特别是在自主选择区角活动时，数学区的活跃度提高了40%。'
+          },
+          {
+            id: 2,
+            year: '2022-2023',
+            plan: '本年度重点在于新入园小班幼儿的情绪安抚与社会性发展。计划通过“绘本共读”与“角色扮演”相结合的方式，帮助孩子快速建立安全感。个人专业成长方面，计划参加区级骨干教师培训课，提升个人教育科研水平。',
+            summary: '年度目标圆满达成。班级孩子在第一学期末基本消除分离焦虑，能够愉快融入集体生活。我也顺利通过了市级骨干教师的结业考核，并被评为“园内年度优秀教师”。'
+          }
+        ]
+      },
+      {
+        id: 2,
+        name: '李沛雯',
+        className: '中三班',
+        position: '配班老师',
+        years: 2,
+        status: '在职',
+        avatar: '李',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1996-09-20',
+          age: 28,
+          politicalStatus: '群众',
+          education: '本科（学前教育专业）',
+          employmentStatus: '合同制',
+          phone: '136-xxxx-2345',
+          address: '北京市朝阳区青年路xx号',
+          emergencyContact: '李母',
+          emergencyPhone: '137-xxxx-3456'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2020112345678', level: '幼儿园教师资格', issueDate: '2020-09-01' }
+        ],
+        educationList: [
+          { school: '首都师范大学', major: '学前教育', degree: '本科', graduationDate: '2020-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '语言',
+          appointmentDate: '2022-09-01',
+          duties: '协助班主任开展日常教学、班级环境创设及幼儿生活照料。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园二级教师',
+          titleDate: '2023-09',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: [
+          {
+            id: 1,
+            year: '2023-2024',
+            plan: '继续提升班级协作能力，重点学习观察记录幼儿的个性化发展。',
+            summary: '能够独立完成幼儿观察记录，并与家长进行有效沟通。'
+          }
+        ]
+      },
+      {
+        id: 3,
+        name: '孙婉茹',
+        className: '小二班',
+        position: '副班主任',
+        years: 2,
+        status: '在职',
+        avatar: '孙',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1995-03-08',
+          age: 29,
+          politicalStatus: '共青团员',
+          education: '本科',
+          employmentStatus: '合同制',
+          phone: '150-xxxx-4567',
+          address: '广州市天河区珠江新城xx号',
+          emergencyContact: '孙父',
+          emergencyPhone: '151-xxxx-5678'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2021112345678', level: '幼儿园教师资格', issueDate: '2021-07-01' }
+        ],
+        educationList: [
+          { school: '华南师范大学', major: '学前教育', degree: '本科', graduationDate: '2021-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '艺术',
+          appointmentDate: '2022-03-01',
+          duties: '负责班级艺术领域教学、环境布置及家长沟通。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园二级教师',
+          titleDate: '2023-06',
+          attachment: '附件'
+        },
+        honors: [
+          { id: 1, title: '年度先进个人', level: '校级', date: '2022-11', issuer: '启明星双语幼儿园', attachment: '查看材料' }
+        ],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 4,
+        name: '李慕雪',
+        className: '大三班',
+        position: '实习老师',
+        years: 1,
+        status: '在职',
+        avatar: '李',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1999-11-15',
+          age: 25,
+          politicalStatus: '群众',
+          education: '本科在读',
+          employmentStatus: '实习',
+          phone: '188-xxxx-7890',
+          address: '深圳市南山区xx路',
+          emergencyContact: '李姐',
+          emergencyPhone: '189-xxxx-8901'
+        },
+        certificates: [],
+        educationList: [
+          { school: '深圳大学', major: '学前教育', degree: '本科在读', graduationDate: '2025-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '综合',
+          appointmentDate: '2024-02-01',
+          duties: '在指导教师带领下参与班级日常教学与保育工作。'
+        },
+        titleInfo: {
+          currentTitle: '无',
+          titleDate: '-',
+          attachment: ''
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 5,
+        name: '王薏玲',
+        className: '中一班',
+        position: '配班老师',
+        years: 3,
+        status: '在职',
+        avatar: '王',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1993-07-22',
+          age: 31,
+          politicalStatus: '党员',
+          education: '本科',
+          employmentStatus: '正式在编',
+          phone: '139-xxxx-1111',
+          address: '杭州市西湖区xx街',
+          emergencyContact: '丈夫',
+          emergencyPhone: '138-xxxx-2222'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2019112345678', level: '幼儿园教师资格', issueDate: '2019-09-01' }
+        ],
+        educationList: [
+          { school: '浙江师范大学', major: '学前教育', degree: '本科', graduationDate: '2019-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '科学',
+          appointmentDate: '2021-09-01',
+          duties: '负责科学领域教学、班级常规管理及家园联系。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园二级教师',
+          titleDate: '2022-09',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 6,
+        name: '钱若霖',
+        className: '大一班',
+        position: '配班老师',
+        years: 5,
+        status: '在职',
+        avatar: '钱',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1990-12-01',
+          age: 34,
+          politicalStatus: '群众',
+          education: '本科',
+          employmentStatus: '正式在编',
+          phone: '137-xxxx-3333',
+          address: '南京市鼓楼区xx路',
+          emergencyContact: '母亲',
+          emergencyPhone: '136-xxxx-4444'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2018112345678', level: '幼儿园教师资格', issueDate: '2018-07-01' }
+        ],
+        educationList: [
+          { school: '南京师范大学', major: '学前教育', degree: '本科', graduationDate: '2018-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '数学',
+          appointmentDate: '2019-09-01',
+          duties: '负责数学领域教学及大班幼小衔接工作。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园一级教师',
+          titleDate: '2023-12',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 7,
+        name: '郑文英',
+        className: '大三班',
+        position: '班主任',
+        years: 7,
+        status: '在职',
+        avatar: '郑',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1989-04-18',
+          age: 35,
+          politicalStatus: '党员',
+          education: '本科',
+          employmentStatus: '正式在编',
+          phone: '135-xxxx-5555',
+          address: '成都市锦江区xx街',
+          emergencyContact: '丈夫',
+          emergencyPhone: '134-xxxx-6666'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2017112345678', level: '幼儿园教师资格', issueDate: '2017-09-01' }
+        ],
+        educationList: [
+          { school: '四川师范大学', major: '学前教育', degree: '本科', graduationDate: '2017-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '综合',
+          appointmentDate: '2017-09-01',
+          duties: '全面负责大三班教育教学、班级管理及家长工作。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园一级教师',
+          titleDate: '2021-12',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 8,
+        name: '赵筠洲',
+        className: '大二班',
+        position: '配班老师',
+        years: 7,
+        status: '在职',
+        avatar: '赵',
+        basicInfo: {
+          gender: '男',
+          birthDate: '1988-08-30',
+          age: 36,
+          politicalStatus: '群众',
+          education: '本科',
+          employmentStatus: '正式在编',
+          phone: '133-xxxx-7777',
+          address: '武汉市武昌区xx路',
+          emergencyContact: '妻子',
+          emergencyPhone: '132-xxxx-8888'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2016112345678', level: '幼儿园教师资格', issueDate: '2016-09-01' }
+        ],
+        educationList: [
+          { school: '华中师范大学', major: '学前教育', degree: '本科', graduationDate: '2016-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '体育',
+          appointmentDate: '2017-09-01',
+          duties: '负责幼儿体育教学、户外活动组织及安全管理工作。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园一级教师',
+          titleDate: '2022-06',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 9,
+        name: '王天琦',
+        className: '小三班',
+        position: '班主任',
+        years: 6,
+        status: '在职',
+        avatar: '王',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1991-02-14',
+          age: 33,
+          politicalStatus: '党员',
+          education: '本科',
+          employmentStatus: '正式在编',
+          phone: '131-xxxx-9999',
+          address: '西安市雁塔区xx路',
+          emergencyContact: '母亲',
+          emergencyPhone: '130-xxxx-0000'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2018112345679', level: '幼儿园教师资格', issueDate: '2018-09-01' }
+        ],
+        educationList: [
+          { school: '陕西师范大学', major: '学前教育', degree: '本科', graduationDate: '2018-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '综合',
+          appointmentDate: '2018-09-01',
+          duties: '全面负责小三班教育教学、班级管理及家长工作。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园一级教师',
+          titleDate: '2023-06',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 10,
+        name: '吴思潼',
+        className: '大一班',
+        position: '配班老师',
+        years: 3,
+        status: '休假',
+        avatar: '吴',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1994-06-25',
+          age: 30,
+          politicalStatus: '群众',
+          education: '本科',
+          employmentStatus: '正式在编',
+          phone: '129-xxxx-1212',
+          address: '重庆市渝中区xx路',
+          emergencyContact: '丈夫',
+          emergencyPhone: '128-xxxx-2323'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2020112345679', level: '幼儿园教师资格', issueDate: '2020-09-01' }
+        ],
+        educationList: [
+          { school: '西南大学', major: '学前教育', degree: '本科', graduationDate: '2020-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '音乐',
+          appointmentDate: '2021-09-01',
+          duties: '负责音乐领域教学及班级环境创设。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园二级教师',
+          titleDate: '2023-09',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 11,
+        name: '何诗琪',
+        className: '小一班',
+        position: '班主任',
+        years: 4,
+        status: '在职',
+        avatar: '何',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1992-10-10',
+          age: 32,
+          politicalStatus: '共青团员',
+          education: '本科',
+          employmentStatus: '正式在编',
+          phone: '127-xxxx-3434',
+          address: '天津市和平区xx路',
+          emergencyContact: '母亲',
+          emergencyPhone: '126-xxxx-4545'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2019112345679', level: '幼儿园教师资格', issueDate: '2019-09-01' }
+        ],
+        educationList: [
+          { school: '天津师范大学', major: '学前教育', degree: '本科', graduationDate: '2019-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '综合',
+          appointmentDate: '2020-09-01',
+          duties: '全面负责小一班教育教学、班级管理及家长工作。'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园二级教师',
+          titleDate: '2022-09',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      },
+      {
+        id: 12,
+        name: '张丽华',
+        className: '大二班',
+        position: '班主任',
+        years: 9,
+        status: '离职',
+        avatar: '张',
+        basicInfo: {
+          gender: '女',
+          birthDate: '1987-01-05',
+          age: 37,
+          politicalStatus: '党员',
+          education: '本科',
+          employmentStatus: '已离职',
+          phone: '125-xxxx-5656',
+          address: '苏州市工业园区xx路',
+          emergencyContact: '丈夫',
+          emergencyPhone: '124-xxxx-6767'
+        },
+        certificates: [
+          { type: '教师资格证', number: '2015112345678', level: '幼儿园教师资格', issueDate: '2015-09-01' }
+        ],
+        educationList: [
+          { school: '苏州大学', major: '学前教育', degree: '本科', graduationDate: '2015-06' }
+        ],
+        positionInfo: {
+          department: '学前部',
+          subject: '综合',
+          appointmentDate: '2015-09-01',
+          duties: '原全面负责大二班教育教学、班级管理及家长工作。',
+          leaveDate: '2024-01-31'
+        },
+        titleInfo: {
+          currentTitle: '幼儿园一级教师',
+          titleDate: '2020-12',
+          attachment: '附件'
+        },
+        honors: [],
+        research: [],
+        awards: [],
+        papers: [],
+        openClasses: [],
+        annualPlans: []
+      }
+    ];
+
+    // ============================================================
+    // 列表页状态
+    // ============================================================
+    let filteredData = [...TEACHERS_DATA];
+    let currentPage = 1;
+    let pageSize = 10;
+    let currentTeacherId = null;
+    let currentTab = 'info';
+
+    // ============================================================
+    // 初始化
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      handleSearch();
+    });
+
+    // ============================================================
+    // 列表页渲染
+    // ============================================================
+    function renderTable() {
+      const tbody = document.getElementById('teacherTableBody');
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageData = filteredData.slice(start, end);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">暂无数据</td></tr>`;
+      } else {
+        tbody.innerHTML = pageData.map(t => `
+          <tr>
+            <td>${t.name}</td>
+            <td>${t.className}</td>
+            <td>${t.position}</td>
+            <td>${t.years}年</td>
+            <td><span class="status-tag ${t.status === '在职' ? 'active' : 'inactive'}">${t.status}</span></td>
+            <td><button class="btn btn-text" onclick="showDetail(${t.id})">查看</button></td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('totalCount').textContent = filteredData.length;
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
+      const container = document.getElementById('pageNumbers');
+      let html = '';
+
+      html += `<button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">‹</button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+          html += `<span class="page-btn disabled">...</span>`;
+        }
+      }
+
+      html += `<button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">›</button>`;
+      container.innerHTML = html;
+    }
+
+    function changePage(page) {
+      const totalPages = Math.ceil(filteredData.length / pageSize);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById('pageSize').value);
+      currentPage = 1;
+      renderTable();
+    }
+
+    function goToPage() {
+      const input = document.getElementById('goToPage');
+      const page = parseInt(input.value);
+      if (page) changePage(page);
+      input.value = '';
+    }
+
+    function handleSearch() {
+      const name = document.getElementById('searchName').value.trim();
+      const cls = document.getElementById('searchClass').value;
+      const position = document.getElementById('searchPosition').value;
+      const status = document.getElementById('searchStatus').value;
+
+      filteredData = TEACHERS_DATA.filter(t => {
+        return (!name || t.name.includes(name))
+          && (!cls || t.className === cls)
+          && (!position || t.position === position)
+          && (!status || t.status === status);
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    function handleReset() {
+      document.getElementById('searchName').value = '';
+      document.getElementById('searchClass').value = '';
+      document.getElementById('searchPosition').value = '';
+      document.getElementById('searchStatus').value = '';
+      handleSearch();
+    }
+
+    function handleExport() {
+      const csvContent = [
+        ['教师姓名', '所属班级', '岗位', '工龄', '状态'],
+        ...filteredData.map(t => [t.name, t.className, t.position, t.years + '年', t.status])
+      ].map(row => row.join(',')).join('\n');
+
+      const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `教师档案_${new Date().toLocaleDateString()}.csv`;
+      link.click();
+    }
+
+    // ============================================================
+    // 页面切换
+    // ============================================================
+    function showDetail(id) {
+      currentTeacherId = id;
+      const teacher = TEACHERS_DATA.find(t => t.id === id);
+      if (!teacher) return;
+
+      document.getElementById('page-list').classList.remove('active');
+      document.getElementById('page-detail').classList.add('active');
+      document.getElementById('breadcrumbBar').classList.add('visible');
+      document.getElementById('breadcrumbCurrent').textContent = teacher.name;
+
+      document.getElementById('detailAvatar').textContent = teacher.avatar;
+      document.getElementById('detailName').textContent = teacher.name;
+      document.getElementById('detailTags').innerHTML = `
+        <span class="detail-tag">${teacher.className}</span>
+        <span class="detail-tag">${teacher.position}</span>
+        <span class="detail-tag">工龄 ${teacher.years} 年</span>
+        <span class="detail-tag">${teacher.status}</span>
+      `;
+
+      switchTab('info');
+      renderDetail();
+    }
+
+    function showList() {
+      document.getElementById('page-detail').classList.remove('active');
+      document.getElementById('page-list').classList.add('active');
+      document.getElementById('breadcrumbBar').classList.remove('visible');
+      currentTeacherId = null;
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.tab === tab);
+      });
+      document.querySelectorAll('.tab-panel').forEach(el => {
+        el.classList.toggle('active', el.id === 'tab-' + tab);
+      });
+    }
+
+    function getCurrentTeacher() {
+      return TEACHERS_DATA.find(t => t.id === currentTeacherId);
+    }
+
+    // ============================================================
+    // 详情页渲染
+    // ============================================================
+    function renderDetail() {
+      const teacher = getCurrentTeacher();
+      if (!teacher) return;
+
+      // 基础信息
+      const basic = teacher.basicInfo;
+      document.getElementById('basicInfoGrid').innerHTML = `
+        <div class="info-item"><div class="info-label">性别</div><div class="info-value">${basic.gender}</div></div>
+        <div class="info-item"><div class="info-label">出生日期</div><div class="info-value">${basic.birthDate}</div></div>
+        <div class="info-item"><div class="info-label">年龄</div><div class="info-value">${basic.age}</div></div>
+        <div class="info-item"><div class="info-label">政治面貌</div><div class="info-value">${basic.politicalStatus}</div></div>
+        <div class="info-item"><div class="info-label">文化程度</div><div class="info-value">${basic.education}</div></div>
+        <div class="info-item"><div class="info-label">在职状态</div><div class="info-value">${basic.employmentStatus}</div></div>
+        <div class="info-item"><div class="info-label">联系方式</div><div class="info-value">${basic.phone}</div></div>
+        <div class="info-item"><div class="info-label">家庭住址</div><div class="info-value">${basic.address}</div></div>
+        <div class="info-item"><div class="info-label">紧急联系人</div><div class="info-value">${basic.emergencyContact}</div></div>
+        <div class="info-item"><div class="info-label">联系电话</div><div class="info-value">${basic.emergencyPhone}</div></div>
+      `;
+
+      // 资格证书
+      renderCertificateList(teacher);
+
+      // 学历信息
+      renderEducationList(teacher);
+
+      // 任职信息
+      const pos = teacher.positionInfo;
+      document.getElementById('positionInfoGrid').innerHTML = `
+        <div class="info-item"><div class="info-label">部门</div><div class="info-value">${pos.department}</div></div>
+        <div class="info-item"><div class="info-label">学科</div><div class="info-value">${pos.subject}</div></div>
+        <div class="info-item"><div class="info-label">任职时间</div><div class="info-value">${pos.appointmentDate}</div></div>
+        <div class="info-item"><div class="info-label">分工</div><div class="info-value">${pos.duties}</div></div>
+        ${pos.leaveDate ? `<div class="info-item"><div class="info-label">离职时间</div><div class="info-value">${pos.leaveDate}</div></div>` : ''}
+      `;
+
+      // 职称信息
+      const title = teacher.titleInfo;
+      document.getElementById('titleInfoGrid').innerHTML = `
+        <div class="info-item"><div class="info-label">专业技术职称</div><div class="info-value">${title.currentTitle}</div></div>
+        <div class="info-item"><div class="info-label">获得时间</div><div class="info-value">${title.titleDate}</div></div>
+        <div class="info-item"><div class="info-label">附件材料</div><div class="info-value">${title.attachment || '无'}</div></div>
+      `;
+
+      // 荣誉成果
+      renderHonorList(teacher);
+      renderResearchList(teacher);
+      renderAwardList(teacher);
+      renderPaperList(teacher);
+      renderOpenClassList(teacher);
+
+      // 年度计划
+      renderAnnualPlanList(teacher);
+    }
+
+    function renderCertificateList(teacher) {
+      const container = document.getElementById('certificateList');
+      if (!teacher.certificates || teacher.certificates.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无资格证书</div>';
+        return;
+      }
+      container.innerHTML = teacher.certificates.map((c, idx) => `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div class="list-item-title">${c.type}</div>
+            <div class="list-item-actions">
+              <button class="icon-btn" onclick="openModal('certificate', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('certificates', ${idx})" title="删除">🗑️</button>
+            </div>
+          </div>
+          <div class="list-item-body">
+            <div><span>证书编号</span> <strong>${c.number}</strong></div>
+            <div><span>资格等级</span> <strong>${c.level}</strong></div>
+            <div><span>发证日期</span> <strong>${c.issueDate}</strong></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderEducationList(teacher) {
+      const container = document.getElementById('educationList');
+      if (!teacher.educationList || teacher.educationList.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无学历信息</div>';
+        return;
+      }
+      container.innerHTML = teacher.educationList.map((e, idx) => `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div class="list-item-title">${e.school}</div>
+            <div class="list-item-actions">
+              <button class="icon-btn" onclick="openModal('education', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('educationList', ${idx})" title="删除">🗑️</button>
+            </div>
+          </div>
+          <div class="list-item-body">
+            <div><span>专业</span> <strong>${e.major}</strong></div>
+            <div><span>学历</span> <strong>${e.degree}</strong></div>
+            <div><span>毕业时间</span> <strong>${e.graduationDate}</strong></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderHonorList(teacher) {
+      const container = document.getElementById('honorList');
+      if (!teacher.honors || teacher.honors.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无荣誉信息</div>';
+        return;
+      }
+      container.innerHTML = teacher.honors.map((h, idx) => `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div class="list-item-title">${h.title}</div>
+            <div class="list-item-actions">
+              <button class="icon-btn" onclick="openModal('honor', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('honors', ${idx})" title="删除">🗑️</button>
+            </div>
+          </div>
+          <div class="list-item-body">
+            <div><span>荣誉级别</span> <strong>${h.level}</strong></div>
+            <div><span>获奖时间</span> <strong>${h.date}</strong></div>
+            <div><span>授予单位</span> <strong>${h.issuer}</strong></div>
+            <div><span>附件材料</span> <strong class="btn-text" style="cursor:pointer">${h.attachment}</strong></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderResearchList(teacher) {
+      const container = document.getElementById('researchList');
+      if (!teacher.research || teacher.research.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无科研成果</div>';
+        return;
+      }
+      container.innerHTML = teacher.research.map((r, idx) => `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div class="list-item-title">${r.title}</div>
+            <div class="list-item-actions">
+              <button class="icon-btn" onclick="openModal('research', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('research', ${idx})" title="删除">🗑️</button>
+            </div>
+          </div>
+          <div class="list-item-body">
+            <div><span>课题类型</span> <strong>${r.level}</strong></div>
+            <div><span>本人角色</span> <strong>${r.role}</strong></div>
+            <div><span>本人排名</span> <strong>${r.rank}</strong></div>
+            <div><span>立项单位</span> <strong>${r.unit}</strong></div>
+            <div><span>开始时间</span> <strong>${r.date}</strong></div>
+            <div><span>结束时间</span> <strong>${r.endDate}</strong></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAwardList(teacher) {
+      const container = document.getElementById('awardList');
+      if (!teacher.awards || teacher.awards.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无获奖信息</div>';
+        return;
+      }
+      container.innerHTML = teacher.awards.map((a, idx) => `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div class="list-item-title">${a.title}</div>
+            <div class="list-item-actions">
+              <button class="icon-btn" onclick="openModal('award', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('awards', ${idx})" title="删除">🗑️</button>
+            </div>
+          </div>
+          <div class="list-item-body">
+            <div><span>奖励级别</span> <strong>${a.level}</strong></div>
+            <div><span>奖励等级</span> <strong>${a.grade}</strong></div>
+            <div><span>本人排名</span> <strong>${a.rank}</strong></div>
+            <div><span>获奖时间</span> <strong>${a.date}</strong></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPaperList(teacher) {
+      const container = document.getElementById('paperList');
+      if (!teacher.papers || teacher.papers.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无论文</div>';
+        return;
+      }
+      container.innerHTML = teacher.papers.map((p, idx) => `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div class="list-item-title">${p.title}</div>
+            <div class="list-item-actions">
+              <button class="icon-btn" onclick="openModal('paper', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('papers', ${idx})" title="删除">🗑️</button>
+            </div>
+          </div>
+          <div class="list-item-body">
+            <div><span>刊物名称</span> <strong>${p.journal}</strong></div>
+            <div><span>发表时间</span> <strong>${p.date}</strong></div>
+            <div><span>本人角色</span> <strong>${p.role}</strong></div>
+            <div><span>学科领域</span> <strong>${p.subject}</strong></div>
+            <div><span>是否获奖</span> <strong>${p.awarded}</strong></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderOpenClassList(teacher) {
+      const container = document.getElementById('openClassList');
+      if (!teacher.openClasses || teacher.openClasses.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无公开课</div>';
+        return;
+      }
+      container.innerHTML = teacher.openClasses.map((o, idx) => `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div class="list-item-title">${o.title}</div>
+            <div class="list-item-actions">
+              <button class="icon-btn" onclick="openModal('openClass', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('openClasses', ${idx})" title="删除">🗑️</button>
+            </div>
+          </div>
+          <div class="list-item-body">
+            <div><span>开课性质</span> <strong>${o.level}</strong></div>
+            <div><span>时间</span> <strong>${o.date}</strong></div>
+            <div><span>授课对象</span> <strong>${o.audience}</strong></div>
+            <div><span>人数</span> <strong>${o.count}</strong></div>
+            <div><span>效果</span> <strong>${o.effect}</strong></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAnnualPlanList(teacher) {
+      const container = document.getElementById('annualPlanList');
+      if (!teacher.annualPlans || teacher.annualPlans.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无年度计划</div>';
+        return;
+      }
+      container.innerHTML = teacher.annualPlans.map((p, idx) => `
+        <div class="plan-item">
+          <div class="plan-year">
+            ${p.year}学年
+            <span style="float:right;">
+              <button class="icon-btn" onclick="openModal('annualPlan', ${idx})" title="编辑">✏️</button>
+              <button class="icon-btn delete" onclick="deleteItem('annualPlans', ${idx})" title="删除">🗑️</button>
+            </span>
+          </div>
+          <div class="plan-content">
+            <div class="plan-block">
+              <div class="plan-block-title">年度计划</div>
+              <div class="plan-block-text">${p.plan}</div>
+            </div>
+            <div class="plan-block">
+              <div class="plan-block-title">年度总结</div>
+              <div class="plan-block-text">${p.summary}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ============================================================
+    // 弹窗逻辑
+    // ============================================================
+    let modalType = '';
+    let modalIndex = null;
+    let modalIsAdd = false;
+
+    const MODAL_CONFIG = {
+      basicInfo: { title: '编辑基础信息', fields: [
+        { name: 'gender', label: '性别', type: 'select', options: ['女','男'], required: true },
+        { name: 'birthDate', label: '出生日期', type: 'date', required: true },
+        { name: 'age', label: '年龄', type: 'number', required: true },
+        { name: 'politicalStatus', label: '政治面貌', type: 'text', required: true },
+        { name: 'education', label: '文化程度', type: 'text', required: true },
+        { name: 'employmentStatus', label: '在职状态', type: 'select', options: ['正式在编','合同制','实习','已离职'], required: true },
+        { name: 'phone', label: '联系方式', type: 'text', required: true },
+        { name: 'address', label: '家庭住址', type: 'text', required: true },
+        { name: 'emergencyContact', label: '紧急联系人', type: 'text', required: true },
+        { name: 'emergencyPhone', label: '联系电话', type: 'text', required: true }
+      ]},
+      certificate: { title: '资格证书', fields: [
+        { name: 'type', label: '证书类型', type: 'text', required: true },
+        { name: 'number', label: '证书编号', type: 'text', required: true },
+        { name: 'level', label: '资格等级', type: 'text', required: true },
+        { name: 'issueDate', label: '发证日期', type: 'date', required: true }
+      ]},
+      education: { title: '学历信息', fields: [
+        { name: 'school', label: '毕业院校', type: 'text', required: true },
+        { name: 'major', label: '专业', type: 'text', required: true },
+        { name: 'degree', label: '学历', type: 'select', options: ['博士研究生','硕士研究生','本科','本科在读','专科'], required: true },
+        { name: 'graduationDate', label: '毕业时间', type: 'month', required: true }
+      ]},
+      positionInfo: { title: '编辑任职信息', fields: [
+        { name: 'department', label: '部门', type: 'text', required: true },
+        { name: 'subject', label: '学科', type: 'text', required: true },
+        { name: 'appointmentDate', label: '任职时间', type: 'date', required: true },
+        { name: 'duties', label: '分工', type: 'textarea', required: true }
+      ]},
+      titleInfo: { title: '编辑职称信息', fields: [
+        { name: 'currentTitle', label: '专业技术职称', type: 'text', required: true },
+        { name: 'titleDate', label: '获得时间', type: 'month', required: true },
+        { name: 'attachment', label: '附件材料', type: 'text' }
+      ]},
+      honor: { title: '荣誉信息', fields: [
+        { name: 'title', label: '荣誉名称', type: 'text', required: true },
+        { name: 'level', label: '荣誉级别', type: 'select', options: ['国家级','省级','市级','区级','校级'], required: true },
+        { name: 'date', label: '获奖时间', type: 'month', required: true },
+        { name: 'issuer', label: '授予单位', type: 'text', required: true },
+        { name: 'attachment', label: '附件材料', type: 'text' }
+      ]},
+      research: { title: '科研成果', fields: [
+        { name: 'title', label: '课题名称', type: 'text', required: true },
+        { name: 'level', label: '课题类型', type: 'select', options: ['市级重点课题','市级一般课题','区级重点课题','区级一般课题','园级课题'], required: true },
+        { name: 'role', label: '本人角色', type: 'select', options: ['主持人','核心成员','参与人员'], required: true },
+        { name: 'rank', label: '本人排名', type: 'number', required: true },
+        { name: 'unit', label: '立项单位', type: 'text', required: true },
+        { name: 'date', label: '开始时间', type: 'month', required: true },
+        { name: 'endDate', label: '结束时间', type: 'month', required: true }
+      ]},
+      award: { title: '获奖信息', fields: [
+        { name: 'title', label: '奖励名称', type: 'text', required: true },
+        { name: 'level', label: '奖励级别', type: 'select', options: ['国家级','省级','市级','区级','校级'], required: true },
+        { name: 'grade', label: '奖励等级', type: 'select', options: ['特等奖','一等奖','二等奖','三等奖','优秀奖'], required: true },
+        { name: 'rank', label: '本人排名', type: 'number', required: true },
+        { name: 'date', label: '获奖时间', type: 'month', required: true }
+      ]},
+      paper: { title: '论文', fields: [
+        { name: 'title', label: '论文名称', type: 'text', required: true },
+        { name: 'journal', label: '刊物名称', type: 'text', required: true },
+        { name: 'date', label: '发表时间', type: 'month', required: true },
+        { name: 'role', label: '本人角色', type: 'select', options: ['第一作者','第二作者','第三作者','独著','通讯作者'], required: true },
+        { name: 'subject', label: '学科领域', type: 'text', required: true },
+        { name: 'awarded', label: '是否获奖', type: 'select', options: ['是','否'], required: true }
+      ]},
+      openClass: { title: '公开课', fields: [
+        { name: 'title', label: '内容', type: 'text', required: true },
+        { name: 'level', label: '开课性质', type: 'select', options: ['市级观摩课','区级观摩课','园级观摩课','教研课'], required: true },
+        { name: 'date', label: '时间', type: 'month', required: true },
+        { name: 'audience', label: '授课对象', type: 'text', required: true },
+        { name: 'count', label: '人数', type: 'number', required: true },
+        { name: 'effect', label: '效果', type: 'select', options: ['优秀','良好','合格','待改进'], required: true }
+      ]},
+      annualPlan: { title: '年度计划', fields: [
+        { name: 'year', label: '学年', type: 'text', required: true, placeholder: '例：2023-2024' },
+        { name: 'plan', label: '年度计划', type: 'textarea', required: true, ai: true },
+        { name: 'summary', label: '年度总结', type: 'textarea', required: true, ai: true }
+      ]}
+    };
+
+    function openModal(type, index, isAdd) {
+      modalType = type;
+      modalIndex = index;
+      modalIsAdd = !!isAdd;
+      const config = MODAL_CONFIG[type];
+      const teacher = getCurrentTeacher();
+
+      let data = {};
+      if (type === 'basicInfo') data = { ...teacher.basicInfo };
+      else if (type === 'positionInfo') data = { ...teacher.positionInfo };
+      else if (type === 'titleInfo') data = { ...teacher.titleInfo };
+      else if (!isAdd && index !== null && index !== undefined) {
+        const arrKey = getArrayKey(type);
+        data = { ...teacher[arrKey][index] };
+      }
+
+      document.getElementById('modalTitle').textContent = (isAdd ? '新增' : '编辑') + config.title;
+      document.getElementById('modalBody').innerHTML = renderFormFields(config.fields, data);
+      document.getElementById('modalOverlay').classList.add('visible');
+    }
+
+    function getArrayKey(type) {
+      const map = {
+        certificate: 'certificates',
+        education: 'educationList',
+        honor: 'honors',
+        research: 'research',
+        award: 'awards',
+        paper: 'papers',
+        openClass: 'openClasses',
+        annualPlan: 'annualPlans'
+      };
+      return map[type];
+    }
+
+    function renderFormFields(fields, data) {
+      return fields.map(f => {
+        const value = data[f.name] !== undefined ? data[f.name] : '';
+        let inputHtml = '';
+        if (f.type === 'select') {
+          inputHtml = `<select class="form-input" name="${f.name}" data-required="${!!f.required}">
+            ${f.options.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('')}
+          </select>`;
+        } else if (f.type === 'textarea') {
+          inputHtml = `<textarea class="form-textarea" name="${f.name}" placeholder="${f.placeholder || ''}" data-required="${!!f.required}">${value}</textarea>`;
+          if (f.ai) {
+            inputHtml = `<button type="button" class="ai-generate" onclick="aiGenerate(this)">✨ AI 生成</button>` + inputHtml;
+          }
+        } else {
+          inputHtml = `<input class="form-input" type="${f.type}" name="${f.name}" value="${value}" placeholder="${f.placeholder || ''}" data-required="${!!f.required}">`;
+        }
+        return `
+          <div class="form-item ${f.type === 'textarea' ? '' : 'half'}">
+            <div class="form-label">${f.required ? '<span class="required"></span>' : ''}${f.label}</div>
+            ${inputHtml}
+            <div class="form-error" id="error-${f.name}">请输入${f.label}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('visible');
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById('modalOverlay')) {
+        closeModal();
+      }
+    }
+
+    function saveModal() {
+      const teacher = getCurrentTeacher();
+      const config = MODAL_CONFIG[modalType];
+      const formData = {};
+      let hasError = false;
+
+      config.fields.forEach(f => {
+        const el = document.querySelector(`[name="${f.name}"]`);
+        const value = el.value.trim();
+        formData[f.name] = value;
+
+        const errorEl = document.getElementById(`error-${f.name}`);
+        if (f.required && !value) {
+          errorEl.classList.add('visible');
+          hasError = true;
+        } else {
+          errorEl.classList.remove('visible');
+        }
+      });
+
+      if (hasError) return;
+
+      if (modalType === 'basicInfo') teacher.basicInfo = { ...teacher.basicInfo, ...formData };
+      else if (modalType === 'positionInfo') teacher.positionInfo = { ...teacher.positionInfo, ...formData };
+      else if (modalType === 'titleInfo') teacher.titleInfo = { ...teacher.titleInfo, ...formData };
+      else {
+        const arrKey = getArrayKey(modalType);
+        if (!teacher[arrKey]) teacher[arrKey] = [];
+        if (modalIsAdd) {
+          formData.id = Date.now();
+          teacher[arrKey].push(formData);
+        } else {
+          teacher[arrKey][modalIndex] = { ...teacher[arrKey][modalIndex], ...formData };
+        }
+      }
+
+      closeModal();
+      renderDetail();
+    }
+
+    function deleteItem(arrKey, index) {
+      if (!confirm('确定要删除这条记录吗？')) return;
+      const teacher = getCurrentTeacher();
+      teacher[arrKey].splice(index, 1);
+      renderDetail();
+    }
+
+    function aiGenerate(btn) {
+      const textarea = btn.nextElementSibling;
+      const originalText = btn.textContent;
+      btn.textContent = '⏳ 生成中...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        if (!textarea.value.trim()) {
+          textarea.value = '本年度将继续围绕幼儿核心素养发展，深入开展主题探究活动，注重过程性评价与家园协同，促进每位幼儿在原有水平上获得发展。';
+        } else {
+          textarea.value += '\n\n【AI 补充】结合班级实际情况，建议增加项目式学习环节，鼓励幼儿在真实情境中解决问题，提升自主学习能力。';
+        }
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }, 600);
+    }
+  </script>
+</body>
+</html>
